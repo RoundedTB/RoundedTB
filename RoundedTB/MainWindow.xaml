@@ -1,0 +1,19 @@
+﻿<Window x:Class="RoundedTB.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RoundedTB"
+        mc:Ignorable="d"
+        Title="RoundedTB" Height="216.526" Width="168.781"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        ui:WindowHelper.UseModernWindowStyle="True" ResizeMode="NoResize" ShowInTaskbar="False">
+    <ui:SimpleStackPanel Margin="12,0,12,12.5" Spacing="24">
+        <Label x:Name="marginLabel" Content="Margin" HorizontalAlignment="Left" Width="119" Margin="10,10,0,-29" Height="19" VerticalAlignment="Top"/>
+        <Label x:Name="cornerRadiusLabel" Content="Corner radius" HorizontalAlignment="Left" Height="19" VerticalAlignment="Top" Width="119" Margin="10,47,0,-66"/>
+        <TextBox x:Name="marginInput" TextWrapping="NoWrap" Text="" Margin="10,-14,10,-18" Height="32" VerticalAlignment="Top"/>
+        <TextBox x:Name="cornerRadiusInput" TextWrapping="NoWrap" Text="" Margin="10,23,10,-23" Height="32" VerticalAlignment="Top"/>
+        <Button x:Name="applyButton" Content="Apply" Style="{StaticResource AccentButtonStyle}" Margin="10,9,10,-6" HorizontalAlignment="Stretch" Click="applyButton_Click" />
+    </ui:SimpleStackPanel>
+
+</Window>
