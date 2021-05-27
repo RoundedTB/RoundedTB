@@ -1,24 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.IO;
-//using System.Windows.Shapes;
-using System.Runtime.InteropServices;
-using System.Windows.Forms;
-using System.Drawing;
-using PInvoke;
+﻿using IWshRuntimeLibrary;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Windows;
 
 namespace RoundedTB
 {
@@ -27,17 +14,27 @@ namespace RoundedTB
     /// </summary>
     public partial class MainWindow : Window
     {
-        public List<(IntPtr, RECT, IntPtr)> taskbarDetails = new List<(IntPtr, RECT, IntPtr)>();
-        public List<KeyValuePair<double, Rectangle>> monitors = new List<KeyValuePair<double, Rectangle>>();
-        public Dictionary<IntPtr, double> taskbarScalechart = new Dictionary<IntPtr, double>();
+        public List<Taskbar> taskbarDetails = new List<Taskbar>();
         public bool shouldReallyDieNoReally = false;
         public string localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         public Settings activeSettings = new Settings();
         public BackgroundWorker bw = new BackgroundWorker();
 
+
+
         public MainWindow()
         {
             InitializeComponent();
+
+            if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")))
+            {
+                StartupCheckBox.IsChecked = true;
+                ShowMenuItem.Header = "Show RDP";
+            }
+            else
+            {
+                Visibility = Visibility.Visible;
+            }
 
             bw.DoWork += Bw_DoWork;
             bw.WorkerSupportsCancellation = true;
@@ -45,13 +42,14 @@ namespace RoundedTB
             FileSystem();
             activeSettings = ReadJSON();
 
-            marginInput.Text = activeSettings.margin.ToString();
-            cornerRadiusInput.Text = activeSettings.cornerRadius.ToString();
+            marginInput.Text = activeSettings.Margin.ToString();
+            cornerRadiusInput.Text = activeSettings.CornerRadius.ToString();
 
             IntPtr hwndMain = FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Shell_TrayWnd", null);
             GetWindowRect(hwndMain, out RECT rectMain);
             GetWindowRgn(hwndMain, out IntPtr hrgnMain);
-            taskbarDetails.Add((hwndMain, rectMain, hrgnMain));
+            
+            taskbarDetails.Add(new Taskbar { TaskbarHwnd = hwndMain, TaskbarRect = rectMain, RecoveryHrgn = hrgnMain, ScaleFactor = Convert.ToDouble(GetDpiForWindow(hwndMain)) / 96.00, TaskbarRes = $"{rectMain.Right - rectMain.Left} x {rectMain.Bottom - rectMain.Top}" });
 
             bool i = true;
             IntPtr hwndPrevious = IntPtr.Zero;
@@ -68,12 +66,44 @@ namespace RoundedTB
                 {
                     GetWindowRect(hwndCurrent, out RECT rectCurrent);
                     GetWindowRgn(hwndCurrent, out IntPtr hrgnCurrent);
-                    taskbarDetails.Add((hwndCurrent, rectCurrent, hrgnCurrent));
+                    taskbarDetails.Add(new Taskbar { TaskbarHwnd = hwndCurrent, TaskbarRect = rectCurrent, RecoveryHrgn = hrgnCurrent, ScaleFactor = Convert.ToDouble(GetDpiForWindow(hwndCurrent)) / 96.00, TaskbarRes = $"{rectCurrent.Right - rectCurrent.Left} x {rectCurrent.Bottom - rectCurrent.Top}" });
                 }
             }
             if (marginInput.Text != null && cornerRadiusInput.Text != null)
             {
                 ApplyButton_Click(null, null);
+            }
+
+        }
+
+        private void ApplyButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!int.TryParse(cornerRadiusInput.Text, out int roundFactor) || !int.TryParse(marginInput.Text, out int marginFactor))
+            {
+                return;
+            }
+
+            activeSettings.CornerRadius = roundFactor;
+            activeSettings.Margin = marginFactor;
+
+            foreach (var tbDeets in taskbarDetails)
+            {
+                UpdateTaskbar(tbDeets, marginFactor, roundFactor, tbDeets.TaskbarRect);
+            }
+
+            if (bw.IsBusy == false)
+            {
+                bw.RunWorkerAsync((marginFactor, roundFactor));
+            }
+            else
+            {
+                bw.CancelAsync();
+                while (bw.IsBusy == true)
+                {
+                    System.Windows.Forms.Application.DoEvents();
+                    System.Threading.Thread.Sleep(100);
+                }
+                bw.RunWorkerAsync((marginFactor, roundFactor));
             }
 
         }
@@ -104,14 +134,13 @@ namespace RoundedTB
                 {
                     for (int a = 0; a < taskbarDetails.Count; a++)
                     {
-                        GetWindowRect(taskbarDetails[a].Item1, out RECT rectCheck);
-                        if (rectCheck.Left != taskbarDetails[a].Item2.Left || rectCheck.Top != taskbarDetails[a].Item2.Top || rectCheck.Right != taskbarDetails[a].Item2.Right || rectCheck.Bottom != taskbarDetails[a].Item2.Bottom)
+                        GetWindowRect(taskbarDetails[a].TaskbarHwnd, out RECT rectCheck);
+                        if (rectCheck.Left != taskbarDetails[a].TaskbarRect.Left || rectCheck.Top != taskbarDetails[a].TaskbarRect.Top || rectCheck.Right != taskbarDetails[a].TaskbarRect.Right || rectCheck.Bottom != taskbarDetails[a].TaskbarRect.Bottom)
                         {
                             ResetTaskbar(taskbarDetails[a]);
-                            taskbarDetails[a] = (taskbarDetails[a].Item1, rectCheck, taskbarDetails[a].Item3);
+                            taskbarDetails[a] = new Taskbar { TaskbarHwnd = taskbarDetails[a].TaskbarHwnd, TaskbarRect = rectCheck, RecoveryHrgn = taskbarDetails[a].RecoveryHrgn, ScaleFactor = GetDpiForWindow(taskbarDetails[a].TaskbarHwnd) / 96 };
 
-                            taskbarScalechart.TryGetValue(taskbarDetails[a].Item1, out double scaleFactor);
-                            UpdateTaskbar(taskbarDetails[a], (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item2, scaleFactor, rectCheck);
+                            UpdateTaskbar(taskbarDetails[a], (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item2, rectCheck);
                         }
                     }
                     System.Threading.Thread.Sleep(50);
@@ -120,39 +149,37 @@ namespace RoundedTB
             }
         }
 
-        private void ApplyButton_Click(object sender, RoutedEventArgs e)
+        public static void ResetTaskbar(Taskbar tbDeets)
         {
-            taskbarScalechart.Clear();
-            int roundFactor = Convert.ToInt32(cornerRadiusInput.Text);
-            int marginFactor = Convert.ToInt32(marginInput.Text);
-            activeSettings.cornerRadius = roundFactor;
-            activeSettings.margin = marginFactor;
+            SetWindowRgn(tbDeets.TaskbarHwnd, tbDeets.RecoveryHrgn, true);
+        }
 
-            if (bw.IsBusy == false)
+        public static void UpdateTaskbar(Taskbar tbDeets, int marginFactor, int roundFactor, RECT rectNew)
+        {
+            TaskbarEffectiveRegion ter; // TODO - Work out what on earth is going on here.
+            if (tbDeets.ScaleFactor >= 1.5)
             {
-                bw.RunWorkerAsync((marginFactor, roundFactor));
+                ter = new TaskbarEffectiveRegion
+                {
+                    EffectiveCornerRadius = Convert.ToInt32(roundFactor * tbDeets.ScaleFactor),
+                    EffectiveTopLeft = Convert.ToInt32(marginFactor * tbDeets.ScaleFactor),
+                    EffectiveBottomRightX = Convert.ToInt32(rectNew.Right - rectNew.Left + 1) - marginFactor,
+                    EffectiveBottomRightY = Convert.ToInt32(rectNew.Bottom - rectNew.Top + 1) - marginFactor
+                };
             }
             else
             {
-                bw.CancelAsync();
-                while (bw.IsBusy == true)
+                ter = new TaskbarEffectiveRegion
                 {
-                    System.Windows.Forms.Application.DoEvents();
-                    System.Threading.Thread.Sleep(100);
-                }
-                bw.RunWorkerAsync((marginFactor, roundFactor));
+                    EffectiveCornerRadius = Convert.ToInt32(roundFactor * tbDeets.ScaleFactor),
+                    EffectiveTopLeft = Convert.ToInt32(marginFactor * tbDeets.ScaleFactor),
+                    EffectiveBottomRightX = Convert.ToInt32(rectNew.Right - rectNew.Left) - marginFactor,
+                    EffectiveBottomRightY = Convert.ToInt32(rectNew.Bottom - rectNew.Top) - marginFactor
+                };
             }
 
-        }
 
-        public static void ResetTaskbar((IntPtr, RECT, IntPtr) tbDeets)
-        {
-            SetWindowRgn(tbDeets.Item1, tbDeets.Item3, true);
-        }
-
-        public static void UpdateTaskbar((IntPtr, RECT, IntPtr) tbDeets, int marginFactor, int roundFactor, double scaleFactor, RECT rectNew)
-        {
-            SetWindowRgn(tbDeets.Item1, CreateRoundRectRgn(Convert.ToInt32(marginFactor * scaleFactor), Convert.ToInt32(marginFactor * scaleFactor), Convert.ToInt32((rectNew.Right - rectNew.Left) * scaleFactor) - marginFactor, Convert.ToInt32((rectNew.Bottom - rectNew.Top) * scaleFactor) - marginFactor, Convert.ToInt32(roundFactor * scaleFactor), Convert.ToInt32(roundFactor * scaleFactor)), true);
+            SetWindowRgn(tbDeets.TaskbarHwnd, CreateRoundRectRgn(ter.EffectiveTopLeft, ter.EffectiveTopLeft , ter.EffectiveBottomRightX, ter.EffectiveBottomRightY , ter.EffectiveCornerRadius, ter.EffectiveCornerRadius), true);
         }
 
         private void CloseMenuItem_Click(object sender, RoutedEventArgs e)
@@ -179,64 +206,72 @@ namespace RoundedTB
             }
         }
 
-
-
-        public class Settings
+        private void Startup_Checked(object sender, RoutedEventArgs e)
         {
-            public int cornerRadius { get; set; }
-            public int margin { get; set; }
+            if (!System.IO.File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Startup)))
+            {
+                EnableStartup();
+            }
+        }
+
+        private void Startup_Unchecked(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
+            }
+            catch (Exception) { }
         }
 
         public Settings ReadJSON()
         {
-            string jsonSettings = File.ReadAllText(Path.Combine(localFolder, "rtb.json"));
+            string jsonSettings = System.IO.File.ReadAllText(Path.Combine(localFolder, "rtb.json"));
             Settings settings = JsonConvert.DeserializeObject<Settings>(jsonSettings);
             return settings;
         }
 
         private void WriteJSON()
         {
-            File.Create(Path.Combine(localFolder, "rtb.json")).Close();
-            File.WriteAllText(Path.Combine(localFolder, "rtb.json"), JsonConvert.SerializeObject(activeSettings, Formatting.Indented));
+            System.IO.File.Create(Path.Combine(localFolder, "rtb.json")).Close();
+            System.IO.File.WriteAllText(Path.Combine(localFolder, "rtb.json"), JsonConvert.SerializeObject(activeSettings, Formatting.Indented));
         }
 
         private void FileSystem()
         {
 
-            if (!File.Exists(Path.Combine(localFolder, "rtb.json")))
+            if (!System.IO.File.Exists(Path.Combine(localFolder, "rtb.json")))
             {
                 WriteJSON(); // butts - Missy Quarry, 2020
             }
-            if (File.ReadAllText(Path.Combine(localFolder, "rtb.json")) == "" || File.ReadAllText(Path.Combine(localFolder, "rtb.json")) == null)
+            if (System.IO.File.ReadAllText(Path.Combine(localFolder, "rtb.json")) == "" || System.IO.File.ReadAllText(Path.Combine(localFolder, "rtb.json")) == null)
             {
                 WriteJSON(); // Initialises empty file
             }
 
         }
 
-        [DllImport("user32.dll", SetLastError = true)]
-        static extern IntPtr MonitorFromPoint(POINT pt, MonitorOptions dwFlags);
-
-        enum MonitorOptions : uint
+        public void EnableStartup()
         {
-            MONITOR_DEFAULTTONULL = 0x00000000,
-            MONITOR_DEFAULTTOPRIMARY = 0x00000001,
-            MONITOR_DEFAULTTONEAREST = 0x00000002
+            try
+            {
+                string shortcutFolder = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+                if (!Directory.Exists(shortcutFolder))
+                {
+                    Directory.CreateDirectory(shortcutFolder);
+                }
+                WshShell shellClass = new WshShell();
+                string rtbStartupLink = Path.Combine(shortcutFolder, "RoundedTB.lnk");
+                IWshShortcut shortcut = (IWshShortcut)shellClass.CreateShortcut(rtbStartupLink);
+                shortcut.TargetPath = Environment.GetCommandLineArgs()[0];
+                shortcut.IconLocation = Environment.GetCommandLineArgs()[0];
+                shortcut.Arguments = "";
+                shortcut.Description = "Start RoundedTB";
+                shortcut.Save();
+            }
+            catch (Exception)
+            {
+            }
         }
-
-        [DllImport("shcore.dll")]
-        static extern void GetDpiForMonitor(IntPtr hmonitor, MONITOR_DPI_TYPE dpiType, out int dpiX, out int dpiY);
-
-        private enum MONITOR_DPI_TYPE
-        {
-            MDT_EFFECTIVE_DPI,
-            MDT_ANGULAR_DPI,
-            MDT_RAW_DPI,
-            MDT_DEFAULT
-        };
-
-        [DllImport("user32.dll")]
-        static extern int GetWindowRgnBox(IntPtr hWnd, out RECT lprc);
 
         [DllImport("user32.dll")]
         static extern int GetWindowRgn(IntPtr hWnd, out IntPtr hRgn);
@@ -265,5 +300,27 @@ namespace RoundedTB
             public int Bottom;
         }
 
+        public class Taskbar
+        {
+            public IntPtr TaskbarHwnd { get; set; }
+            public RECT TaskbarRect { get; set; }
+            public IntPtr RecoveryHrgn { get; set; }
+            public double ScaleFactor { get; set; }
+            public string TaskbarRes { get; set; }
+        }
+
+        public class Settings
+        {
+            public int CornerRadius { get; set; }
+            public int Margin { get; set; }
+        }
+
+        public class TaskbarEffectiveRegion
+        {
+            public int EffectiveCornerRadius { get; set; }
+            public int EffectiveTopLeft { get; set; }
+            public int EffectiveBottomRightX { get; set; }
+            public int EffectiveBottomRightY { get; set; }
+        }
     }
 }
