@@ -6,6 +6,10 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
+using PInvoke;
+using ModernWpf;
+using System.Windows.Interop;
+
 
 namespace RoundedTB
 {
@@ -21,10 +25,11 @@ namespace RoundedTB
         public BackgroundWorker bw = new BackgroundWorker();
 
 
-
         public MainWindow()
         {
             InitializeComponent();
+
+            ThemeManager.Current.ActualApplicationThemeChanged += ThemeChanged();
 
             if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")))
             {
@@ -35,7 +40,6 @@ namespace RoundedTB
             {
                 Visibility = Visibility.Visible;
             }
-
             bw.DoWork += Bw_DoWork;
             bw.WorkerSupportsCancellation = true;
             bw.WorkerReportsProgress = true;
@@ -74,6 +78,19 @@ namespace RoundedTB
                 ApplyButton_Click(null, null);
             }
 
+        }
+
+        private TypedEventHandler<ThemeManager, object> ThemeChanged()
+        {
+            if (ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Dark)
+            {
+                TrayIcon.Icon = DarkIcon.Icon;
+            }
+            else
+            {
+                TrayIcon.Icon = LightIcon.Icon;
+            }
+            return null;
         }
 
         private void ApplyButton_Click(object sender, RoutedEventArgs e)
@@ -156,30 +173,17 @@ namespace RoundedTB
 
         public static void UpdateTaskbar(Taskbar tbDeets, int marginFactor, int roundFactor, RECT rectNew)
         {
-            TaskbarEffectiveRegion ter; // TODO - Work out what on earth is going on here.
-            if (tbDeets.ScaleFactor >= 1.5)
+
+            TaskbarEffectiveRegion ter = new TaskbarEffectiveRegion
             {
-                ter = new TaskbarEffectiveRegion
-                {
-                    EffectiveCornerRadius = Convert.ToInt32(roundFactor * tbDeets.ScaleFactor),
-                    EffectiveTopLeft = Convert.ToInt32(marginFactor * tbDeets.ScaleFactor),
-                    EffectiveBottomRightX = Convert.ToInt32(rectNew.Right - rectNew.Left + 1) - marginFactor,
-                    EffectiveBottomRightY = Convert.ToInt32(rectNew.Bottom - rectNew.Top + 1) - marginFactor
-                };
-            }
-            else
-            {
-                ter = new TaskbarEffectiveRegion
-                {
-                    EffectiveCornerRadius = Convert.ToInt32(roundFactor * tbDeets.ScaleFactor),
-                    EffectiveTopLeft = Convert.ToInt32(marginFactor * tbDeets.ScaleFactor),
-                    EffectiveBottomRightX = Convert.ToInt32(rectNew.Right - rectNew.Left) - marginFactor,
-                    EffectiveBottomRightY = Convert.ToInt32(rectNew.Bottom - rectNew.Top) - marginFactor
-                };
-            }
+                EffectiveCornerRadius = Convert.ToInt32(roundFactor * tbDeets.ScaleFactor),
+                EffectiveTopLeft = Convert.ToInt32(marginFactor * tbDeets.ScaleFactor),
+                EffectiveBottomRightX = Convert.ToInt32(rectNew.Right - rectNew.Left - (marginFactor * tbDeets.ScaleFactor)) + 1,
+                EffectiveBottomRightY = Convert.ToInt32(rectNew.Bottom - rectNew.Top - (marginFactor * tbDeets.ScaleFactor)) + 1
+            };
 
 
-            SetWindowRgn(tbDeets.TaskbarHwnd, CreateRoundRectRgn(ter.EffectiveTopLeft, ter.EffectiveTopLeft , ter.EffectiveBottomRightX, ter.EffectiveBottomRightY , ter.EffectiveCornerRadius, ter.EffectiveCornerRadius), true);
+            SetWindowRgn(tbDeets.TaskbarHwnd, CreateRoundRectRgn(ter.EffectiveTopLeft, ter.EffectiveTopLeft , ter.EffectiveBottomRightX, ter.EffectiveBottomRightY, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius), true);
         }
 
         private void CloseMenuItem_Click(object sender, RoutedEventArgs e)
@@ -222,6 +226,7 @@ namespace RoundedTB
             }
             catch (Exception) { }
         }
+
 
         public Settings ReadJSON()
         {
@@ -273,6 +278,16 @@ namespace RoundedTB
             }
         }
 
+        private static IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (msg == 0x001A) // WM_SETTINGCHANGE
+            {
+                
+            }
+
+            return IntPtr.Zero;
+        }
+
         [DllImport("user32.dll")]
         static extern int GetWindowRgn(IntPtr hWnd, out IntPtr hRgn);
 
@@ -290,6 +305,65 @@ namespace RoundedTB
 
         [DllImport("user32.dll")]
         public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+        [DllImport("user32.dll")]
+        public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+
+        [DllImport("user32.dll")]
+        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+        [DllImport("user32.dll")]
+        static extern bool RedrawWindow(IntPtr hWnd, [In] ref RECT lprcUpdate, IntPtr hrgnUpdate, Rdw flags);
+
+        [Flags()]
+        private enum Rdw : uint
+        {
+            /// <summary>
+            /// Invalidates the rectangle or region that you specify in lprcUpdate or hrgnUpdate.
+            /// You can set only one of these parameters to a non-NULL value. If both are NULL, RDW_INVALIDATE invalidates the entire window.
+            /// </summary>
+            Invalidate = 0x1,
+
+            /// <summary>Causes the OS to post a WM_PAINT message to the window regardless of whether a portion of the window is invalid.</summary>
+            InternalPaint = 0x2,
+
+            /// <summary>
+            /// Causes the window to receive a WM_ERASEBKGND message when the window is repainted.
+            /// Specify this value in combination with the RDW_INVALIDATE value; otherwise, RDW_ERASE has no effect.
+            /// </summary>
+            Erase = 0x4,
+
+            /// <summary>
+            /// Validates the rectangle or region that you specify in lprcUpdate or hrgnUpdate.
+            /// You can set only one of these parameters to a non-NULL value. If both are NULL, RDW_VALIDATE validates the entire window.
+            /// This value does not affect internal WM_PAINT messages.
+            /// </summary>
+            Validate = 0x8,
+
+            NoInternalPaint = 0x10,
+
+            /// <summary>Suppresses any pending WM_ERASEBKGND messages.</summary>
+            NoErase = 0x20,
+
+            /// <summary>Excludes child windows, if any, from the repainting operation.</summary>
+            NoChildren = 0x40,
+
+            /// <summary>Includes child windows, if any, in the repainting operation.</summary>
+            AllChildren = 0x80,
+
+            /// <summary>Causes the affected windows, which you specify by setting the RDW_ALLCHILDREN and RDW_NOCHILDREN values, to receive WM_ERASEBKGND and WM_PAINT messages before the RedrawWindow returns, if necessary.</summary>
+            UpdateNow = 0x100,
+
+            /// <summary>
+            /// Causes the affected windows, which you specify by setting the RDW_ALLCHILDREN and RDW_NOCHILDREN values, to receive WM_ERASEBKGND messages before RedrawWindow returns, if necessary.
+            /// The affected windows receive WM_PAINT messages at the ordinary time.
+            /// </summary>
+            EraseNow = 0x200,
+
+            Frame = 0x400,
+
+            NoFrame = 0x800
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT
@@ -321,6 +395,30 @@ namespace RoundedTB
             public int EffectiveTopLeft { get; set; }
             public int EffectiveBottomRightX { get; set; }
             public int EffectiveBottomRightY { get; set; }
+        }
+
+        private void DebugMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+
+            
+            IntPtr hwndNext = FindWindowExA(taskbarDetails[0].TaskbarHwnd, IntPtr.Zero, "Start", null);
+            List<IntPtr> bitsOfTaskbar = new List<IntPtr>();
+            bitsOfTaskbar.Add(hwndNext);
+            while (true) 
+            {
+                hwndNext = FindWindowExA(taskbarDetails[0].TaskbarHwnd, hwndNext, null, null);
+                if (bitsOfTaskbar.Contains(hwndNext))
+                {
+                    break;
+                }
+                bitsOfTaskbar.Add(hwndNext);
+
+            }
+            foreach (IntPtr hwnd in bitsOfTaskbar)
+            {
+                GetWindowRect(hwnd, out RECT rect);
+                MoveWindow(hwnd, rect.Left + 50, rect.Top, (rect.Right + 50) - (rect.Left + 50), rect.Bottom - rect.Top, true);
+            }
         }
     }
 }
