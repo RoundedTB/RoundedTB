@@ -6,26 +6,28 @@
         xmlns:local="clr-namespace:RoundedTB"
         xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
-        Title="RoundedTB" Height="216.526" Width="168.781"
+        Title="RoundedTB" Height="224.693" Width="168.781"
         xmlns:ui="http://schemas.modernwpf.com/2019"
-        ui:WindowHelper.UseModernWindowStyle="True" Visibility ="Hidden" ResizeMode="NoResize" ShowInTaskbar="False">
-    <ui:SimpleStackPanel Margin="12,0,12,12.5" Spacing="24">
-        <tb:TaskbarIcon x:Name="TrayIcon" Visibility ="Visible" IconSource="/RoundedTB.ico" ToolTipText="RoundedTB">
+        ui:WindowHelper.UseModernWindowStyle="True" Visibility ="Hidden" ResizeMode="NoResize">
+    <Grid Margin="12,0,12,12.5">
+        <tb:TaskbarIcon x:Name="TrayIcon" Visibility ="Visible" IconSource="TrayDark.ico" ToolTipText="RoundedTB">
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
                     <CheckBox x:Name ="StartupCheckBox" Content="Run at startup" Checked="Startup_Checked" Unchecked="Startup_Unchecked"/>
-                    <MenuItem x:Name="DebugMenuItem" Header="Debug" Visibility ="Hidden"  Click="DebugMenuItem_Click"/>
+                    <MenuItem x:Name="DebugMenuItem" Header="Debug" Visibility ="Hidden" Click="DebugMenuItem_Click" Height="0"/>
                     <MenuItem x:Name ="ShowMenuItem" Header="Hide RTB" Click="ShowMenuItem_Click"/>
                     <MenuItem x:Name ="CloseMenuItem" Header="Close RTB" Click="CloseMenuItem_Click"/>
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
-        <tb:TaskbarIcon x:Name="DarkIcon" Visibility="Hidden" IconSource="/TrayDark.ico"/>
-        <tb:TaskbarIcon x:Name="LightIcon" Visibility="Hidden" IconSource="/TrayLight.ico"/>
-        <Label x:Name="marginLabel" Content="Margin" HorizontalAlignment="Left" Width="119" Margin="10,-18,0,-1" Height="19" VerticalAlignment="Top"/>
-        <Label x:Name="cornerRadiusLabel" Content="Corner radius" HorizontalAlignment="Left" Height="19" VerticalAlignment="Top" Width="119" Margin="10,19,0,-38"/>
-        <TextBox x:Name="marginInput" TextWrapping="NoWrap" Text="" Margin="10,-42,10,0" Height="32" VerticalAlignment="Top"/>
-        <TextBox x:Name="cornerRadiusInput" TextWrapping="NoWrap" Text="" Margin="10,-5,10,-2" Height="32" VerticalAlignment="Top"/>
-        <Button x:Name="applyButton" Content="Apply" Style="{StaticResource AccentButtonStyle}" Margin="10,-11,10,14.5" HorizontalAlignment="Stretch" Click="ApplyButton_Click" />
-    </ui:SimpleStackPanel>
+        <Grid Visibility="Hidden">
+            <tb:TaskbarIcon x:Name="DarkIcon" Visibility="Hidden" IconSource="TrayDark.ico"/>
+            <tb:TaskbarIcon x:Name="LightIcon" Visibility="Hidden" IconSource="TrayLight.ico"/>
+        </Grid>
+        <Label x:Name="marginLabel" Content="Margin" HorizontalAlignment="Left" Width="119" Margin="10,6,0,0" Height="19" VerticalAlignment="Top"/>
+        <Label x:Name="cornerRadiusLabel" Content="Corner radius" HorizontalAlignment="Left" Height="19" VerticalAlignment="Top" Width="119" Margin="10,67,0,0"/>
+        <TextBox x:Name="marginInput" TextWrapping="NoWrap" Text="" Margin="10,30,10,0" Height="32" VerticalAlignment="Top"/>
+        <TextBox x:Name="cornerRadiusInput" TextWrapping="NoWrap" Text="" Margin="10,91,10,0" Height="32" VerticalAlignment="Top"/>
+        <Button x:Name="applyButton" Content="Apply" Style="{StaticResource AccentButtonStyle}" Margin="10,0,10,3.5" HorizontalAlignment="Stretch" Click="ApplyButton_Click" VerticalAlignment="Bottom" Height="32" />
+    </Grid>
 </Window>

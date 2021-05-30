@@ -23,18 +23,17 @@ namespace RoundedTB
         public string localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         public Settings activeSettings = new Settings();
         public BackgroundWorker bw = new BackgroundWorker();
-
+        public IntPtr hwndDesktopButton = IntPtr.Zero;
 
         public MainWindow()
         {
             InitializeComponent();
-
-            ThemeManager.Current.ActualApplicationThemeChanged += ThemeChanged();
+            TrayIconCheck();
 
             if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")))
             {
                 StartupCheckBox.IsChecked = true;
-                ShowMenuItem.Header = "Show RDP";
+                ShowMenuItem.Header = "Show RTB";
             }
             else
             {
@@ -50,6 +49,8 @@ namespace RoundedTB
             cornerRadiusInput.Text = activeSettings.CornerRadius.ToString();
 
             IntPtr hwndMain = FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Shell_TrayWnd", null);
+            hwndDesktopButton = FindWindowExA(FindWindowExA(hwndMain, IntPtr.Zero, "TrayNotifyWnd", null), IntPtr.Zero, "TrayShowDesktopButtonWClass", null);
+            User32.SetWindowPos(hwndDesktopButton, IntPtr.Zero, 0, 0, 0, 0, User32.SetWindowPosFlags.SWP_NOMOVE | User32.SetWindowPosFlags.SWP_HIDEWINDOW); // Hide "Show Desktop" button
             GetWindowRect(hwndMain, out RECT rectMain);
             GetWindowRgn(hwndMain, out IntPtr hrgnMain);
             
@@ -80,13 +81,9 @@ namespace RoundedTB
 
         }
 
-        private TypedEventHandler<ThemeManager, object> ThemeChanged()
+        private TypedEventHandler<ThemeManager, object> TrayIconCheck()
         {
-            if (ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Dark)
-            {
-                TrayIcon.Icon = DarkIcon.Icon;
-            }
-            else
+            if (ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Light)
             {
                 TrayIcon.Icon = LightIcon.Icon;
             }
@@ -134,14 +131,20 @@ namespace RoundedTB
                 Visibility = Visibility.Hidden;
                 ShowMenuItem.Header = "Show RTB";
             }
+            else
+            {
+                User32.SetWindowPos(hwndDesktopButton, IntPtr.Zero, 0, 0, 0, 0, User32.SetWindowPosFlags.SWP_NOMOVE | User32.SetWindowPosFlags.SWP_SHOWWINDOW);
+            }
             WriteJSON();
         }
 
+        // Handles keeping the taskbar updated in the background
         private void Bw_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
             while (true)
             {
+                int i = 0;
                 if (worker.CancellationPending == true)
                 {
                     e.Cancel = true;
@@ -149,21 +152,56 @@ namespace RoundedTB
                 }
                 else
                 {
+                    MonitorStuff.DisplayInfoCollection Displays = MonitorStuff.GetDisplays();
                     for (int a = 0; a < taskbarDetails.Count; a++)
                     {
+                        if (i >= 99) // Perform explorer/newmon checks here
+                        {
+                            if (!IsWindow(taskbarDetails[a].TaskbarHwnd))
+                            {
+                                GenerateTaskbarInfo();
+                            }
+
+                            i = 0;
+                        }
+
+                        IntPtr currentMonitor = MonitorFromWindow(taskbarDetails[a].TaskbarHwnd, 0x2);
                         GetWindowRect(taskbarDetails[a].TaskbarHwnd, out RECT rectCheck);
+                        foreach (MonitorStuff.DisplayInfo Display in Displays) // This loop checks for if the taskbar is "hidden" offscreen
+                        {
+                            if (Display.Handle == currentMonitor)
+                            {
+                                POINT pt = new POINT { x = rectCheck.Left + ((rectCheck.Right - rectCheck.Left) / 2), y = rectCheck.Top + ((rectCheck.Bottom - rectCheck.Top) / 2) };
+                                RECT refRect = Display.MonitorArea;
+                                bool isOnTaskbar = PtInRect(ref refRect, pt);
+                                if (!isOnTaskbar)
+                                {
+                                    ResetTaskbar(taskbarDetails[a]);
+                                    goto LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH; // consider this a double-break, it's literally just a few lines below STOP COMPLAINING
+                                }
+                            }
+                        }
+                        // If the taskbar moves, reset it the n
                         if (rectCheck.Left != taskbarDetails[a].TaskbarRect.Left || rectCheck.Top != taskbarDetails[a].TaskbarRect.Top || rectCheck.Right != taskbarDetails[a].TaskbarRect.Right || rectCheck.Bottom != taskbarDetails[a].TaskbarRect.Bottom)
                         {
                             ResetTaskbar(taskbarDetails[a]);
                             taskbarDetails[a] = new Taskbar { TaskbarHwnd = taskbarDetails[a].TaskbarHwnd, TaskbarRect = rectCheck, RecoveryHrgn = taskbarDetails[a].RecoveryHrgn, ScaleFactor = GetDpiForWindow(taskbarDetails[a].TaskbarHwnd) / 96 };
-
                             UpdateTaskbar(taskbarDetails[a], (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item2, rectCheck);
                         }
+
+                        LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH: 
+                        { };
                     }
-                    System.Threading.Thread.Sleep(50);
+                    i++;
+                    System.Threading.Thread.Sleep(100);
                 }
 
             }
+        }
+
+        public static void GenerateTaskbarInfo()
+        {
+
         }
 
         public static void ResetTaskbar(Taskbar tbDeets)
@@ -193,6 +231,7 @@ namespace RoundedTB
             {
                 ResetTaskbar(tbDeets);
             }
+
             Close();
         }
 
@@ -226,7 +265,6 @@ namespace RoundedTB
             }
             catch (Exception) { }
         }
-
 
         public Settings ReadJSON()
         {
@@ -278,15 +316,12 @@ namespace RoundedTB
             }
         }
 
-        private static IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-        {
-            if (msg == 0x001A) // WM_SETTINGCHANGE
-            {
-                
-            }
+        [DllImport("user32.dll")]
+        static extern bool PtInRect(ref RECT lprc, POINT pt);
 
-            return IntPtr.Zero;
-        }
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool IsWindow(IntPtr hWnd);
 
         [DllImport("user32.dll")]
         static extern int GetWindowRgn(IntPtr hWnd, out IntPtr hRgn);
@@ -307,63 +342,10 @@ namespace RoundedTB
         public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
         [DllImport("user32.dll")]
+        static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+        [DllImport("user32.dll")]
         public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
-
-        [DllImport("user32.dll")]
-        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-
-        [DllImport("user32.dll")]
-        static extern bool RedrawWindow(IntPtr hWnd, [In] ref RECT lprcUpdate, IntPtr hrgnUpdate, Rdw flags);
-
-        [Flags()]
-        private enum Rdw : uint
-        {
-            /// <summary>
-            /// Invalidates the rectangle or region that you specify in lprcUpdate or hrgnUpdate.
-            /// You can set only one of these parameters to a non-NULL value. If both are NULL, RDW_INVALIDATE invalidates the entire window.
-            /// </summary>
-            Invalidate = 0x1,
-
-            /// <summary>Causes the OS to post a WM_PAINT message to the window regardless of whether a portion of the window is invalid.</summary>
-            InternalPaint = 0x2,
-
-            /// <summary>
-            /// Causes the window to receive a WM_ERASEBKGND message when the window is repainted.
-            /// Specify this value in combination with the RDW_INVALIDATE value; otherwise, RDW_ERASE has no effect.
-            /// </summary>
-            Erase = 0x4,
-
-            /// <summary>
-            /// Validates the rectangle or region that you specify in lprcUpdate or hrgnUpdate.
-            /// You can set only one of these parameters to a non-NULL value. If both are NULL, RDW_VALIDATE validates the entire window.
-            /// This value does not affect internal WM_PAINT messages.
-            /// </summary>
-            Validate = 0x8,
-
-            NoInternalPaint = 0x10,
-
-            /// <summary>Suppresses any pending WM_ERASEBKGND messages.</summary>
-            NoErase = 0x20,
-
-            /// <summary>Excludes child windows, if any, from the repainting operation.</summary>
-            NoChildren = 0x40,
-
-            /// <summary>Includes child windows, if any, in the repainting operation.</summary>
-            AllChildren = 0x80,
-
-            /// <summary>Causes the affected windows, which you specify by setting the RDW_ALLCHILDREN and RDW_NOCHILDREN values, to receive WM_ERASEBKGND and WM_PAINT messages before the RedrawWindow returns, if necessary.</summary>
-            UpdateNow = 0x100,
-
-            /// <summary>
-            /// Causes the affected windows, which you specify by setting the RDW_ALLCHILDREN and RDW_NOCHILDREN values, to receive WM_ERASEBKGND messages before RedrawWindow returns, if necessary.
-            /// The affected windows receive WM_PAINT messages at the ordinary time.
-            /// </summary>
-            EraseNow = 0x200,
-
-            Frame = 0x400,
-
-            NoFrame = 0x800
-        }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT
@@ -399,8 +381,6 @@ namespace RoundedTB
 
         private void DebugMenuItem_Click(object sender, RoutedEventArgs e)
         {
-
-            
             IntPtr hwndNext = FindWindowExA(taskbarDetails[0].TaskbarHwnd, IntPtr.Zero, "Start", null);
             List<IntPtr> bitsOfTaskbar = new List<IntPtr>();
             bitsOfTaskbar.Add(hwndNext);
@@ -420,5 +400,8 @@ namespace RoundedTB
                 MoveWindow(hwnd, rect.Left + 50, rect.Top, (rect.Right + 50) - (rect.Left + 50), rect.Bottom - rect.Top, true);
             }
         }
+
+
+        
     }
 }
