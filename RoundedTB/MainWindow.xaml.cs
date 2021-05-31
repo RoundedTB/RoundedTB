@@ -7,8 +7,12 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using PInvoke;
+using System.Reflection;
 using ModernWpf;
 using System.Windows.Interop;
+using DesktopBridge;
+using System.Threading.Tasks;
+using Windows.ApplicationModel;
 
 
 namespace RoundedTB
@@ -24,20 +28,29 @@ namespace RoundedTB
         public Settings activeSettings = new Settings();
         public BackgroundWorker bw = new BackgroundWorker();
         public IntPtr hwndDesktopButton = IntPtr.Zero;
+        int numberToForceRefresh = 0;
 
         public MainWindow()
         {
             InitializeComponent();
             TrayIconCheck();
-
-            if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")))
+            if (IsRunningAsUWP())
+            {
+                StartupInit(true);
+                localFolder = Windows.Storage.ApplicationData.Current.RoamingFolder.Path;
+            }
+            if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")) && !IsRunningAsUWP())
             {
                 StartupCheckBox.IsChecked = true;
                 ShowMenuItem.Header = "Show RTB";
             }
             else
             {
-                Visibility = Visibility.Visible;
+                if (!IsRunningAsUWP())
+                {
+                    Visibility = Visibility.Visible;
+
+                }
             }
             bw.DoWork += Bw_DoWork;
             bw.WorkerSupportsCancellation = true;
@@ -47,45 +60,25 @@ namespace RoundedTB
 
             marginInput.Text = activeSettings.Margin.ToString();
             cornerRadiusInput.Text = activeSettings.CornerRadius.ToString();
-
-            IntPtr hwndMain = FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Shell_TrayWnd", null);
-            hwndDesktopButton = FindWindowExA(FindWindowExA(hwndMain, IntPtr.Zero, "TrayNotifyWnd", null), IntPtr.Zero, "TrayShowDesktopButtonWClass", null);
-            User32.SetWindowPos(hwndDesktopButton, IntPtr.Zero, 0, 0, 0, 0, User32.SetWindowPosFlags.SWP_NOMOVE | User32.SetWindowPosFlags.SWP_HIDEWINDOW); // Hide "Show Desktop" button
-            GetWindowRect(hwndMain, out RECT rectMain);
-            GetWindowRgn(hwndMain, out IntPtr hrgnMain);
-            
-            taskbarDetails.Add(new Taskbar { TaskbarHwnd = hwndMain, TaskbarRect = rectMain, RecoveryHrgn = hrgnMain, ScaleFactor = Convert.ToDouble(GetDpiForWindow(hwndMain)) / 96.00, TaskbarRes = $"{rectMain.Right - rectMain.Left} x {rectMain.Bottom - rectMain.Top}" });
-
-            bool i = true;
-            IntPtr hwndPrevious = IntPtr.Zero;
-            while (i == true)
-            {
-                IntPtr hwndCurrent = FindWindowExA(IntPtr.Zero, hwndPrevious, "Shell_SecondaryTrayWnd", null);
-                hwndPrevious = hwndCurrent;
-
-                if (hwndCurrent == IntPtr.Zero)
-                {
-                    i = false;
-                }
-                else
-                {
-                    GetWindowRect(hwndCurrent, out RECT rectCurrent);
-                    GetWindowRgn(hwndCurrent, out IntPtr hrgnCurrent);
-                    taskbarDetails.Add(new Taskbar { TaskbarHwnd = hwndCurrent, TaskbarRect = rectCurrent, RecoveryHrgn = hrgnCurrent, ScaleFactor = Convert.ToDouble(GetDpiForWindow(hwndCurrent)) / 96.00, TaskbarRes = $"{rectCurrent.Right - rectCurrent.Left} x {rectCurrent.Bottom - rectCurrent.Top}" });
-                }
-            }
+            GenerateTaskbarInfo();
             if (marginInput.Text != null && cornerRadiusInput.Text != null)
             {
                 ApplyButton_Click(null, null);
             }
-
         }
 
         private TypedEventHandler<ThemeManager, object> TrayIconCheck()
         {
+            Uri resLight = new Uri("pack://application:,,,/res/traylight.ico");
+            Uri resDark = new Uri("pack://application:,,,/res/traydark.ico");
+
             if (ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Light)
             {
-                TrayIcon.Icon = LightIcon.Icon;
+                TrayIcon.Icon = new System.Drawing.Icon(Application.GetResourceStream(resLight).Stream);
+            }
+            else
+            {
+                TrayIcon.Icon = new System.Drawing.Icon(Application.GetResourceStream(resDark).Stream);
             }
             return null;
         }
@@ -144,7 +137,6 @@ namespace RoundedTB
             BackgroundWorker worker = sender as BackgroundWorker;
             while (true)
             {
-                int i = 0;
                 if (worker.CancellationPending == true)
                 {
                     e.Cancel = true;
@@ -155,14 +147,13 @@ namespace RoundedTB
                     MonitorStuff.DisplayInfoCollection Displays = MonitorStuff.GetDisplays();
                     for (int a = 0; a < taskbarDetails.Count; a++)
                     {
-                        if (i >= 99) // Perform explorer/newmon checks here
+                        if (!IsWindow(taskbarDetails[a].TaskbarHwnd) || AreThereNewTaskbars(taskbarDetails[a].TaskbarHwnd))
                         {
-                            if (!IsWindow(taskbarDetails[a].TaskbarHwnd))
-                            {
-                                GenerateTaskbarInfo();
-                            }
-
-                            i = 0;
+                            Displays = MonitorStuff.GetDisplays();
+                            System.Threading.Thread.Sleep(5000);
+                            GenerateTaskbarInfo();
+                            numberToForceRefresh = taskbarDetails.Count + 1;
+                            goto LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH; // consider this a double-break, it's literally just a few lines below STOP COMPLAINING
                         }
 
                         IntPtr currentMonitor = MonitorFromWindow(taskbarDetails[a].TaskbarHwnd, 0x2);
@@ -182,25 +173,81 @@ namespace RoundedTB
                             }
                         }
                         // If the taskbar moves, reset it the n
-                        if (rectCheck.Left != taskbarDetails[a].TaskbarRect.Left || rectCheck.Top != taskbarDetails[a].TaskbarRect.Top || rectCheck.Right != taskbarDetails[a].TaskbarRect.Right || rectCheck.Bottom != taskbarDetails[a].TaskbarRect.Bottom)
+                        if (rectCheck.Left != taskbarDetails[a].TaskbarRect.Left || rectCheck.Top != taskbarDetails[a].TaskbarRect.Top || rectCheck.Right != taskbarDetails[a].TaskbarRect.Right || rectCheck.Bottom != taskbarDetails[a].TaskbarRect.Bottom || numberToForceRefresh > 0)
                         {
                             ResetTaskbar(taskbarDetails[a]);
                             taskbarDetails[a] = new Taskbar { TaskbarHwnd = taskbarDetails[a].TaskbarHwnd, TaskbarRect = rectCheck, RecoveryHrgn = taskbarDetails[a].RecoveryHrgn, ScaleFactor = GetDpiForWindow(taskbarDetails[a].TaskbarHwnd) / 96 };
                             UpdateTaskbar(taskbarDetails[a], (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item2, rectCheck);
+                            numberToForceRefresh--;
                         }
 
                         LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH: 
                         { };
                     }
-                    i++;
                     System.Threading.Thread.Sleep(100);
                 }
 
             }
         }
 
-        public static void GenerateTaskbarInfo()
+        public bool AreThereNewTaskbars(IntPtr checkAfterTaskbar)
         {
+            List<IntPtr> currentTaskbars = new List<IntPtr>();
+            bool i = true;
+            IntPtr hwndPrevious = IntPtr.Zero;
+            currentTaskbars.Add(FindWindowExA(IntPtr.Zero, hwndPrevious, "Shell_TrayWnd", null));
+
+            while (i)
+            {
+                IntPtr hwndCurrent = FindWindowExA(IntPtr.Zero, hwndPrevious, "Shell_SecondaryTrayWnd", null);
+                hwndPrevious = hwndCurrent;
+
+                if (hwndCurrent == IntPtr.Zero)
+                {
+                    i = false;
+                }
+                else
+                {
+                    currentTaskbars.Add(hwndCurrent);
+                }
+            }
+
+            if (currentTaskbars.Count > taskbarDetails.Count)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public void GenerateTaskbarInfo()
+        {
+            taskbarDetails.Clear();
+            IntPtr hwndMain = FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Shell_TrayWnd", null);
+            hwndDesktopButton = FindWindowExA(FindWindowExA(hwndMain, IntPtr.Zero, "TrayNotifyWnd", null), IntPtr.Zero, "TrayShowDesktopButtonWClass", null);
+            User32.SetWindowPos(hwndDesktopButton, IntPtr.Zero, 0, 0, 0, 0, User32.SetWindowPosFlags.SWP_NOMOVE | User32.SetWindowPosFlags.SWP_HIDEWINDOW); // Hide "Show Desktop" button
+            GetWindowRect(hwndMain, out RECT rectMain);
+            GetWindowRgn(hwndMain, out IntPtr hrgnMain);
+
+            taskbarDetails.Add(new Taskbar { TaskbarHwnd = hwndMain, TaskbarRect = rectMain, RecoveryHrgn = hrgnMain, ScaleFactor = Convert.ToDouble(GetDpiForWindow(hwndMain)) / 96.00, TaskbarRes = $"{rectMain.Right - rectMain.Left} x {rectMain.Bottom - rectMain.Top}" });
+
+            bool i = true;
+            IntPtr hwndPrevious = IntPtr.Zero;
+            while (i)
+            {
+                IntPtr hwndCurrent = FindWindowExA(IntPtr.Zero, hwndPrevious, "Shell_SecondaryTrayWnd", null);
+                hwndPrevious = hwndCurrent;
+
+                if (hwndCurrent == IntPtr.Zero)
+                {
+                    i = false;
+                }
+                else
+                {
+                    GetWindowRect(hwndCurrent, out RECT rectCurrent);
+                    GetWindowRgn(hwndCurrent, out IntPtr hrgnCurrent);
+                    taskbarDetails.Add(new Taskbar { TaskbarHwnd = hwndCurrent, TaskbarRect = rectCurrent, RecoveryHrgn = hrgnCurrent, ScaleFactor = Convert.ToDouble(GetDpiForWindow(hwndCurrent)) / 96.00, TaskbarRes = $"{rectCurrent.Right - rectCurrent.Left} x {rectCurrent.Bottom - rectCurrent.Top}" });
+                }
+            }
 
         }
 
@@ -249,21 +296,29 @@ namespace RoundedTB
             }
         }
 
-        private void Startup_Checked(object sender, RoutedEventArgs e)
+        private async void Startup_Checked(object sender, RoutedEventArgs e)
         {
-            if (!System.IO.File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Startup)))
+            if (IsRunningAsUWP())
             {
-                EnableStartup();
+                await StartupToggle();
+                await StartupInit(false);
             }
-        }
-
-        private void Startup_Unchecked(object sender, RoutedEventArgs e)
-        {
-            try
+            else
             {
-                System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
+                if (!System.IO.File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Startup)))
+                {
+                    EnableStartup();
+                }
+                else
+                {
+                    try
+                    {
+                        System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
+                    }
+                    catch (Exception) { }
+                }
             }
-            catch (Exception) { }
+            
         }
 
         public Settings ReadJSON()
@@ -314,6 +369,112 @@ namespace RoundedTB
             catch (Exception)
             {
             }
+        }
+
+        async Task StartupToggle()
+        {
+            StartupTask startupTask = await StartupTask.GetAsync("RTB"); // Pass the task ID you specified in the appxmanifest file
+            switch (startupTask.State)
+            {
+                case StartupTaskState.Disabled:
+                    StartupTaskState newState = await startupTask.RequestEnableAsync();
+                    StartupCheckBox.IsEnabled = true;
+                    break;
+
+                case StartupTaskState.DisabledByUser:
+                    StartupCheckBox.IsEnabled = false;
+                    break;
+
+                case StartupTaskState.EnabledByPolicy:
+                    StartupCheckBox.IsEnabled = false;
+                    break;
+
+                case StartupTaskState.DisabledByPolicy:
+                    StartupCheckBox.IsEnabled = false;
+                    break;
+
+                case StartupTaskState.Enabled:
+                    startupTask.Disable();
+                    StartupCheckBox.IsEnabled = true;
+                    break;
+            }
+        }
+
+        async Task StartupInit(bool clean)
+        {
+            StartupTask startupTask = await StartupTask.GetAsync("RTB");
+            switch (startupTask.State)
+            {
+                case StartupTaskState.Disabled:
+                    StartupCheckBox.IsChecked = false;
+                    StartupCheckBox.IsEnabled = true;
+                    if (clean)
+                    {
+                        Visibility = Visibility.Visible;
+                        ShowMenuItem.Header = "Hide RTB";
+                    }
+                    StartupCheckBox.Content = "Run on startup";
+                    break;
+
+                case StartupTaskState.DisabledByUser:
+                    StartupCheckBox.IsChecked = false;
+                    StartupCheckBox.IsEnabled = false;
+                    if (clean)
+                    {
+                        Visibility = Visibility.Visible;
+                        ShowMenuItem.Header = "Hide RTB";
+                    }
+                    StartupCheckBox.Content = "Startup unavailable";
+                    break;
+
+                case StartupTaskState.EnabledByPolicy:
+                    StartupCheckBox.IsChecked = true;
+                    StartupCheckBox.IsEnabled = false;
+                    if (clean)
+                    {
+                        Visibility = Visibility.Hidden;
+                        ShowMenuItem.Header = "Show RTB";
+                    }
+                    StartupCheckBox.Content = "Startup mandatory";
+                    break;
+
+                case StartupTaskState.DisabledByPolicy:
+                    StartupCheckBox.IsChecked = false;
+                    StartupCheckBox.IsEnabled = false;
+                    if (clean)
+                    {
+                        Visibility = Visibility.Visible;
+                        ShowMenuItem.Header = "Hide RTB";
+                    }
+                    StartupCheckBox.Content = "Startup unavailable";
+                    break;
+
+                case StartupTaskState.Enabled:
+                    StartupCheckBox.IsChecked = true;
+                    StartupCheckBox.IsEnabled = true;
+                    if (clean)
+                    {
+                        Visibility = Visibility.Hidden;
+                        ShowMenuItem.Header = "Show RTB";
+                    }
+                    StartupCheckBox.Content = "Run on startup";
+                    break;
+            }
+        }
+
+        // Checks if running as a UWP app
+        public bool IsRunningAsUWP()
+        {
+            try
+            {
+                Helpers helpers = new Helpers();
+                return helpers.IsRunningAsUwp();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
         }
 
         [DllImport("user32.dll")]
@@ -401,7 +562,12 @@ namespace RoundedTB
             }
         }
 
-
-        
+        private async void ContextMenu_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (IsRunningAsUWP())
+            {
+                await StartupInit(false);
+            }
+        }
     }
 }

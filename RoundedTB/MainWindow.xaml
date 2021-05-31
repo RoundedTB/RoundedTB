@@ -10,19 +10,17 @@
         xmlns:ui="http://schemas.modernwpf.com/2019"
         ui:WindowHelper.UseModernWindowStyle="True" Visibility ="Hidden" ResizeMode="NoResize">
     <Grid Margin="12,0,12,12.5">
-        <tb:TaskbarIcon x:Name="TrayIcon" Visibility ="Visible" IconSource="TrayDark.ico" ToolTipText="RoundedTB">
+        <tb:TaskbarIcon x:Name="TrayIcon" Visibility ="Visible" ToolTipText="RoundedTB">
             <tb:TaskbarIcon.ContextMenu>
-                <ContextMenu>
-                    <CheckBox x:Name ="StartupCheckBox" Content="Run at startup" Checked="Startup_Checked" Unchecked="Startup_Unchecked"/>
+                <ContextMenu MouseEnter="ContextMenu_MouseEnter">
+                    <CheckBox x:Name ="StartupCheckBox" Content="Run at startup" Click="Startup_Checked"/>
                     <MenuItem x:Name="DebugMenuItem" Header="Debug" Visibility ="Hidden" Click="DebugMenuItem_Click" Height="0"/>
                     <MenuItem x:Name ="ShowMenuItem" Header="Hide RTB" Click="ShowMenuItem_Click"/>
                     <MenuItem x:Name ="CloseMenuItem" Header="Close RTB" Click="CloseMenuItem_Click"/>
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
-        <Grid Visibility="Hidden">
-            <tb:TaskbarIcon x:Name="DarkIcon" Visibility="Hidden" IconSource="TrayDark.ico"/>
-            <tb:TaskbarIcon x:Name="LightIcon" Visibility="Hidden" IconSource="TrayLight.ico"/>
+        <Grid x:Name="SpareIcons" Visibility="Hidden">
         </Grid>
         <Label x:Name="marginLabel" Content="Margin" HorizontalAlignment="Left" Width="119" Margin="10,6,0,0" Height="19" VerticalAlignment="Top"/>
         <Label x:Name="cornerRadiusLabel" Content="Corner radius" HorizontalAlignment="Left" Height="19" VerticalAlignment="Top" Width="119" Margin="10,67,0,0"/>
