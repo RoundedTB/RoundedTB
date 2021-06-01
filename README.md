@@ -11,7 +11,7 @@ Simply open the application, enter a margin and corner radius (try 2 and 6 to ge
 
  - Works with most other taskbar mods, including [TranslucentTB](https://github.com/TranslucentTB/TranslucentTB)
  - Works with multiple monitors, resolutions and scale factors
- - Uses effectively no resources
+ - Minimal impact on performance
  - Doesn't alter or modify system files
  - Doesn't require admin permissions
  - Experimental support for auto-hiding taskbars
