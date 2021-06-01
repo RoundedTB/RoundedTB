@@ -1,7 +1,10 @@
 # RoundedTB
-Add margins and rounded corners to your taskbars!
+Add margins and rounded corners to your taskbars! 
 
 ![RoundedTB](https://cdn.discordapp.com/attachments/272509873479221249/846188615993262100/unknown.png)
+
+## How do I get it?
+The easiest way to download RoundedTB is from the [Microsoft Store](https://www.microsoft.com/store/productId/9MTFTXSJ9M7F). You can also download the latest release from the Releases tab, unzip it and run `RoundedTB.exe`. Lastly, if you're a madman, just compile it yourself.
 
 ## To use
 Simply open the application, enter a margin and corner radius (try 2 and 6 to get started with a subtle effect!) then click Apply. To remove the effect, close the application.
