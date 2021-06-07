@@ -13,7 +13,7 @@ using System.Windows.Interop;
 using DesktopBridge;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
-
+using System.Windows.Input;
 
 namespace RoundedTB
 {
@@ -22,12 +22,19 @@ namespace RoundedTB
     /// </summary>
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// If the Start Menu was visible before re-checking
+        /// </summary>
+        private static bool? wasStartMenuVisibleBefore = null;
+
         public List<Taskbar> taskbarDetails = new List<Taskbar>();
         public bool shouldReallyDieNoReally = false;
         public string localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         public Settings activeSettings = new Settings();
         public BackgroundWorker bw = new BackgroundWorker();
         public IntPtr hwndDesktopButton = IntPtr.Zero;
+        public IntPtr hwndMain = IntPtr.Zero;
+        public IntPtr hwndMainSecond = IntPtr.Zero;
         int numberToForceRefresh = 0;
 
         public MainWindow()
@@ -60,6 +67,7 @@ namespace RoundedTB
 
             marginInput.Text = activeSettings.Margin.ToString();
             cornerRadiusInput.Text = activeSettings.CornerRadius.ToString();
+            completeHideCheckBox.IsChecked = activeSettings.CompleteHide;
             GenerateTaskbarInfo();
             if (marginInput.Text != null && cornerRadiusInput.Text != null)
             {
@@ -92,6 +100,11 @@ namespace RoundedTB
 
             activeSettings.CornerRadius = roundFactor;
             activeSettings.Margin = marginFactor;
+            activeSettings.CompleteHide = (bool)completeHideCheckBox.IsChecked;
+
+            if (!(bool)completeHideCheckBox.IsChecked)
+                for (int a = 0; a < taskbarDetails.Count; a++)
+                    ShowWindow(taskbarDetails[a].TaskbarHwnd, 5);
 
             foreach (var tbDeets in taskbarDetails)
             {
@@ -127,6 +140,8 @@ namespace RoundedTB
             else
             {
                 User32.SetWindowPos(hwndDesktopButton, IntPtr.Zero, 0, 0, 0, 0, User32.SetWindowPosFlags.SWP_NOMOVE | User32.SetWindowPosFlags.SWP_SHOWWINDOW);
+                for (int a = 0; a < taskbarDetails.Count; a++)
+                    ShowWindow(taskbarDetails[a].TaskbarHwnd, 5);
             }
             WriteJSON();
         }
@@ -167,11 +182,18 @@ namespace RoundedTB
                                 bool isOnTaskbar = PtInRect(ref refRect, pt);
                                 if (!isOnTaskbar)
                                 {
+                                    this.Dispatcher.Invoke(() =>
+                                    {
+                                        if (activeSettings.CompleteHide)
+                                            ShowWindow(taskbarDetails[a].TaskbarHwnd, 0);
+                                    });
+                                    
                                     ResetTaskbar(taskbarDetails[a]);
                                     goto LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH; // consider this a double-break, it's literally just a few lines below STOP COMPLAINING
                                 }
                             }
                         }
+
                         // If the taskbar moves, reset it the n
                         if (rectCheck.Left != taskbarDetails[a].TaskbarRect.Left || rectCheck.Top != taskbarDetails[a].TaskbarRect.Top || rectCheck.Right != taskbarDetails[a].TaskbarRect.Right || rectCheck.Bottom != taskbarDetails[a].TaskbarRect.Bottom || numberToForceRefresh > 0)
                         {
@@ -179,9 +201,14 @@ namespace RoundedTB
                             taskbarDetails[a] = new Taskbar { TaskbarHwnd = taskbarDetails[a].TaskbarHwnd, TaskbarRect = rectCheck, RecoveryHrgn = taskbarDetails[a].RecoveryHrgn, ScaleFactor = GetDpiForWindow(taskbarDetails[a].TaskbarHwnd) / 96 };
                             UpdateTaskbar(taskbarDetails[a], (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item2, rectCheck);
                             numberToForceRefresh--;
+                            this.Dispatcher.Invoke(() =>
+                            {
+                                if (activeSettings.CompleteHide)
+                                    ShowWindow(taskbarDetails[a].TaskbarHwnd, 5);
+                            });
                         }
 
-                        LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH: 
+                    LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH:
                         { };
                     }
                     System.Threading.Thread.Sleep(100);
@@ -268,7 +295,7 @@ namespace RoundedTB
             };
 
 
-            SetWindowRgn(tbDeets.TaskbarHwnd, CreateRoundRectRgn(ter.EffectiveTopLeft, ter.EffectiveTopLeft , ter.EffectiveBottomRightX, ter.EffectiveBottomRightY, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius), true);
+            SetWindowRgn(tbDeets.TaskbarHwnd, CreateRoundRectRgn(ter.EffectiveTopLeft, ter.EffectiveTopLeft, ter.EffectiveBottomRightX, ter.EffectiveBottomRightY, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius), true);
         }
 
         private void CloseMenuItem_Click(object sender, RoutedEventArgs e)
@@ -318,7 +345,7 @@ namespace RoundedTB
                     catch (Exception) { }
                 }
             }
-            
+
         }
 
         public Settings ReadJSON()
@@ -508,6 +535,16 @@ namespace RoundedTB
         [DllImport("user32.dll")]
         public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
 
+        [DllImport("user32.dll")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsWindowVisible(IntPtr hWnd);
+
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT
         {
@@ -530,6 +567,7 @@ namespace RoundedTB
         {
             public int CornerRadius { get; set; }
             public int Margin { get; set; }
+            public bool CompleteHide { get; set; }
         }
 
         public class TaskbarEffectiveRegion
@@ -545,7 +583,7 @@ namespace RoundedTB
             IntPtr hwndNext = FindWindowExA(taskbarDetails[0].TaskbarHwnd, IntPtr.Zero, "Start", null);
             List<IntPtr> bitsOfTaskbar = new List<IntPtr>();
             bitsOfTaskbar.Add(hwndNext);
-            while (true) 
+            while (true)
             {
                 hwndNext = FindWindowExA(taskbarDetails[0].TaskbarHwnd, hwndNext, null, null);
                 if (bitsOfTaskbar.Contains(hwndNext))

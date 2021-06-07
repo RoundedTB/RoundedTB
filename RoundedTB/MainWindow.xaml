@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:RoundedTB"
         xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
-        Title="RoundedTB" Height="224.693" Width="168.781"
+        Title="RoundedTB" Height="245.693" Width="168.781"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         ui:WindowHelper.UseModernWindowStyle="True" Visibility ="Hidden" ResizeMode="NoResize">
     <Grid Margin="12,0,12,12.5">
@@ -26,6 +26,7 @@
         <Label x:Name="cornerRadiusLabel" Content="Corner radius" HorizontalAlignment="Left" Height="19" VerticalAlignment="Top" Width="119" Margin="10,67,0,0"/>
         <TextBox x:Name="marginInput" TextWrapping="NoWrap" Text="" Margin="10,30,10,0" Height="32" VerticalAlignment="Top"/>
         <TextBox x:Name="cornerRadiusInput" TextWrapping="NoWrap" Text="" Margin="10,91,10,0" Height="32" VerticalAlignment="Top"/>
+        <CheckBox x:Name="completeHideCheckBox" Margin="10,91,10,0" IsChecked="False" >Complete Hide</CheckBox>
         <Button x:Name="applyButton" Content="Apply" Style="{StaticResource AccentButtonStyle}" Margin="10,0,10,3.5" HorizontalAlignment="Stretch" Click="ApplyButton_Click" VerticalAlignment="Bottom" Height="32" />
     </Grid>
 </Window>
