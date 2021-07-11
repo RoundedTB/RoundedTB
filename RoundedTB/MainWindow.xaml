@@ -6,11 +6,11 @@
         xmlns:local="clr-namespace:RoundedTB"
         xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
-        Title="RoundedTB" Height="224.693" Width="168.781"
+        Title="RoundedTB" Height="244" Width="169"
         xmlns:ui="http://schemas.modernwpf.com/2019"
-        ui:WindowHelper.UseModernWindowStyle="True" Visibility ="Hidden" ResizeMode="NoResize">
-    <Grid Margin="12,0,12,12.5">
-        <tb:TaskbarIcon x:Name="TrayIcon" Visibility ="Visible" ToolTipText="RoundedTB">
+        ui:WindowHelper.UseModernWindowStyle="True" Visibility ="Visible" ResizeMode="NoResize">
+    <Grid HorizontalAlignment="Left" Margin="11,-6,0,0" Width="357">
+        <tb:TaskbarIcon x:Name="TrayIcon" Visibility ="Hidden" ToolTipText="RoundedTB" Height="216" VerticalAlignment="Top">
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu MouseEnter="ContextMenu_MouseEnter">
                     <CheckBox x:Name ="StartupCheckBox" Content="Run at startup" Click="Startup_Checked"/>
@@ -24,8 +24,25 @@
         </Grid>
         <Label x:Name="marginLabel" Content="Margin" HorizontalAlignment="Left" Width="119" Margin="10,6,0,0" Height="19" VerticalAlignment="Top"/>
         <Label x:Name="cornerRadiusLabel" Content="Corner radius" HorizontalAlignment="Left" Height="19" VerticalAlignment="Top" Width="119" Margin="10,67,0,0"/>
-        <TextBox x:Name="marginInput" TextWrapping="NoWrap" Text="" Margin="10,30,10,0" Height="32" VerticalAlignment="Top"/>
-        <TextBox x:Name="cornerRadiusInput" TextWrapping="NoWrap" Text="" Margin="10,91,10,0" Height="32" VerticalAlignment="Top"/>
-        <Button x:Name="applyButton" Content="Apply" Style="{StaticResource AccentButtonStyle}" Margin="10,0,10,3.5" HorizontalAlignment="Stretch" Click="ApplyButton_Click" VerticalAlignment="Bottom" Height="32" />
+        <TextBox x:Name="marginInput" TextWrapping="NoWrap" Text="" Margin="10,30,0,0" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" Width="125"/>
+        <TextBox x:Name="cornerRadiusInput" TextWrapping="NoWrap" Text="" Margin="10,91,0,0" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" Width="125"/>
+        <Button x:Name="applyButton" Content="Apply" Style="{StaticResource AccentButtonStyle}" Margin="10,165,0,0" Click="ApplyButton_Click" VerticalAlignment="Top" Height="32" Width="125" />
+        <Button x:Name="advancedButton" Content="Advanced" Margin="10,128,0,0" VerticalAlignment="Top" Width="125" Click="advancedButton_Click"/>
+
+        <Grid x:Name="AdvancedGrid" Margin="156,6,0,0" HorizontalAlignment="Left" Width="201" Height="218" VerticalAlignment="Top" Visibility="Hidden">
+            <Label x:Name="mTopLabel" Content="Top Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Width="94"/>
+            <TextBox x:Name="mTopInput" HorizontalAlignment="Left" Margin="0,24,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94"/>
+
+            <Label x:Name="mLeftLabel" Content="Left Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,61,0,0" Width="94"/>
+            <TextBox x:Name="mLeftInput" HorizontalAlignment="Left" Margin="0,85,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94"/>
+
+            <Label x:Name="mBottomLabel" Content="Bottom Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="107,0,0,0" Width="94"/>
+            <TextBox x:Name="mBottomInput" HorizontalAlignment="Left" Margin="107,24,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94"/>
+
+            <Label x:Name="mRightLabel" Content="Right Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="107,61,0,0" Width="85"/>
+            <TextBox x:Name="mRightInput" HorizontalAlignment="Left" Margin="107,85,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94"/>
+
+            <TextBlock x:Name="warningLabel" Text="Note: using these advanced margins currently disables taskbar movement detection. Autorotate/moving the taskbar is not recommended." TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,122,0,0" Width="201" Height="71"/>
+        </Grid>
     </Grid>
 </Window>

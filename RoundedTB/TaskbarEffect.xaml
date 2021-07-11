@@ -1,0 +1,27 @@
+﻿<Window x:Class="RoundedTB.TaskbarEffect"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RoundedTB"
+        mc:Ignorable="d"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        x:Name="mwin"
+        Title="TaskbarEffect" Height="48" Width="1920" AllowsTransparency="True" WindowStyle="None" ResizeMode="NoResize" Background="#02000000" ShowInTaskbar="False">
+
+    <Grid>
+
+        <!--MouseMove="HandleMouseMove"-->
+        <Canvas 
+            Background="Transparent">
+            <Ellipse x:Name="eye"
+             Width="73"
+             Height="38"
+             Fill="white" Canvas.Top="10"/>
+            <Canvas.Effect>
+                <BlurEffect KernelType="Box" Radius="10"/>
+            </Canvas.Effect>
+        </Canvas>
+    </Grid>
+</Window>
+
