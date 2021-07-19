@@ -6,11 +6,11 @@
         xmlns:local="clr-namespace:RoundedTB"
         xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
-        Title="RoundedTB" Height="244" Width="169"
+        Title="RoundedTB" Height="244" Width="393"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         ui:WindowHelper.UseModernWindowStyle="True" Visibility ="Visible" ResizeMode="NoResize">
     <Grid HorizontalAlignment="Left" Margin="11,-6,0,0" Width="357">
-        <tb:TaskbarIcon x:Name="TrayIcon" Visibility ="Hidden" ToolTipText="RoundedTB" Height="216" VerticalAlignment="Top">
+        <tb:TaskbarIcon x:Name="TrayIcon" Visibility ="Visible" ToolTipText="RoundedTB" Height="216" VerticalAlignment="Top">
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu MouseEnter="ContextMenu_MouseEnter">
                     <CheckBox x:Name ="StartupCheckBox" Content="Run at startup" Click="Startup_Checked"/>
@@ -29,7 +29,13 @@
         <Button x:Name="applyButton" Content="Apply" Style="{StaticResource AccentButtonStyle}" Margin="10,165,0,0" Click="ApplyButton_Click" VerticalAlignment="Top" Height="32" Width="125" />
         <Button x:Name="advancedButton" Content="Advanced" Margin="10,128,0,0" VerticalAlignment="Top" Width="125" Click="advancedButton_Click"/>
 
-        <Grid x:Name="AdvancedGrid" Margin="156,6,0,0" HorizontalAlignment="Left" Width="201" Height="218" VerticalAlignment="Top" Visibility="Hidden">
+        <Grid x:Name="AdvancedGrid" Margin="156,6,0,0" HorizontalAlignment="Left" Width="201" Height="218" VerticalAlignment="Top" Visibility="Visible">
+            <CheckBox x:Name="dynamicCheckBox" Content="Dynamic mode" Margin="10,25,0,0" VerticalAlignment="Top" Checked="dynamicCheckBox_Checked" Unchecked="dynamicCheckBox_Unchecked"/>
+            <CheckBox x:Name="centredCheckBox" Content="Centred taskbar?" Margin="10,62,0,0" VerticalAlignment="Top"/>
+            <CheckBox x:Name="showTrayCheckBox" Content="Show system tray" Margin="10,99,0,0" VerticalAlignment="Top"/>
+        </Grid>
+
+        <Grid x:Name="MarginGrid" Margin="156,6,0,0" HorizontalAlignment="Left" Width="201" Height="218" VerticalAlignment="Top" Visibility="Hidden">
             <Label x:Name="mTopLabel" Content="Top Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Width="94"/>
             <TextBox x:Name="mTopInput" HorizontalAlignment="Left" Margin="0,24,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94"/>
 
@@ -44,5 +50,7 @@
 
             <TextBlock x:Name="warningLabel" Text="Note: using these advanced margins currently disables taskbar movement detection. Autorotate/moving the taskbar is not recommended." TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,122,0,0" Width="201" Height="71"/>
         </Grid>
+
+
     </Grid>
 </Window>
