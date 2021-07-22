@@ -31,8 +31,8 @@
 
         <Grid x:Name="AdvancedGrid" Margin="156,6,0,0" HorizontalAlignment="Left" Width="201" Height="218" VerticalAlignment="Top" Visibility="Visible">
             <CheckBox x:Name="dynamicCheckBox" Content="Dynamic mode" Margin="10,25,0,0" VerticalAlignment="Top" Checked="dynamicCheckBox_Checked" Unchecked="dynamicCheckBox_Unchecked"/>
-            <CheckBox x:Name="centredCheckBox" Content="Centred taskbar?" Margin="10,62,0,0" VerticalAlignment="Top"/>
-            <CheckBox x:Name="showTrayCheckBox" Content="Show system tray" Margin="10,99,0,0" VerticalAlignment="Top"/>
+            <CheckBox x:Name="centredCheckBox" Content="Centred taskbar?" Margin="10,62,0,0" VerticalAlignment="Top" Visibility="Hidden"/>
+            <CheckBox x:Name="showTrayCheckBox" Content="Show system tray" Margin="10,62,0,0" VerticalAlignment="Top"/>
         </Grid>
 
         <Grid x:Name="MarginGrid" Margin="156,6,0,0" HorizontalAlignment="Left" Width="201" Height="218" VerticalAlignment="Top" Visibility="Hidden">

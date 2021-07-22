@@ -85,7 +85,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="IAppVisibility.cs" />
-    <Compile Include="TaskbarAutomation.cs" />
     <Compile Include="TaskbarEffect.xaml.cs">
       <DependentUpon>TaskbarEffect.xaml</DependentUpon>
     </Compile>

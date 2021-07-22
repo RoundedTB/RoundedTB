@@ -15,6 +15,7 @@ using DesktopBridge;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using System.Diagnostics;
+using Microsoft.Win32;
 
 
 namespace RoundedTB
@@ -32,6 +33,7 @@ namespace RoundedTB
         public IntPtr hwndDesktopButton = IntPtr.Zero;
         public int lastDynDistance = 0;
         int numberToForceRefresh = 0;
+        public bool isCentred = false;
 
         public MainWindow()
         {
@@ -76,6 +78,29 @@ namespace RoundedTB
                 mLeftInput.Text = activeSettings.MarginLeft.ToString();
                 mBottomInput.Text = activeSettings.MarginBottom.ToString();
                 mRightInput.Text = activeSettings.MarginRight.ToString();
+            }
+
+            try
+            {
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced"))
+                {
+                    if (key != null)
+                    {
+                        int val = (int)key.GetValue("TaskbarAl");
+                        if (val == 1)
+                        {
+                            isCentred = true;
+                        }
+                        else
+                        {
+                            isCentred = false;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
             }
 
             dynamicCheckBox.IsChecked = activeSettings.IsDynamic;
@@ -142,7 +167,7 @@ namespace RoundedTB
 
             foreach (var tbDeets in taskbarDetails)
             {
-                UpdateTaskbar(tbDeets, mt, ml, mb, mr, roundFactor, tbDeets.TaskbarRect, activeSettings.IsDynamic, activeSettings.IsCentred, activeSettings.ShowTray, 0);
+                UpdateTaskbar(tbDeets, mt, ml, mb, mr, roundFactor, tbDeets.TaskbarRect, activeSettings.IsDynamic, isCentred, activeSettings.ShowTray, 0);
             }
 
             if (bw.IsBusy == false && marginInput.Text.ToLower() != "advanced")
@@ -272,7 +297,7 @@ namespace RoundedTB
                             int dynDistChange = Math.Abs(newWidth - oldWidth);
 
                             bool failedRefresh = false;
-                            Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => failedRefresh = UpdateTaskbar(taskbarDetails[a], (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item2, taskbarRectCheck, activeSettings.IsDynamic, activeSettings.IsCentred, activeSettings.ShowTray, dynDistChange)));
+                            Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => failedRefresh = UpdateTaskbar(taskbarDetails[a], (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item2, taskbarRectCheck, activeSettings.IsDynamic, isCentred, activeSettings.ShowTray, dynDistChange)));
                             if (!failedRefresh && taskbarDetails[a].FailCount <= 3)
                             {
                                 taskbarDetails[a] = backupTaskbar;
@@ -289,6 +314,30 @@ namespace RoundedTB
 
                     LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH: 
                         { };
+                    }
+                    
+                    // Check if centred
+                    try
+                    {
+                        using (RegistryKey key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced"))
+                        {
+                            if (key != null)
+                            {
+                                int val = (int)key.GetValue("TaskbarAl");
+                                if (val == 1)
+                                {
+                                    isCentred = true;
+                                }
+                                else
+                                {
+                                    isCentred = false;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+
                     }
                     System.Threading.Thread.Sleep(100);
                 }
@@ -379,10 +428,18 @@ namespace RoundedTB
                 {
                     GetWindowRect(hwndCurrent, out RECT rectCurrent);
                     GetWindowRgn(hwndCurrent, out IntPtr hrgnCurrent);
+                    IntPtr hwndSecTray = FindWindowExA(hwndCurrent, IntPtr.Zero, "TrayNotifyWnd", null); // Get handle to the main taskbar's tray
+                    GetWindowRect(hwndTray, out RECT rectSecTray); // Get the RECT for the main taskbar's tray
+                    IntPtr hwndSecAppList = FindWindowExA(FindWindowExA(hwndCurrent, IntPtr.Zero, "WorkerW", null), IntPtr.Zero, "MSTaskListWClass", null); // Get the handle to the main taskbar's app list
+                    GetWindowRect(hwndSecAppList, out RECT rectSecAppList);// Get the RECT for the main taskbar's app list
                     taskbarDetails.Add(new Taskbar
                     {
                         TaskbarHwnd = hwndCurrent,
+                        TrayHwnd = hwndSecTray,
+                        AppListHwnd = hwndSecAppList,
                         TaskbarRect = rectCurrent,
+                        TrayRect = rectSecTray,
+                        AppListRect = rectSecAppList,
                         RecoveryHrgn = hrgnCurrent,
                         ScaleFactor = Convert.ToDouble(GetDpiForWindow(hwndCurrent)) / 96.00,
                         TaskbarRes = $"{rectCurrent.Right - rectCurrent.Left} x {rectCurrent.Bottom - rectCurrent.Top}",
@@ -432,13 +489,20 @@ namespace RoundedTB
                     Debug.WriteLine($"------------------");
                     return false;
                 }
+                if (tbDeets.TrayHwnd != IntPtr.Zero && tbDeets.AppListRect.Left == 0)
+                {
+                    Debug.WriteLine($"Taskbar is aligned to left: {tbDeets.AppListRect.Left}");
+                }
+                else if (tbDeets.TrayHwnd != IntPtr.Zero)
+                {
+                        Debug.WriteLine($"Taskbar is centred: {tbDeets.AppListRect.Left}");
+                }
 
                 if (isCentred)
                 {
                     // If the taskbar is centered, take the right-to-right distance off from both sides, as well as the margin
                     rgn = CreateRoundRectRgn(dynDistance + ter.EffectiveLeft, ter.EffectiveTop, ter.EffectiveWidth - dynDistance, ter.EffectiveHeight, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius);
                 }
-                // DISTANCE FROM LEDGE OF SCREEN MINUS DISTANCE BETWEEN REDGE OF TASKBAR AND REDGE OF APPLIST
                 else
                 {
                     // If not, just take it from one side.
@@ -454,7 +518,10 @@ namespace RoundedTB
 
                 }
                 SetWindowRgn(tbDeets.TaskbarHwnd, rgn, true);
-                SendMessage(tbDeets.TaskbarHwnd, 798, 0, IntPtr.Zero); // TTB compat
+                IntPtr a = SendMessage(tbDeets.TaskbarHwnd, 798, 1, IntPtr.Zero); // TTB compat
+                bool b = RedrawWindow(tbDeets.TaskbarHwnd, IntPtr.Zero, IntPtr.Zero, RedrawWindowFlags.Erase | RedrawWindowFlags.Invalidate | RedrawWindowFlags.Frame | RedrawWindowFlags.UpdateNow);
+                Debug.WriteLine($"SendMessage returned: {a}");
+                Debug.WriteLine($"RedrawWindow returned: {b}");
                 return true;
             }
 
@@ -678,6 +745,9 @@ namespace RoundedTB
 
         }
 
+        [DllImport("user32.dll")]
+        static extern bool RedrawWindow(IntPtr hWnd, IntPtr idk, IntPtr hrgnUpdate, RedrawWindowFlags flags);
+
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, IntPtr lParam);
 
@@ -726,6 +796,56 @@ namespace RoundedTB
             public int Top;
             public int Right;
             public int Bottom;
+        }
+
+        [Flags()]
+        private enum RedrawWindowFlags : uint
+        {
+            /// <summary>
+            /// Invalidates the rectangle or region that you specify in lprcUpdate or hrgnUpdate.
+            /// You can set only one of these parameters to a non-NULL value. If both are NULL, RDW_INVALIDATE invalidates the entire window.
+            /// </summary>
+            Invalidate = 0x1,
+
+            /// <summary>Causes the OS to post a WM_PAINT message to the window regardless of whether a portion of the window is invalid.</summary>
+            InternalPaint = 0x2,
+
+            /// <summary>
+            /// Causes the window to receive a WM_ERASEBKGND message when the window is repainted.
+            /// Specify this value in combination with the RDW_INVALIDATE value; otherwise, RDW_ERASE has no effect.
+            /// </summary>
+            Erase = 0x4,
+
+            /// <summary>
+            /// Validates the rectangle or region that you specify in lprcUpdate or hrgnUpdate.
+            /// You can set only one of these parameters to a non-NULL value. If both are NULL, RDW_VALIDATE validates the entire window.
+            /// This value does not affect internal WM_PAINT messages.
+            /// </summary>
+            Validate = 0x8,
+
+            NoInternalPaint = 0x10,
+
+            /// <summary>Suppresses any pending WM_ERASEBKGND messages.</summary>
+            NoErase = 0x20,
+
+            /// <summary>Excludes child windows, if any, from the repainting operation.</summary>
+            NoChildren = 0x40,
+
+            /// <summary>Includes child windows, if any, in the repainting operation.</summary>
+            AllChildren = 0x80,
+
+            /// <summary>Causes the affected windows, which you specify by setting the RDW_ALLCHILDREN and RDW_NOCHILDREN values, to receive WM_ERASEBKGND and WM_PAINT messages before the RedrawWindow returns, if necessary.</summary>
+            UpdateNow = 0x100,
+
+            /// <summary>
+            /// Causes the affected windows, which you specify by setting the RDW_ALLCHILDREN and RDW_NOCHILDREN values, to receive WM_ERASEBKGND messages before RedrawWindow returns, if necessary.
+            /// The affected windows receive WM_PAINT messages at the ordinary time.
+            /// </summary>
+            EraseNow = 0x200,
+
+            Frame = 0x400,
+
+            NoFrame = 0x800
         }
 
         public class Taskbar
