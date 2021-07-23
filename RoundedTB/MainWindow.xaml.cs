@@ -34,10 +34,34 @@ namespace RoundedTB
         public int lastDynDistance = 0;
         int numberToForceRefresh = 0;
         public bool isCentred = false;
+        public bool isAlreadyRunning = false;
+
+
+        [DllImport("user32.dll")]
+        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        public bool? IsOdd(int input)
+        {
+            decimal comparison = input / 2;
+            int check = Convert.ToInt32(comparison) * 2;
+            if (check == input)
+            {
+                return false;
+            }
+            return true;
+        }
+
 
         public MainWindow()
         {
             InitializeComponent();
+            if (Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Length > 1)
+            {
+                shouldReallyDieNoReally = true;
+                isAlreadyRunning = true;
+                Close();
+                return;
+            }
             TrayIconCheck();
             if (IsRunningAsUWP())
             {
@@ -202,11 +226,10 @@ namespace RoundedTB
                 Visibility = Visibility.Hidden;
                 ShowMenuItem.Header = "Show RTB";
             }
-            else
+            if (!isAlreadyRunning)
             {
-                User32.SetWindowPos(hwndDesktopButton, IntPtr.Zero, 0, 0, 0, 0, User32.SetWindowPosFlags.SWP_NOMOVE | User32.SetWindowPosFlags.SWP_SHOWWINDOW);
+                WriteJSON();
             }
-            WriteJSON();
         }
 
         // Handles keeping the taskbar updated in the background
