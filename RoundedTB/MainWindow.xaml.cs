@@ -17,7 +17,6 @@ using Windows.ApplicationModel;
 using System.Diagnostics;
 using Microsoft.Win32;
 
-
 namespace RoundedTB
 {
     /// <summary>
@@ -63,6 +62,7 @@ namespace RoundedTB
                 return;
             }
             TrayIconCheck();
+
             if (IsRunningAsUWP())
             {
                 StartupInit(true);
