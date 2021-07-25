@@ -1,32 +1,51 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System;
+using System.Diagnostics;
 using System.IO;
+using System.Windows;
+
 
 namespace RoundedTB
 {
-    class SystemFns
+    public class SystemFns
     {
-        public static Types.Settings ReadJSON()
+        public MainWindow mw;
+
+        public SystemFns()
         {
-            string jsonSettings = File.ReadAllText(Path.Combine(MainWindow.localFolder, "rtb.json"));
+            mw = (MainWindow)Application.Current.MainWindow;
+        }
+
+    public Types.Settings ReadJSON()
+        {
+            string jsonSettings = File.ReadAllText(Path.Combine(mw.localFolder, "rtb.json"));
             Types.Settings settings = JsonConvert.DeserializeObject<Types.Settings>(jsonSettings);
             return settings;
         }
 
-        public static void WriteJSON()
+        public bool IsWindows11()
         {
-            File.Create(Path.Combine(MainWindow.localFolder, "rtb.json")).Close();
-            File.WriteAllText(Path.Combine(MainWindow.localFolder, "rtb.json"), JsonConvert.SerializeObject(MainWindow.activeSettings, Formatting.Indented));
+            Debug.WriteLine(Environment.OSVersion.Version.Build);
+            if (Environment.OSVersion.Version.Build >= 21996)
+            {
+                return true;
+            }
+            return false;
         }
 
-        public static void FileSystem()
+        public void WriteJSON()
         {
+            File.Create(Path.Combine(mw.localFolder, "rtb.json")).Close();
+            File.WriteAllText(Path.Combine(mw.localFolder, "rtb.json"), JsonConvert.SerializeObject(mw.activeSettings, Formatting.Indented));
+        }
 
-            if (!File.Exists(Path.Combine(MainWindow.localFolder, "rtb.json")))
+        public void FileSystem()
+        {
+            if (!File.Exists(Path.Combine(mw.localFolder, "rtb.json")))
             {
                 WriteJSON(); // butts - Missy Quarry, 2020
             }
-            if (File.ReadAllText(Path.Combine(MainWindow.localFolder, "rtb.json")) == "" || File.ReadAllText(Path.Combine(MainWindow.localFolder, "rtb.json")) == null)
+            if (File.ReadAllText(Path.Combine(mw.localFolder, "rtb.json")) == "" || File.ReadAllText(Path.Combine(mw.localFolder, "rtb.json")) == null)
             {
                 WriteJSON(); // Initialises empty file
             }

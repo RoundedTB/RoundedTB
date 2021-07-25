@@ -11,144 +11,161 @@ namespace RoundedTB
 {
     public class BackgroundFns
     {
-        public static MainWindow mw = (MainWindow)Application.Current.MainWindow;
+        // Just have a reference point for the Dispatcher
+        public MainWindow mw;
 
-        public static void DoWork(object sender, DoWorkEventArgs e)
+        public BackgroundFns()
+        {
+            mw = (MainWindow)Application.Current.MainWindow;
+        }
+
+
+        // Main function for the BackgroundWorker - runs indefinitely
+        public void DoWork(object sender, DoWorkEventArgs e)
         {
             Debug.WriteLine("in bw");
             BackgroundWorker worker = sender as BackgroundWorker;
             while (true)
             {
-                if (worker.CancellationPending == true)
+                try
                 {
-                    Debug.WriteLine("cancelling");
-                    e.Cancel = true;
-                    break;
-                }
-                else
-                {
-                    MonitorStuff.DisplayInfoCollection Displays = MonitorStuff.GetDisplays();
-                    for (int a = 0; a < MainWindow.taskbarDetails.Count; a++)
+                    if (worker.CancellationPending == true)
                     {
-                        if (!LocalPInvoke.IsWindow(MainWindow.taskbarDetails[a].TaskbarHwnd) || AreThereNewTaskbars(MainWindow.taskbarDetails[a].TaskbarHwnd))
+                        Debug.WriteLine("cancelling");
+                        e.Cancel = true;
+                        break;
+                    }
+                    else
+                    {
+                        MonitorStuff.DisplayInfoCollection Displays = MonitorStuff.GetDisplays();
+                        for (int a = 0; a < mw.taskbarDetails.Count; a++)
                         {
-                            Displays = MonitorStuff.GetDisplays();
-                            System.Threading.Thread.Sleep(5000);
-                            GenerateTaskbarInfo();
-                            MainWindow.numberToForceRefresh = MainWindow.taskbarDetails.Count + 1;
-                            goto LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH; // consider this a double-break, it's literally just a few lines below STOP COMPLAINING
-                        }
-
-                        IntPtr currentMonitor = LocalPInvoke.MonitorFromWindow(MainWindow.taskbarDetails[a].TaskbarHwnd, 0x2);
-                        LocalPInvoke.GetWindowRect(MainWindow.taskbarDetails[a].TaskbarHwnd, out LocalPInvoke.RECT taskbarRectCheck);
-                        LocalPInvoke.GetWindowRect(MainWindow.taskbarDetails[a].TrayHwnd, out LocalPInvoke.RECT trayRectCheck);
-                        LocalPInvoke.GetWindowRect(MainWindow.taskbarDetails[a].AppListHwnd, out LocalPInvoke.RECT appListRectCheck);
-                        foreach (MonitorStuff.DisplayInfo Display in Displays) // This loop checks for if the taskbar is "hidden" offscreen
-                        {
-                            if (Display.Handle == currentMonitor)
+                            if (!LocalPInvoke.IsWindow(mw.taskbarDetails[a].TaskbarHwnd) || AreThereNewTaskbars(mw.taskbarDetails[a].TaskbarHwnd))
                             {
-                                LocalPInvoke.POINT pt = new LocalPInvoke.POINT { x = taskbarRectCheck.Left + ((taskbarRectCheck.Right - taskbarRectCheck.Left) / 2), y = taskbarRectCheck.Top + ((taskbarRectCheck.Bottom - taskbarRectCheck.Top) / 2) };
-                                LocalPInvoke.RECT refRect = Display.MonitorArea;
-                                bool isOnTaskbar = LocalPInvoke.PtInRect(ref refRect, pt);
-                                if (!isOnTaskbar)
+                                Displays = MonitorStuff.GetDisplays();
+                                System.Threading.Thread.Sleep(5000);
+                                GenerateTaskbarInfo();
+                                mw.numberToForceRefresh = mw.taskbarDetails.Count + 1;
+                                goto LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH; // consider this a double-break, it's literally just a few lines below STOP COMPLAINING
+                            }
+
+                            IntPtr currentMonitor = LocalPInvoke.MonitorFromWindow(mw.taskbarDetails[a].TaskbarHwnd, 0x2);
+                            LocalPInvoke.GetWindowRect(mw.taskbarDetails[a].TaskbarHwnd, out LocalPInvoke.RECT taskbarRectCheck);
+                            LocalPInvoke.GetWindowRect(mw.taskbarDetails[a].TrayHwnd, out LocalPInvoke.RECT trayRectCheck);
+                            LocalPInvoke.GetWindowRect(mw.taskbarDetails[a].AppListHwnd, out LocalPInvoke.RECT appListRectCheck);
+                            foreach (MonitorStuff.DisplayInfo Display in Displays) // This loop checks for if the taskbar is "hidden" offscreen
+                            {
+                                if (Display.Handle == currentMonitor)
                                 {
-                                    MainWindow.ResetTaskbar(MainWindow.taskbarDetails[a]);
-                                    goto LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH; // consider this a double-break, it's literally just a few lines below STOP COMPLAINING
+                                    LocalPInvoke.POINT pt = new LocalPInvoke.POINT { x = taskbarRectCheck.Left + ((taskbarRectCheck.Right - taskbarRectCheck.Left) / 2), y = taskbarRectCheck.Top + ((taskbarRectCheck.Bottom - taskbarRectCheck.Top) / 2) };
+                                    LocalPInvoke.RECT refRect = Display.MonitorArea;
+                                    bool isOnTaskbar = LocalPInvoke.PtInRect(ref refRect, pt);
+                                    if (!isOnTaskbar)
+                                    {
+                                        mw.ResetTaskbar(mw.taskbarDetails[a]);
+                                        goto LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH; // consider this a double-break, it's literally just a few lines below STOP COMPLAINING
+                                    }
                                 }
                             }
-                        }
 
 
 
-                        // If the taskbar moves, reset it then restore it
-                        if (
-                                taskbarRectCheck.Left != MainWindow.taskbarDetails[a].TaskbarRect.Left ||
-                                taskbarRectCheck.Top != MainWindow.taskbarDetails[a].TaskbarRect.Top ||
-                                taskbarRectCheck.Right != MainWindow.taskbarDetails[a].TaskbarRect.Right ||
-                                taskbarRectCheck.Bottom != MainWindow.taskbarDetails[a].TaskbarRect.Bottom ||
+                            // If the taskbar moves, reset it then restore it
+                            if (
+                                    taskbarRectCheck.Left != mw.taskbarDetails[a].TaskbarRect.Left ||
+                                    taskbarRectCheck.Top != mw.taskbarDetails[a].TaskbarRect.Top ||
+                                    taskbarRectCheck.Right != mw.taskbarDetails[a].TaskbarRect.Right ||
+                                    taskbarRectCheck.Bottom != mw.taskbarDetails[a].TaskbarRect.Bottom ||
 
-                                appListRectCheck.Left != MainWindow.taskbarDetails[a].AppListRect.Left ||
-                                appListRectCheck.Top != MainWindow.taskbarDetails[a].AppListRect.Top ||
-                                appListRectCheck.Right != MainWindow.taskbarDetails[a].AppListRect.Right ||
-                                appListRectCheck.Bottom != MainWindow.taskbarDetails[a].AppListRect.Bottom ||
+                                    appListRectCheck.Left != mw.taskbarDetails[a].AppListRect.Left ||
+                                    appListRectCheck.Top != mw.taskbarDetails[a].AppListRect.Top ||
+                                    appListRectCheck.Right != mw.taskbarDetails[a].AppListRect.Right ||
+                                    appListRectCheck.Bottom != mw.taskbarDetails[a].AppListRect.Bottom ||
 
-                                trayRectCheck.Left != MainWindow.taskbarDetails[a].TrayRect.Left ||
-                                trayRectCheck.Top != MainWindow.taskbarDetails[a].TrayRect.Top ||
-                                trayRectCheck.Right != MainWindow.taskbarDetails[a].TrayRect.Right ||
-                                trayRectCheck.Bottom != MainWindow.taskbarDetails[a].TrayRect.Bottom ||
+                                    trayRectCheck.Left != mw.taskbarDetails[a].TrayRect.Left ||
+                                    trayRectCheck.Top != mw.taskbarDetails[a].TrayRect.Top ||
+                                    trayRectCheck.Right != mw.taskbarDetails[a].TrayRect.Right ||
+                                    trayRectCheck.Bottom != mw.taskbarDetails[a].TrayRect.Bottom ||
 
-                                MainWindow.numberToForceRefresh > 0
-                          )
-                        {
-                            int oldWidth = MainWindow.taskbarDetails[a].AppListRect.Right - MainWindow.taskbarDetails[a].TrayRect.Left;
-                            Types.Taskbar backupTaskbar = MainWindow.taskbarDetails[a];
-                            //Debug.WriteLine("in if");
-                            //ResetTaskbar(MainWindow.taskbarDetails[a]);
-                            MainWindow.taskbarDetails[a] = new Types.Taskbar
+                                    mw.numberToForceRefresh > 0
+                              )
                             {
-                                TaskbarHwnd = MainWindow.taskbarDetails[a].TaskbarHwnd,
-                                TaskbarRect = taskbarRectCheck,
-                                TrayHwnd = MainWindow.taskbarDetails[a].TrayHwnd,
-                                TrayRect = trayRectCheck,
-                                AppListHwnd = MainWindow.taskbarDetails[a].AppListHwnd,
-                                AppListRect = appListRectCheck,
-                                RecoveryHrgn = MainWindow.taskbarDetails[a].RecoveryHrgn,
-                                ScaleFactor = LocalPInvoke.GetDpiForWindow(MainWindow.taskbarDetails[a].TaskbarHwnd) / 96,
-                                FailCount = MainWindow.taskbarDetails[a].FailCount
-                            };
-                            int newWidth = MainWindow.taskbarDetails[a].AppListRect.Right - MainWindow.taskbarDetails[a].TrayRect.Left;
-                            int dynDistChange = Math.Abs(newWidth - oldWidth);
-
-                            bool failedRefresh = false;
-                            mw.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => failedRefresh = UpdateTaskbar(MainWindow.taskbarDetails[a], (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item2, taskbarRectCheck, MainWindow.activeSettings.IsDynamic, MainWindow.isCentred, MainWindow.activeSettings.ShowTray, dynDistChange)));
-                            if (!failedRefresh && MainWindow.taskbarDetails[a].FailCount <= 3)
-                            {
-                                MainWindow.taskbarDetails[a] = backupTaskbar;
-                                MainWindow.taskbarDetails[a].FailCount++;
-                            }
-                            else
-                            {
-                                MainWindow.taskbarDetails[a].FailCount = 0;
-                            }
-
-                            MainWindow.numberToForceRefresh--;
-                        }
-
-
-                    LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH:
-                        { };
-                    }
-
-                    // Check if centred
-                    try
-                    {
-                        using (RegistryKey key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced"))
-                        {
-                            if (key != null)
-                            {
-                                int val = (int)key.GetValue("TaskbarAl");
-                                if (val == 1)
+                                int oldWidth = mw.taskbarDetails[a].AppListRect.Right - mw.taskbarDetails[a].TrayRect.Left;
+                                Types.Taskbar backupTaskbar = mw.taskbarDetails[a];
+                                //Debug.WriteLine("in if");
+                                //ResetTaskbar(mw.taskbarDetails[a]);
+                                mw.taskbarDetails[a] = new Types.Taskbar
                                 {
-                                    MainWindow.isCentred = true;
+                                    TaskbarHwnd = mw.taskbarDetails[a].TaskbarHwnd,
+                                    TaskbarRect = taskbarRectCheck,
+                                    TrayHwnd = mw.taskbarDetails[a].TrayHwnd,
+                                    TrayRect = trayRectCheck,
+                                    AppListHwnd = mw.taskbarDetails[a].AppListHwnd,
+                                    AppListRect = appListRectCheck,
+                                    RecoveryHrgn = mw.taskbarDetails[a].RecoveryHrgn,
+                                    ScaleFactor = LocalPInvoke.GetDpiForWindow(mw.taskbarDetails[a].TaskbarHwnd) / 96,
+                                    FailCount = mw.taskbarDetails[a].FailCount
+                                };
+                                int newWidth = mw.taskbarDetails[a].AppListRect.Right - mw.taskbarDetails[a].TrayRect.Left;
+                                int dynDistChange = Math.Abs(newWidth - oldWidth);
+
+                                bool failedRefresh = false;
+                                mw.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => failedRefresh = UpdateTaskbar(mw.taskbarDetails[a], (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item2, taskbarRectCheck, mw.activeSettings.IsDynamic, mw.isCentred, mw.activeSettings.ShowTray, dynDistChange)));
+                                if (!failedRefresh && mw.taskbarDetails[a].FailCount <= 3)
+                                {
+                                    mw.taskbarDetails[a] = backupTaskbar;
+                                    mw.taskbarDetails[a].FailCount++;
                                 }
                                 else
                                 {
-                                    MainWindow.isCentred = false;
+                                    mw.taskbarDetails[a].FailCount = 0;
+                                }
+
+                                mw.numberToForceRefresh--;
+                            }
+
+
+                        LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH:
+                            { };
+                        }
+
+                        // Check if centred
+                        try
+                        {
+                            using (RegistryKey key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced"))
+                            {
+                                if (key != null)
+                                {
+                                    int val = (int)key.GetValue("TaskbarAl");
+                                    if (val == 1)
+                                    {
+                                        mw.isCentred = true;
+                                    }
+                                    else
+                                    {
+                                        mw.isCentred = false;
+                                    }
                                 }
                             }
                         }
-                    }
-                    catch (Exception)
-                    {
+                        catch (Exception)
+                        {
 
+                        }
+                        System.Threading.Thread.Sleep(100);
                     }
-                    System.Threading.Thread.Sleep(100);
                 }
-
+                catch (TypeInitializationException ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    Debug.WriteLine(ex.InnerException.Message);
+                    throw ex;
+                }
             }
         }
 
-        public static bool UpdateTaskbar(Types.Taskbar tbDeets, int mTopFactor, int mLeftFactor, int mBottomFactor, int mRightFactor, int roundFactor, LocalPInvoke.RECT rectTaskbarNew, bool isDynamic, bool isCentred, bool showTrayDynamic, int dynChangeDistance)
+        // Primary code for updating the taskbar regions
+        public bool UpdateTaskbar(Types.Taskbar tbDeets, int mTopFactor, int mLeftFactor, int mBottomFactor, int mRightFactor, int roundFactor, LocalPInvoke.RECT rectTaskbarNew, bool isDynamic, bool isCentred, bool showTrayDynamic, int dynChangeDistance)
         {
             Types.TaskbarEffectiveRegion ter = new Types.TaskbarEffectiveRegion
             {
@@ -158,6 +175,10 @@ namespace RoundedTB
                 EffectiveWidth = Convert.ToInt32(rectTaskbarNew.Right - rectTaskbarNew.Left - (mRightFactor * tbDeets.ScaleFactor)) + 1,
                 EffectiveHeight = Convert.ToInt32(rectTaskbarNew.Bottom - rectTaskbarNew.Top - (mBottomFactor * tbDeets.ScaleFactor)) + 1
             };
+            //if (!SystemFns.IsWindows11())
+            //{
+            //    ter.EffectiveWidth += Convert.ToInt32(6 * tbDeets.ScaleFactor);
+            //}
 
             if (!isDynamic)
             {
@@ -229,7 +250,8 @@ namespace RoundedTB
             // MoveWindow(effectHandle, rectNew.Left, rectNew.Top, rectNew.Right - rectNew.Left, rectNew.Bottom - rectNew.Top, true);
         }
 
-        public static bool AreThereNewTaskbars(IntPtr checkAfterTaskbar)
+        // Checks for new taskbars
+        public bool AreThereNewTaskbars(IntPtr checkAfterTaskbar)
         {
             List<IntPtr> currentTaskbars = new List<IntPtr>();
             bool i = true;
@@ -250,25 +272,17 @@ namespace RoundedTB
                     currentTaskbars.Add(hwndCurrent);
                 }
             }
-
-            if (currentTaskbars.Count > MainWindow.taskbarDetails.Count)
+            if (currentTaskbars.Count > mw.taskbarDetails.Count)
             {
                 return true;
             }
             return false;
         }
 
-        public static void GenerateTaskbarInfo()
+        // Generates info about existing taskbars
+        public void GenerateTaskbarInfo()
         {
-            foreach (Types.Taskbar tb in MainWindow.taskbarDetails)
-            {
-                try
-                {
-                    //tb.TaskbarEffectWindow.Close();
-                }
-                catch (Exception) { }
-            } // Attempt to close all effect windows - unused
-            MainWindow.taskbarDetails.Clear(); // Clear taskbar list to start from scratch
+            mw.taskbarDetails.Clear(); // Clear taskbar list to start from scratch
 
 
             IntPtr hwndMain = LocalPInvoke.FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Shell_TrayWnd", null); // Find main taskbar
@@ -282,7 +296,7 @@ namespace RoundedTB
             // hwndDesktopButton = FindWindowExA(FindWindowExA(hwndMain, IntPtr.Zero, "TrayNotifyWnd", null), IntPtr.Zero, "TrayShowDesktopButtonWClass", null);
             // User32.SetWindowPos(hwndDesktopButton, IntPtr.Zero, 0, 0, 0, 0, User32.SetWindowPosFlags.SWP_NOMOVE | User32.SetWindowPosFlags.SWP_HIDEWINDOW); // Hide "Show Desktop" button
 
-            MainWindow.taskbarDetails.Add(new Types.Taskbar
+            mw.taskbarDetails.Add(new Types.Taskbar
             {
                 TaskbarHwnd = hwndMain,
                 TrayHwnd = hwndTray,
@@ -316,7 +330,7 @@ namespace RoundedTB
                     LocalPInvoke.GetWindowRect(hwndTray, out LocalPInvoke.RECT rectSecTray); // Get the RECT for the main taskbar's tray
                     IntPtr hwndSecAppList = LocalPInvoke.FindWindowExA(LocalPInvoke.FindWindowExA(hwndCurrent, IntPtr.Zero, "WorkerW", null), IntPtr.Zero, "MSTaskListWClass", null); // Get the handle to the main taskbar's app list
                     LocalPInvoke.GetWindowRect(hwndSecAppList, out LocalPInvoke.RECT rectSecAppList);// Get the RECT for the main taskbar's app list
-                    MainWindow.taskbarDetails.Add(new Types.Taskbar
+                    mw.taskbarDetails.Add(new Types.Taskbar
                     {
                         TaskbarHwnd = hwndCurrent,
                         TrayHwnd = hwndSecTray,

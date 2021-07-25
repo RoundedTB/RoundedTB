@@ -23,23 +23,26 @@ namespace RoundedTB
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static List<Types.Taskbar> taskbarDetails = new List<Types.Taskbar>();
+        public List<Types.Taskbar> taskbarDetails = new List<Types.Taskbar>();
         public bool shouldReallyDieNoReally = false;
-        public static string localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        public static Types.Settings activeSettings = new Types.Settings();
+        public string localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        public Types.Settings activeSettings = new Types.Settings();
         public BackgroundWorker bw = new BackgroundWorker();
         public IntPtr hwndDesktopButton = IntPtr.Zero;
         public int lastDynDistance = 0;
-        public static int numberToForceRefresh = 0;
-        public static bool isCentred = false;
+        public int numberToForceRefresh = 0;
+        public bool isCentred = false;
         public bool isAlreadyRunning = false;
-        
+        public BackgroundFns bf;
+        public SystemFns sf;
 
 
 
         public MainWindow()
         {
             InitializeComponent();
+            bf = new BackgroundFns();
+            sf = new SystemFns();
             if (Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Length > 1)
             {
                 shouldReallyDieNoReally = true;
@@ -68,13 +71,13 @@ namespace RoundedTB
 
                 }
             }
-            bw.DoWork += BackgroundFns.DoWork;
+            bw.DoWork +=bf.DoWork;
             bw.WorkerSupportsCancellation = true;
             bw.WorkerReportsProgress = true;
             
             // Load settings into memory/UI
-            SystemFns.FileSystem();
-            activeSettings = SystemFns.ReadJSON();
+            sf.FileSystem();
+            activeSettings = sf.ReadJSON();
 
             if (marginInput.Text.ToLower() != "advanced")
             {
@@ -118,7 +121,7 @@ namespace RoundedTB
             centredCheckBox.IsChecked = activeSettings.IsCentred;
             showTrayCheckBox.IsChecked = activeSettings.ShowTray;
             cornerRadiusInput.Text = activeSettings.CornerRadius.ToString();
-            BackgroundFns.GenerateTaskbarInfo();
+            bf.GenerateTaskbarInfo();
             if (marginInput.Text != null && cornerRadiusInput.Text != null)
             {
                 ApplyButton_Click(null, null);
@@ -178,7 +181,7 @@ namespace RoundedTB
 
             foreach (var tbDeets in taskbarDetails)
             {
-                BackgroundFns.UpdateTaskbar(tbDeets, mt, ml, mb, mr, roundFactor, tbDeets.TaskbarRect, activeSettings.IsDynamic, isCentred, activeSettings.ShowTray, 0);
+                bf.UpdateTaskbar(tbDeets, mt, ml, mb, mr, roundFactor, tbDeets.TaskbarRect, activeSettings.IsDynamic, isCentred, activeSettings.ShowTray, 0);
             }
 
             if (bw.IsBusy == false && marginInput.Text.ToLower() != "advanced")
@@ -200,7 +203,7 @@ namespace RoundedTB
                 bw.CancelAsync();
             }
 
-            SystemFns.WriteJSON();
+            sf.WriteJSON();
 
         }
 
@@ -215,7 +218,7 @@ namespace RoundedTB
             }
             if (!isAlreadyRunning)
             {
-                SystemFns.WriteJSON();
+                sf.WriteJSON();
             }
         }
 
@@ -224,7 +227,7 @@ namespace RoundedTB
 
         
 
-        public static void ResetTaskbar(Types.Taskbar tbDeets)
+        public void ResetTaskbar(Types.Taskbar tbDeets)
         {
             LocalPInvoke.SetWindowRgn(tbDeets.TaskbarHwnd, tbDeets.RecoveryHrgn, true);
         }
