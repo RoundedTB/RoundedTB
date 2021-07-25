@@ -133,7 +133,8 @@ namespace RoundedTB
                     System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
                 }
                 catch (Exception) { }
-                this.Title = "RoundedTB Preview";
+                Title = "RoundedTB Preview";
+                previewWarningLabel.Visibility = Visibility.Visible;
                 Visibility = Visibility.Visible;
             }
         }
