@@ -35,6 +35,7 @@ namespace RoundedTB
         public bool isAlreadyRunning = false;
         public BackgroundFns bf;
         public SystemFns sf;
+        public bool preview = true; // Controls whether or not to compile a preview build - janky way of doing it but hey
 
 
 
@@ -67,8 +68,7 @@ namespace RoundedTB
             {
                 if (!IsRunningAsUWP())
                 {
-                    Visibility = Visibility.Visible;
-
+                    
                 }
             }
             bw.DoWork +=bf.DoWork;
@@ -112,10 +112,7 @@ namespace RoundedTB
                     }
                 }
             }
-            catch (Exception)
-            {
-
-            }
+            catch (Exception) { }
 
             dynamicCheckBox.IsChecked = activeSettings.IsDynamic;
             centredCheckBox.IsChecked = activeSettings.IsCentred;
@@ -125,6 +122,19 @@ namespace RoundedTB
             if (marginInput.Text != null && cornerRadiusInput.Text != null)
             {
                 ApplyButton_Click(null, null);
+            }
+            if (preview) 
+            {
+                MessageBox.Show("This is an unreleased preview build of RoundedTB!\n\nThings are likely horribly broken. This build is not ready for normal daily use. As such, this message box will appear every time you launch the app, and the startup checkbox has been disabled.", "RoundedTB Dev");
+                StartupCheckBox.IsEnabled = false;
+                StartupCheckBox.Content = "Preview build";
+                try
+                {
+                    System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
+                }
+                catch (Exception) { }
+                this.Title = "RoundedTB Preview";
+                Visibility = Visibility.Visible;
             }
         }
 
@@ -290,6 +300,10 @@ namespace RoundedTB
 
         public void EnableStartup()
         {
+            if (preview)
+            {
+                return;
+            }
             try
             {
                 string shortcutFolder = Environment.GetFolderPath(Environment.SpecialFolder.Startup);

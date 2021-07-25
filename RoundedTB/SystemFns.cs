@@ -43,6 +43,17 @@ namespace RoundedTB
         {
             if (!File.Exists(Path.Combine(mw.localFolder, "rtb.json")))
             {
+                mw.activeSettings = new Types.Settings()
+                {
+                    CornerRadius = 16,
+                    MarginBottom = 2,
+                    MarginTop = 2,
+                    MarginLeft = 2,
+                    MarginRight = 2,
+                    IsDynamic = false,
+                    IsCentred = false,
+                    ShowTray = false
+                };
                 WriteJSON(); // butts - Missy Quarry, 2020
             }
             if (File.ReadAllText(Path.Combine(mw.localFolder, "rtb.json")) == "" || File.ReadAllText(Path.Combine(mw.localFolder, "rtb.json")) == null)
