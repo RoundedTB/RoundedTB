@@ -21,8 +21,6 @@ namespace RoundedTB
         void LauncherVisibilityChange([MarshalAs(UnmanagedType.Bool)] bool currentVisibleState);
     }
 
-
-
     [ComImport, Guid("2246EA2D-CAEA-4444-A3C4-6DE827E44313"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppVisibility
     {

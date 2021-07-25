@@ -16,8 +16,8 @@ namespace RoundedTB
         public struct MONITORINFO
         {
             public uint cbSize;
-            public MainWindow.RECT rcMonitor;
-            public MainWindow.RECT rcWork;
+            public LocalPInvoke.RECT rcMonitor;
+            public LocalPInvoke.RECT rcWork;
             public uint dwFlags;
         }
 
@@ -35,7 +35,7 @@ namespace RoundedTB
         }
 
         // It's like a normal bool but delegate, perhaps its also delicate? I don't know. That's up to you, I suppose!
-        public delegate bool EnumMonitorsDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref MainWindow.RECT lprcMonitor, IntPtr dwData);
+        public delegate bool EnumMonitorsDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref LocalPInvoke.RECT lprcMonitor, IntPtr dwData);
 
         // Gets a list of display info
         public static DisplayInfoCollection GetDisplays()
@@ -43,7 +43,7 @@ namespace RoundedTB
             DisplayInfoCollection col = new DisplayInfoCollection();
 
             EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero,
-                delegate (IntPtr hMonitor, IntPtr hdcMonitor, ref MainWindow.RECT lprcMonitor, IntPtr dwData)
+                delegate (IntPtr hMonitor, IntPtr hdcMonitor, ref LocalPInvoke.RECT lprcMonitor, IntPtr dwData)
                 {
                     MONITORINFO mi = new MONITORINFO();
                     mi.cbSize = (uint)Marshal.SizeOf(mi);
@@ -79,8 +79,8 @@ namespace RoundedTB
             public string Availability { get; set; }
             public string ScreenHeight { get; set; }
             public string ScreenWidth { get; set; }
-            public MainWindow.RECT MonitorArea { get; set; }
-            public MainWindow.RECT WorkArea { get; set; }
+            public LocalPInvoke.RECT MonitorArea { get; set; }
+            public LocalPInvoke.RECT WorkArea { get; set; }
             public IntPtr Handle { get; set; }
             public int Top { get; set; }
             public int Left { get; set; }

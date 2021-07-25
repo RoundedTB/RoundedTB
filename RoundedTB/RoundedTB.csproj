@@ -94,12 +94,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Background.cs" />
-    <Compile Include="FileSystem.cs" />
+    <Compile Include="BackgroundFns.cs" />
+    <Compile Include="LocalPInvoke.cs" />
+    <Compile Include="SystemFns.cs" />
     <Compile Include="IAppVisibility.cs" />
     <Compile Include="TaskbarEffect.xaml.cs">
       <DependentUpon>TaskbarEffect.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Types.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

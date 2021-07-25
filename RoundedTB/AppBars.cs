@@ -30,7 +30,7 @@ namespace RoundedTB
             public IntPtr hWnd;
             public UInt32 uCallbackMessage;
             public UInt32 uEdge;
-            public MainWindow.RECT rc;
+            public LocalPInvoke.RECT rc;
             public Int32 lParam;
         }
 
@@ -79,7 +79,7 @@ namespace RoundedTB
         /// <summary>
         /// Unregisters the taskbar as an appbar
         /// </summary>
-        public static void SetAppbarRect(IntPtr hwnd, MainWindow.RECT rc)
+        public static void SetAppbarRect(IntPtr hwnd, LocalPInvoke.RECT rc)
         {
             APPBARDATA msgData = new APPBARDATA();
             msgData.cbSize = (UInt32)Marshal.SizeOf(msgData);
