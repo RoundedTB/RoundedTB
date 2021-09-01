@@ -23,6 +23,7 @@ namespace RoundedTB
     /// </summary>
     public partial class MainWindow : Window
     {
+        public bool isWindows11;
         public List<Types.Taskbar> taskbarDetails = new List<Types.Taskbar>();
         public bool shouldReallyDieNoReally = false;
         public string localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -35,19 +36,36 @@ namespace RoundedTB
         public bool isAlreadyRunning = false;
         public BackgroundFns bf;
         public SystemFns sf;
-        public bool preview = true; // Controls whether or not to compile a preview build - janky way of doing it but hey
+        public bool preview = false; // Controls whether or not to compile a preview build - janky way of doing it but hey
 
 
 
         public MainWindow()
         {
             InitializeComponent();
+            
+            // Check OS build, as behaviours differ between Windows 11 and Windows 10
+            RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+            var buildNumber = registryKey.GetValue("CurrentBuild").ToString();
+            if (Convert.ToInt32(buildNumber) >= 21996)
+            {
+                isWindows11 = true;
+            }
+            else
+            {
+                isWindows11 = false;
+            }
+
+            // Initialise functions
             bf = new BackgroundFns();
             sf = new SystemFns();
+            
+            // Check if RoundedTB is already running, and if it is, do nothing.
             if (Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Length > 1)
             {
                 shouldReallyDieNoReally = true;
                 isAlreadyRunning = true;
+                MessageBox.Show("Only one instance of RoundedTB can be run at once.", "RoundedTB", MessageBoxButton.OK);
                 Close();
                 return;
             }
@@ -125,7 +143,9 @@ namespace RoundedTB
             }
             if (preview) 
             {
-                MessageBox.Show("This is an unreleased preview build of RoundedTB!\n\nThings are likely horribly broken. This build is not ready for normal daily use. As such, this message box will appear every time you launch the app, and the startup checkbox has been disabled.", "RoundedTB Dev");
+                MessageBox.Show("This is an unreleased preview build of RoundedTB!\n\nThings are likely horribly broken." +
+                    "This build is not ready for normal daily use. As such, this message box will appear every time you launch the app," +
+                    "and the startup checkbox has been disabled.", "RoundedTB Dev");
                 StartupCheckBox.IsEnabled = false;
                 StartupCheckBox.Content = "Preview build";
                 try
@@ -215,7 +235,6 @@ namespace RoundedTB
             }
 
             sf.WriteJSON();
-
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -498,6 +517,26 @@ namespace RoundedTB
 
             showTrayCheckBox.IsEnabled = false;
             showTrayCheckBox.IsChecked = false;
+        }
+
+        private void marginSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            marginInput.Text = Math.Round(marginSlider.Value).ToString();
+        }
+
+        private void marginSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            ApplyButton_Click(null, null);
+        }
+
+        private void cornerRadiusSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            cornerRadiusInput.Text = Math.Round(cornerRadiusSlider.Value).ToString();
+        }
+
+        private void cornerRadiusSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            ApplyButton_Click(null, null);
         }
     }
 }

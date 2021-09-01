@@ -16,7 +16,7 @@ namespace RoundedTB
             mw = (MainWindow)Application.Current.MainWindow;
         }
 
-    public Types.Settings ReadJSON()
+        public Types.Settings ReadJSON()
         {
             string jsonSettings = File.ReadAllText(Path.Combine(mw.localFolder, "rtb.json"));
             Types.Settings settings = JsonConvert.DeserializeObject<Types.Settings>(jsonSettings);

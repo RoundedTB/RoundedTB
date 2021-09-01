@@ -55,7 +55,20 @@ namespace RoundedTB
                             LocalPInvoke.GetWindowRect(mw.taskbarDetails[a].AppListHwnd, out LocalPInvoke.RECT appListRectCheck);
                             foreach (MonitorStuff.DisplayInfo Display in Displays) // This loop checks for if the taskbar is "hidden" offscreen
                             {
-                                if (Display.Handle == currentMonitor)
+                                if (mw.isWindows11) // Windows 11, only works when taskbar on bottom but smoother
+                                {
+                                    LocalPInvoke.POINT pt = new LocalPInvoke.POINT { x = taskbarRectCheck.Left + 20, y = taskbarRectCheck.Top + 4 };
+                                    LocalPInvoke.RECT refRect = Display.MonitorArea;
+                                    bool isOnTaskbar = LocalPInvoke.PtInRect(ref refRect, pt);
+                                    if (!isOnTaskbar && pt.x == refRect.Left)
+                                    {
+                                        mw.ResetTaskbar(mw.taskbarDetails[a]);
+                                        //Debug.WriteLine($"Detected taskbar hidden (W11): [{pt.x},{pt.y}] - [{refRect.Left},{refRect.Top},{refRect.Right},{refRect.Bottom}]");
+                                        
+                                        goto LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH;
+                                    }
+                                }
+                                else if (Display.Handle == currentMonitor) // Windows 10, handles all orientations but flickery
                                 {
                                     LocalPInvoke.POINT pt = new LocalPInvoke.POINT { x = taskbarRectCheck.Left + ((taskbarRectCheck.Right - taskbarRectCheck.Left) / 2), y = taskbarRectCheck.Top + ((taskbarRectCheck.Bottom - taskbarRectCheck.Top) / 2) };
                                     LocalPInvoke.RECT refRect = Display.MonitorArea;
@@ -63,7 +76,8 @@ namespace RoundedTB
                                     if (!isOnTaskbar)
                                     {
                                         mw.ResetTaskbar(mw.taskbarDetails[a]);
-                                        goto LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH; // consider this a double-break, it's literally just a few lines below STOP COMPLAINING
+                                        //Debug.WriteLine("Detected taskbar hidden (W10)");
+                                        goto LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH;
                                     }
                                 }
                             }
@@ -92,7 +106,7 @@ namespace RoundedTB
                             {
                                 int oldWidth = mw.taskbarDetails[a].AppListRect.Right - mw.taskbarDetails[a].TrayRect.Left;
                                 Types.Taskbar backupTaskbar = mw.taskbarDetails[a];
-                                //Debug.WriteLine("in if");
+                                Debug.WriteLine("Detected taskbar moving");
                                 //ResetTaskbar(mw.taskbarDetails[a]);
                                 mw.taskbarDetails[a] = new Types.Taskbar
                                 {
@@ -124,8 +138,8 @@ namespace RoundedTB
                                 mw.numberToForceRefresh--;
                             }
 
-
-                        LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH:
+                            //Debug.WriteLine("Detected taskbar shown");
+                            LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH:
                             { };
                         }
 
