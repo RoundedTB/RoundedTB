@@ -9,12 +9,12 @@ The easiest way to download RoundedTB is from the [Microsoft Store](https://www.
 ## To use
 Simply open the application, enter a margin and corner radius (try 2 and 6 to get started with a subtle effect!) then click Apply. To remove the effect, close the application.
 
- - Works with most other taskbar mods, including [TranslucentTB](https://github.com/TranslucentTB/TranslucentTB)
  - Works with multiple monitors, resolutions and scale factors
  - Minimal impact on performance
  - Doesn't alter or modify system files
  - Doesn't require admin permissions
  - Experimental support for auto-hiding taskbars
+ - Mostly compatible with most other taskbar mods, including [TranslucentTB](https://github.com/TranslucentTB/TranslucentTB)
 
 ## Known issues
  - Auto-hiding taskbars that face another monitor may slide onto that monitor
@@ -24,3 +24,5 @@ Simply open the application, enter a margin and corner radius (try 2 and 6 to ge
 
 ## This is not finished!!
 If anything breaks, press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Esc</kbd> to open Task Manager, end RoundedTB and then restart Explorer. Feel free to let me know by filing an issue and I can look into it.
+
+If you want to discuss RoundedTB, get some insider sneak-peeks or just see what I'm up to, then feel free to join the [Discord server](https://discord.gg/wYQJd8VGSB).
