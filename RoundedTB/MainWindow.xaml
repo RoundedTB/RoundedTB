@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:RoundedTB"
         xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
-        Title="RoundedTB" Height="244" Width="169"
+        Title="RoundedTB" Height="244" Width="393"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         ui:WindowHelper.UseModernWindowStyle="True" Visibility ="Visible" ResizeMode="NoResize">
     <!--169, 393-->
@@ -39,7 +39,7 @@
             <TextBlock x:Name="previewWarningLabel" Text="WARNING: this build is buggy and unfinished! In the event the taskbar is inaccessible, kill RoundedTB.exe from Task Manager, and restart Explorer." TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,94,0,0" Width="201" Height="95" Visibility="Hidden"/>
         </Grid>
 
-        <Grid x:Name="MarginGrid" Margin="156,6,0,0" HorizontalAlignment="Left" Width="201" Height="218" VerticalAlignment="Top" Visibility="Hidden">
+        <Grid x:Name="MarginGrid" Margin="156,6,0,0" HorizontalAlignment="Left" Width="201" Height="218" VerticalAlignment="Top" Visibility="Visible">
             <Label x:Name="mTopLabel" Content="Top Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Width="94"/>
             <TextBox x:Name="mTopInput" HorizontalAlignment="Left" Margin="0,24,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94"/>
 
