@@ -35,6 +35,7 @@ namespace RoundedTB
             public bool IsDynamic { get; set; }
             public bool IsCentred { get; set; }
             public bool ShowTray { get; set; }
+            public bool CompositionCompat { get; set; }
         }
 
         public class TaskbarEffectiveRegion
@@ -44,6 +45,15 @@ namespace RoundedTB
             public int EffectiveLeft { get; set; }
             public int EffectiveWidth { get; set; }
             public int EffectiveHeight { get; set; }
+        }
+
+        public enum KeyModifier
+        {
+            None = 0,
+            Alt = 1,
+            Control = 2,
+            Shift = 4,
+            WinKey = 8
         }
     }
 }

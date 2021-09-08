@@ -36,6 +36,7 @@ namespace RoundedTB
         public bool isAlreadyRunning = false;
         public BackgroundFns bf;
         public SystemFns sf;
+        private HwndSource source;
         public bool preview = false; // Controls whether or not to compile a preview build - janky way of doing it but hey
 
 
@@ -141,6 +142,8 @@ namespace RoundedTB
             {
                 ApplyButton_Click(null, null);
             }
+            
+
             if (preview) 
             {
                 MessageBox.Show("This is an unreleased preview build of RoundedTB!\n\nThings are likely horribly broken." +
@@ -175,7 +178,7 @@ namespace RoundedTB
             return null;
         }
 
-        private void ApplyButton_Click(object sender, RoutedEventArgs e)
+        public void ApplyButton_Click(object sender, RoutedEventArgs e)
         {
             int mt = 0;
             int ml = 0;
@@ -537,6 +540,25 @@ namespace RoundedTB
         private void cornerRadiusSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             ApplyButton_Click(null, null);
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            Debug.WriteLine("AAAAA");
+            base.OnSourceInitialized(e);
+
+
+            IntPtr handle = new WindowInteropHelper(this).Handle;
+            source = HwndSource.FromHwnd(handle);
+            source.AddHook(sf.HwndHook);
+            //bool wtf = LocalPInvoke.RegisterHotKey(handle, 9000, (int)Types.KeyModifier.WinKey, System.Windows.Forms.Keys.J.GetHashCode());
+            bool wtf = LocalPInvoke.RegisterHotKey(handle, 9000, 0x8, 0x71);
+            Debug.WriteLine("KEY: " + wtf);
+            Debug.WriteLine(handle);
+            Debug.WriteLine((int)Types.KeyModifier.WinKey);
+            Debug.WriteLine(System.Windows.Forms.Keys.J.GetHashCode());
+            Visibility = Visibility.Hidden;
+            Opacity = 1;
         }
     }
 }

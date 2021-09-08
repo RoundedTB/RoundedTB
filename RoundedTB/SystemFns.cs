@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 
-
 namespace RoundedTB
 {
     public class SystemFns
@@ -90,5 +89,39 @@ namespace RoundedTB
             return null; // Finally, return null to into indicate that the provided number is neither odd nor even - not currently required, added for future-proofing in the event the concept of mathematics changes significantly enough to warrant it.
         // (this is a joke to annoy sylly)
         }
+
+        public IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            const int WM_HOTKEY = 0x0312;
+
+            switch (msg)
+            {
+                case WM_HOTKEY:
+                    Debug.WriteLine(msg);
+                    switch (wParam.ToInt32())
+                    {
+                        case 9000:
+                            int vkey = ((int)lParam >> 16) & 0xFFFF;
+                            Debug.WriteLine(vkey);
+                            if (vkey == 0x71)
+                            {
+                                if (mw.showTrayCheckBox.IsChecked == true)
+                                {
+                                    mw.showTrayCheckBox.IsChecked = false;
+                                }
+                                else
+                                {
+                                    mw.showTrayCheckBox.IsChecked = true;
+                                }
+                                mw.ApplyButton_Click(null, null);
+                            }
+                            handled = true;
+                            break;
+                    }
+                    break;
+            }
+            return IntPtr.Zero;
+        }
+
     }
 }
