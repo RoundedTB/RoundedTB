@@ -31,7 +31,7 @@ jobs:
       run: |
         cd ${{ github.workspace }}
         cd RoundedTB\bin\Release
-        7z a ..\..\..\build.7z .\*
+        7z a ..\..\..\build.zip .\*
         cd ${{ github.workspace }}
         
     - name: Upload artifacts
@@ -39,5 +39,5 @@ jobs:
       with:
         name: artifacts
         path: |
-          .\build.7z
+          .\build.zip
           
