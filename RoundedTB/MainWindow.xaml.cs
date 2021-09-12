@@ -396,7 +396,7 @@ namespace RoundedTB
                         Visibility = Visibility.Visible;
                         ShowMenuItem.Header = "Hide RTB";
                     }
-                    StartupCheckBox.Content = "Run on startup";
+                    StartupCheckBox.Content = "Run at startup";
                     break;
 
                 case StartupTaskState.DisabledByUser:
