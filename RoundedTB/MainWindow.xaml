@@ -16,7 +16,7 @@
                 <ContextMenu MouseEnter="ContextMenu_MouseEnter">
                     <CheckBox x:Name ="StartupCheckBox" Content="Run at startup" Click="Startup_Checked"/>
                     <MenuItem x:Name="DebugMenuItem" Header="Debug" Visibility ="Hidden" Click="DebugMenuItem_Click" Height="0"/>
-                    <MenuItem x:Name ="ShowMenuItem" Header="Hide RTB" Click="ShowMenuItem_Click"/>
+                    <MenuItem x:Name ="ShowMenuItem" Header="Show RTB" Click="ShowMenuItem_Click"/>
                     <MenuItem x:Name ="CloseMenuItem" Header="Close RTB" Click="CloseMenuItem_Click"/>
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
