@@ -105,7 +105,7 @@ namespace RoundedTB
             {
                 return true; // Return true to indicate the value is odd.
             }
-            return null; // Finally, return null to into indicate that the provided number is neither odd nor even - not currently required, added for future-proofing in the event the concept of mathematics changes significantly enough to warrant it.
+            return null; // Finally, return null to indicate that the provided number is neither odd nor even - not currently required, added for future-proofing in the event the concept of mathematics changes significantly enough to warrant it.
         // (this is a joke to annoy sylly)
         }
 

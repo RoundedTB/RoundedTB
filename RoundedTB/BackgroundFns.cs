@@ -106,7 +106,6 @@ namespace RoundedTB
                             {
                                 int oldWidth = mw.taskbarDetails[a].AppListRect.Right - mw.taskbarDetails[a].TrayRect.Left;
                                 Types.Taskbar backupTaskbar = mw.taskbarDetails[a];
-                                Debug.WriteLine("Detected taskbar moving");
                                 //ResetTaskbar(mw.taskbarDetails[a]);
                                 mw.taskbarDetails[a] = new Types.Taskbar
                                 {
@@ -123,8 +122,13 @@ namespace RoundedTB
                                 int newWidth = mw.taskbarDetails[a].AppListRect.Right - mw.taskbarDetails[a].TrayRect.Left;
                                 int dynDistChange = Math.Abs(newWidth - oldWidth);
 
+                                Debug.WriteLine($"Detected taskbar moving! Width changed from [{oldWidth}] to [{newWidth}], total change of {dynDistChange}px");
+
                                 bool failedRefresh = false;
-                                mw.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => failedRefresh = UpdateTaskbar(mw.taskbarDetails[a], (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item2, taskbarRectCheck, mw.activeSettings.IsDynamic, mw.isCentred, mw.activeSettings.ShowTray, dynDistChange)));
+                                if (dynDistChange != 0)
+                                {
+                                    mw.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => failedRefresh = UpdateTaskbar(mw.taskbarDetails[a], (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item2, taskbarRectCheck, mw.activeSettings.IsDynamic, mw.isCentred, mw.activeSettings.ShowTray, dynDistChange)));
+                                }
                                 if (!failedRefresh && mw.taskbarDetails[a].FailCount <= 3)
                                 {
                                     mw.taskbarDetails[a] = backupTaskbar;
