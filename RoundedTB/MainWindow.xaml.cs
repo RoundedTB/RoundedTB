@@ -136,6 +136,7 @@ namespace RoundedTB
             dynamicCheckBox.IsChecked = activeSettings.IsDynamic;
             centredCheckBox.IsChecked = activeSettings.IsCentred;
             showTrayCheckBox.IsChecked = activeSettings.ShowTray;
+            compositionFixCheckBox.IsChecked = activeSettings.CompositionCompat;
             cornerRadiusInput.Text = activeSettings.CornerRadius.ToString();
             bf.GenerateTaskbarInfo();
             if (marginInput.Text != null && cornerRadiusInput.Text != null)
@@ -212,6 +213,7 @@ namespace RoundedTB
             activeSettings.IsDynamic = (bool)dynamicCheckBox.IsChecked;
             activeSettings.IsCentred = (bool)centredCheckBox.IsChecked;
             activeSettings.ShowTray = (bool)showTrayCheckBox.IsChecked;
+            activeSettings.CompositionCompat = (bool)compositionFixCheckBox.IsChecked;
 
             foreach (var tbDeets in taskbarDetails)
             {
@@ -263,6 +265,10 @@ namespace RoundedTB
         public void ResetTaskbar(Types.Taskbar tbDeets)
         {
             LocalPInvoke.SetWindowRgn(tbDeets.TaskbarHwnd, tbDeets.RecoveryHrgn, true);
+            if (activeSettings.CompositionCompat)
+            {
+                SystemFns.UpdateTranslucentTB(tbDeets.TaskbarHwnd);
+            }
         }
 
         

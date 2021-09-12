@@ -198,7 +198,10 @@ namespace RoundedTB
             {
                 IntPtr rgn = LocalPInvoke.CreateRoundRectRgn(ter.EffectiveLeft, ter.EffectiveTop, ter.EffectiveWidth, ter.EffectiveHeight, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius);
                 LocalPInvoke.SetWindowRgn(tbDeets.TaskbarHwnd, rgn, true);
-                LocalPInvoke.SendMessage(tbDeets.TaskbarHwnd, 798, 0, IntPtr.Zero); // TTB compat
+                if (mw.activeSettings.CompositionCompat)
+                {
+                    SystemFns.UpdateTranslucentTB(tbDeets.TaskbarHwnd);
+                }
                 return true;
             }
             else
@@ -245,10 +248,10 @@ namespace RoundedTB
 
                 }
                 LocalPInvoke.SetWindowRgn(tbDeets.TaskbarHwnd, rgn, true);
-                IntPtr a = LocalPInvoke.SendMessage(tbDeets.TaskbarHwnd, 798, 1, IntPtr.Zero); // TTB compat
-                bool b = LocalPInvoke.RedrawWindow(tbDeets.TaskbarHwnd, IntPtr.Zero, IntPtr.Zero, LocalPInvoke.RedrawWindowFlags.Erase | LocalPInvoke.RedrawWindowFlags.Invalidate | LocalPInvoke.RedrawWindowFlags.Frame | LocalPInvoke.RedrawWindowFlags.UpdateNow);
-                Debug.WriteLine($"SendMessage returned: {a}");
-                Debug.WriteLine($"RedrawWindow returned: {b}");
+                if (mw.activeSettings.CompositionCompat)
+                {
+                    SystemFns.UpdateTranslucentTB(tbDeets.TaskbarHwnd);
+                }
                 return true;
             }
 

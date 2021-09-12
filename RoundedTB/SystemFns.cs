@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using System.Threading;
 
 namespace RoundedTB
 {
@@ -60,6 +61,24 @@ namespace RoundedTB
                 WriteJSON(); // Initialises empty file
             }
 
+        }
+
+        public static bool IsTranslucentTBRunning()
+        {
+            Mutex mutex = null;
+            try
+            {
+                return Mutex.TryOpenExisting("344635E9-9AE4-4E60-B128-D53E25AB70A7", out mutex);
+            }
+            finally
+            {
+                mutex?.Dispose();
+            }
+        }
+
+        public static IntPtr UpdateTranslucentTB(IntPtr taskbarHwnd)
+        {
+            return LocalPInvoke.SendMessage(LocalPInvoke.FindWindow("TTB_WorkerWindow", "TTB_WorkerWindow"), LocalPInvoke.RegisterWindowMessage("rtb_hack_test"), 0, taskbarHwnd);
         }
 
         /// <summary>
