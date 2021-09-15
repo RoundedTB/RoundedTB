@@ -193,11 +193,20 @@ namespace RoundedTB
                 EffectiveWidth = Convert.ToInt32(rectTaskbarNew.Right - rectTaskbarNew.Left - (mRightFactor * tbDeets.ScaleFactor)) + 1,
                 EffectiveHeight = Convert.ToInt32(rectTaskbarNew.Bottom - rectTaskbarNew.Top - (mBottomFactor * tbDeets.ScaleFactor)) + 1
             };
-            //if (!SystemFns.IsWindows11())
-            //{
-            //    ter.EffectiveWidth += Convert.ToInt32(6 * tbDeets.ScaleFactor);
-            //}
-
+            if (!mw.isWindows11)
+            {
+                ter.EffectiveWidth += Convert.ToInt32(6 * tbDeets.ScaleFactor);
+            }
+            if (ter.EffectiveWidth < 48 && isDynamic)
+            {
+                Debug.WriteLine($"Taskbar decided to be unreasonably small ({ter.EffectiveWidth}px)");
+                return false;
+            }
+            if (ter.EffectiveWidth > 10000 & isDynamic)
+            {
+                Debug.WriteLine($"Taskbar decided to be unreasonably large ({ter.EffectiveWidth}px)");
+                return false;
+            }
             if (!isDynamic)
             {
                 IntPtr rgn = LocalPInvoke.CreateRoundRectRgn(ter.EffectiveLeft, ter.EffectiveTop, ter.EffectiveWidth, ter.EffectiveHeight, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius);
