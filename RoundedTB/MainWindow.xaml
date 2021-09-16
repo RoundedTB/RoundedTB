@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="RoundedTB" Height="320" Width="169"
         xmlns:ui="http://schemas.modernwpf.com/2019"
-        ui:WindowHelper.UseModernWindowStyle="True" Visibility ="Visible" ResizeMode="NoResize" Opacity="1.001">
+        ui:WindowHelper.UseModernWindowStyle="True" Visibility ="Visible" ResizeMode="NoResize" Opacity="0.001">
     <!--169, 393-->
     <Grid HorizontalAlignment="Left" Margin="11,-6,0,0" Width="357">
         <tb:TaskbarIcon x:Name="TrayIcon" Visibility ="Visible" ToolTipText="RoundedTB" Height="304" VerticalAlignment="Top" Margin="0,6,0,0">
@@ -16,8 +16,8 @@
                 <ContextMenu MouseEnter="ContextMenu_MouseEnter">
                     <CheckBox x:Name ="StartupCheckBox" Content="Run at startup" Click="Startup_Checked"/>
                     <MenuItem x:Name="DebugMenuItem" Header="Debug" Visibility ="Hidden" Click="DebugMenuItem_Click" Height="0"/>
-                    <MenuItem x:Name ="ShowMenuItem" Header="Show RTB" Click="ShowMenuItem_Click"/>
-                    <MenuItem x:Name ="CloseMenuItem" Header="Close RTB" Click="CloseMenuItem_Click"/>
+                    <MenuItem x:Name ="ShowMenuItem" Header="Show RoundedTB" Click="ShowMenuItem_Click"/>
+                    <MenuItem x:Name ="CloseMenuItem" Header="Close RoundedTB" Click="CloseMenuItem_Click"/>
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
@@ -34,18 +34,20 @@
 
         <Grid x:Name="AdvancedGrid" Margin="156,6,0,0" HorizontalAlignment="Left" Width="201" Height="304" VerticalAlignment="Top" Visibility="Visible">
             <Label x:Name="mTopLabel" Content="Top Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Width="94"/>
-            <TextBox x:Name="mTopInput" HorizontalAlignment="Left" Margin="0,24,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94"/>
+            <TextBox x:Name="mTopInput" HorizontalAlignment="Left" Margin="0,24,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False"/>
 
             <Label x:Name="mLeftLabel" Content="Left Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,61,0,0" Width="94"/>
-            <TextBox x:Name="mLeftInput" HorizontalAlignment="Left" Margin="0,85,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94"/>
+            <TextBox x:Name="mLeftInput" HorizontalAlignment="Left" Margin="0,85,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False"/>
 
             <Label x:Name="mBottomLabel" Content="Bottom Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="107,0,0,0" Width="94"/>
-            <TextBox x:Name="mBottomInput" HorizontalAlignment="Left" Margin="107,24,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94"/>
+            <TextBox x:Name="mBottomInput" HorizontalAlignment="Left" Margin="107,24,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False"/>
 
             <Label x:Name="mRightLabel" Content="Right Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="107,61,0,0" Width="85"/>
-            <TextBox x:Name="mRightInput" HorizontalAlignment="Left" Margin="107,85,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94"/>
+            <TextBox x:Name="mRightInput" HorizontalAlignment="Left" Margin="107,85,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False"/>
 
             <CheckBox x:Name="dynamicCheckBox" Content="Dynamic mode" Margin="0,117,0,0" Checked="dynamicCheckBox_Checked" Unchecked="dynamicCheckBox_Unchecked" VerticalAlignment="Top"/>
+            <Button x:Name="splitHelpButton" Content="?" Style="{StaticResource AccentButtonStyle}" Margin="147,122,0,0" Click="splitHelpButton_Click"  Height="54" Width="54" VerticalAlignment="Top" FontSize="24" FontWeight="Normal" FontFamily="Segoe UI Semibold" Visibility="Hidden"/>
+
             <CheckBox x:Name="centredCheckBox" Content="Centred taskbar?" Margin="10,62,0,0" VerticalAlignment="Top" Visibility="Hidden"/>
             <CheckBox x:Name="showTrayCheckBox" Content="Show system tray" Margin="0,149,0,0" VerticalAlignment="Top"/>
             <CheckBox x:Name="compositionFixCheckBox" Content="TranslucentTB compatibility" Margin="0,181,0,0" VerticalAlignment="Top" IsChecked="False"/>

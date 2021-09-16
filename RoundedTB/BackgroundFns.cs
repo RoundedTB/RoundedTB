@@ -193,10 +193,7 @@ namespace RoundedTB
                 EffectiveWidth = Convert.ToInt32(rectTaskbarNew.Right - rectTaskbarNew.Left - (mRightFactor * tbDeets.ScaleFactor)) + 1,
                 EffectiveHeight = Convert.ToInt32(rectTaskbarNew.Bottom - rectTaskbarNew.Top - (mBottomFactor * tbDeets.ScaleFactor)) + 1
             };
-            if (!mw.isWindows11)
-            {
-                ter.EffectiveWidth += Convert.ToInt32(6 * tbDeets.ScaleFactor);
-            }
+
             if (ter.EffectiveWidth < 48 && isDynamic)
             {
                 Debug.WriteLine($"Taskbar decided to be unreasonably small ({ter.EffectiveWidth}px)");
@@ -222,6 +219,12 @@ namespace RoundedTB
                 IntPtr rgn = IntPtr.Zero;
                 IntPtr finalRgn = LocalPInvoke.CreateRoundRectRgn(1, 1, 1, 1, 0, 0);
                 int dynDistance = rectTaskbarNew.Right - tbDeets.AppListRect.Right - Convert.ToInt32(2 * tbDeets.ScaleFactor);
+                
+                if (!mw.isWindows11)
+                {
+                    dynDistance -= Convert.ToInt32(20 * tbDeets.ScaleFactor); // If on Windows 10, add an extra 20 logical pixels for the grabhandle
+                }
+                
                 if (dynChangeDistance > (50 * tbDeets.ScaleFactor) && tbDeets.TrayHwnd != IntPtr.Zero && tbDeets.FailCount <= 3)
                 {
                     Debug.WriteLine($"----||FUCKUP||----");

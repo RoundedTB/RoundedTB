@@ -95,6 +95,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="BackgroundFns.cs" />
+    <Compile Include="Infobox.xaml.cs">
+      <DependentUpon>Infobox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="LocalPInvoke.cs" />
     <Compile Include="SystemFns.cs" />
     <Compile Include="IAppVisibility.cs" />
@@ -102,6 +105,10 @@
       <DependentUpon>TaskbarEffect.xaml</DependentUpon>
     </Compile>
     <Compile Include="Types.cs" />
+    <Page Include="Infobox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

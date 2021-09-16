@@ -55,6 +55,7 @@ namespace RoundedTB
             else
             {
                 isWindows11 = false;
+                dynamicCheckBox.Content = "Split mode";
             }
 
             // Initialise functions
@@ -81,7 +82,7 @@ namespace RoundedTB
             if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")) && !IsRunningAsUWP())
             {
                 StartupCheckBox.IsChecked = true;
-                ShowMenuItem.Header = "Show RTB";
+                ShowMenuItem.Header = "Show RoundedTB";
             }
             else
             {
@@ -143,7 +144,16 @@ namespace RoundedTB
             {
                 ApplyButton_Click(null, null);
             }
-            
+
+            //Showhide the split mode help button
+            if (!isWindows11 && activeSettings.IsDynamic)
+            {
+                splitHelpButton.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                splitHelpButton.Visibility = Visibility.Hidden;
+            }
 
             if (preview) 
             {
@@ -249,7 +259,7 @@ namespace RoundedTB
             {
                 e.Cancel = true;
                 Visibility = Visibility.Hidden;
-                ShowMenuItem.Header = "Show RTB";
+                ShowMenuItem.Header = "Show RoundedTB";
             }
             if (!isAlreadyRunning)
             {
@@ -291,12 +301,12 @@ namespace RoundedTB
             if (IsVisible == false)
             {
                 Visibility = Visibility.Visible;
-                ShowMenuItem.Header = "Hide RTB";
+                ShowMenuItem.Header = "Hide RoundedTB";
             }
             else
             {
                 Visibility = Visibility.Hidden;
-                ShowMenuItem.Header = "Show RTB";
+                ShowMenuItem.Header = "Show RoundedTB";
             }
         }
 
@@ -394,7 +404,7 @@ namespace RoundedTB
                     if (clean)
                     {
                         Visibility = Visibility.Visible;
-                        ShowMenuItem.Header = "Hide RTB";
+                        ShowMenuItem.Header = "Hide RoundedTB";
                     }
                     StartupCheckBox.Content = "Run at startup";
                     break;
@@ -405,7 +415,7 @@ namespace RoundedTB
                     if (clean)
                     {
                         Visibility = Visibility.Visible;
-                        ShowMenuItem.Header = "Hide RTB";
+                        ShowMenuItem.Header = "Hide RoundedTB";
                     }
                     StartupCheckBox.Content = "Startup unavailable";
                     break;
@@ -416,7 +426,7 @@ namespace RoundedTB
                     if (clean)
                     {
                         Visibility = Visibility.Hidden;
-                        ShowMenuItem.Header = "Show RTB";
+                        ShowMenuItem.Header = "Show RoundedTB";
                     }
                     StartupCheckBox.Content = "Startup mandatory";
                     break;
@@ -427,7 +437,7 @@ namespace RoundedTB
                     if (clean)
                     {
                         Visibility = Visibility.Visible;
-                        ShowMenuItem.Header = "Hide RTB";
+                        ShowMenuItem.Header = "Hide RoundedTB";
                     }
                     StartupCheckBox.Content = "Startup unavailable";
                     break;
@@ -438,7 +448,7 @@ namespace RoundedTB
                     if (clean)
                     {
                         Visibility = Visibility.Hidden;
-                        ShowMenuItem.Header = "Show RTB";
+                        ShowMenuItem.Header = "Show RoundedTB";
                     }
                     StartupCheckBox.Content = "Run at startup";
                     break;
@@ -516,6 +526,11 @@ namespace RoundedTB
         {
             centredCheckBox.IsEnabled = true;
             showTrayCheckBox.IsEnabled = true;
+            
+            if (!isWindows11)
+            {
+                splitHelpButton.Visibility = Visibility.Visible;
+            }
 
         }
 
@@ -526,6 +541,11 @@ namespace RoundedTB
 
             showTrayCheckBox.IsEnabled = false;
             showTrayCheckBox.IsChecked = false;
+            
+            if (!isWindows11)
+            {
+                splitHelpButton.Visibility = Visibility.Hidden;
+            }
         }
 
         private void marginSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -565,6 +585,15 @@ namespace RoundedTB
             Debug.WriteLine(System.Windows.Forms.Keys.J.GetHashCode());
             Visibility = Visibility.Hidden;
             Opacity = 1;
+        }
+
+        private void splitHelpButton_Click(object sender, RoutedEventArgs e)
+        {
+            Infobox ib = new Infobox();
+            ib.Title = "RoundedTB - Split mode configuration";
+            ib.titleBlock.Text = "How to use Split Mode";
+            ib.bodyBlock.Text = "Split mode has a couple of limitations and requires a small amount of setup to get working properly.\n\nLimitations:\n1) Split mode doesn't resize itself automatically. This feature will be coming to RoundedTB for Windows 10 in the future.\n2) Toolbars are not compatible with split mode currently, and will need to be disabled apart from one (more on that in a moment).\n3) Split mode only works when the taskbar is horizontal at the top or bottom of the screen.\n\nSetup:\n1) Right-click the taskbar and disable \"Lock the taskbar\".\n2) Right-click it again and turn off any existing toolbars.\n3) Right-click a third time, select Toolbars > Desktop.\n4) Use the small || handle to resize the taskbar as you please.";
+            ib.ShowDialog();
         }
     }
 }
