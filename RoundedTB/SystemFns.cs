@@ -79,7 +79,7 @@ namespace RoundedTB
 
         public static IntPtr UpdateTranslucentTB(IntPtr taskbarHwnd)
         {
-            return LocalPInvoke.SendMessage(LocalPInvoke.FindWindow("TTB_WorkerWindow", "TTB_WorkerWindow"), LocalPInvoke.RegisterWindowMessage("rtb_hack_test"), 0, taskbarHwnd);
+            return LocalPInvoke.SendMessage(LocalPInvoke.FindWindow("TTB_WorkerWindow", "TTB_WorkerWindow"), LocalPInvoke.RegisterWindowMessage("TTB_ForceRefreshTaskbar"), 0, taskbarHwnd);
         }
 
         /// <summary>
