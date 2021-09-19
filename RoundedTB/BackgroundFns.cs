@@ -48,25 +48,41 @@ namespace RoundedTB
                                 mw.numberToForceRefresh = mw.taskbarDetails.Count + 1;
                                 goto LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH; // consider this a double-break, it's literally just a few lines below STOP COMPLAINING
                             }
-
                             IntPtr currentMonitor = LocalPInvoke.MonitorFromWindow(mw.taskbarDetails[a].TaskbarHwnd, 0x2);
                             LocalPInvoke.GetWindowRect(mw.taskbarDetails[a].TaskbarHwnd, out LocalPInvoke.RECT taskbarRectCheck);
                             LocalPInvoke.GetWindowRect(mw.taskbarDetails[a].TrayHwnd, out LocalPInvoke.RECT trayRectCheck);
                             LocalPInvoke.GetWindowRect(mw.taskbarDetails[a].AppListHwnd, out LocalPInvoke.RECT appListRectCheck);
-                            foreach (MonitorStuff.DisplayInfo Display in Displays) // This loop checks for if the taskbar is "hidden" offscreen
+
+                            // This loop checks for if the taskbar is "hidden" offscreen
+                            foreach (MonitorStuff.DisplayInfo Display in Displays)
                             {
-                                if (mw.isWindows11) // Windows 11, only works when taskbar on bottom but smoother
+                                if (mw.isWindows11 && Display.Handle == currentMonitor) // Windows 11, only works when taskbar on bottom but smoother
                                 {
-                                    LocalPInvoke.POINT pt = new LocalPInvoke.POINT { x = taskbarRectCheck.Left + 20, y = taskbarRectCheck.Top + 4 };
-                                    LocalPInvoke.RECT refRect = Display.MonitorArea;
-                                    bool isOnTaskbar = LocalPInvoke.PtInRect(ref refRect, pt);
-                                    if (!isOnTaskbar && pt.x == refRect.Left)
+                                    bool isVisible = mw.sf.IsTaskbarVisibleOnMonitor(mw.taskbarDetails[a].TaskbarRect, Display.MonitorArea);
+                                    if (!isVisible && mw.taskbarDetails[a].Ignored == false)
                                     {
+                                        //Debug.WriteLine($"Taskbar {a} was hidden - marking as ignored.");
                                         mw.ResetTaskbar(mw.taskbarDetails[a]);
-                                        //Debug.WriteLine($"Detected taskbar hidden (W11): [{pt.x},{pt.y}] - [{refRect.Left},{refRect.Top},{refRect.Right},{refRect.Bottom}]");
-                                        
+                                        mw.taskbarDetails[a].Ignored = true;
                                         goto LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH;
                                     }
+                                    if (a == 0)
+                                    {
+                                        Debug.WriteLine($"TB1-------------------\nVisible: {isVisible}\nBeing ignored by RTB: {mw.taskbarDetails[a].Ignored}");
+                                    }
+                                    if (isVisible && mw.taskbarDetails[a].Ignored == true)
+                                    {
+                                        //Debug.WriteLine($"Taskbar {a} is no longer hidden - removing ignored mark.");
+                                        mw.taskbarDetails[a].Ignored = false;
+                                    }
+                                    //LocalPInvoke.POINT pt = new LocalPInvoke.POINT { x = taskbarRectCheck.Left + 20, y = taskbarRectCheck.Top + 4 };
+                                    //LocalPInvoke.RECT refRect = Display.MonitorArea;
+                                    //bool isOnTaskbar = LocalPInvoke.PtInRect(ref refRect, pt);
+                                    //if (!isOnTaskbar && pt.x == refRect.Left)
+                                    //{
+                                    //    Debug.WriteLine($"Detected taskbar hidden (W11): [{pt.x},{pt.y}] - [{refRect.Left},{refRect.Top},{refRect.Right},{refRect.Bottom}]");
+
+                                    //}
                                 }
                                 else if (Display.Handle == currentMonitor) // Windows 10, handles all orientations but flickery
                                 {
@@ -117,15 +133,16 @@ namespace RoundedTB
                                     AppListRect = appListRectCheck,
                                     RecoveryHrgn = mw.taskbarDetails[a].RecoveryHrgn,
                                     ScaleFactor = LocalPInvoke.GetDpiForWindow(mw.taskbarDetails[a].TaskbarHwnd) / 96,
-                                    FailCount = mw.taskbarDetails[a].FailCount
+                                    FailCount = mw.taskbarDetails[a].FailCount,
+                                    Ignored = false
                                 };
                                 int newWidth = mw.taskbarDetails[a].AppListRect.Right - mw.taskbarDetails[a].TrayRect.Left;
                                 int dynDistChange = Math.Abs(newWidth - oldWidth);
 
-                                Debug.WriteLine($"Detected taskbar moving! Width changed from [{oldWidth}] to [{newWidth}], total change of {dynDistChange}px");
+                                //Debug.WriteLine($"Detected taskbar moving! Width changed from [{oldWidth}] to [{newWidth}], total change of {dynDistChange}px");
 
                                 bool failedRefresh = false;
-                                if (dynDistChange != 0)
+                                if (dynDistChange != 0 || true)
                                 {
                                     mw.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => failedRefresh = UpdateTaskbar(mw.taskbarDetails[a], (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item1, (((int, int))e.Argument).Item2, taskbarRectCheck, mw.activeSettings.IsDynamic, mw.isCentred, mw.activeSettings.ShowTray, dynDistChange)));
                                 }
@@ -185,92 +202,96 @@ namespace RoundedTB
         // Primary code for updating the taskbar regions
         public bool UpdateTaskbar(Types.Taskbar tbDeets, int mTopFactor, int mLeftFactor, int mBottomFactor, int mRightFactor, int roundFactor, LocalPInvoke.RECT rectTaskbarNew, bool isDynamic, bool isCentred, bool showTrayDynamic, int dynChangeDistance)
         {
-            Types.TaskbarEffectiveRegion ter = new Types.TaskbarEffectiveRegion
+            if (!tbDeets.Ignored)
             {
-                EffectiveCornerRadius = Convert.ToInt32(roundFactor * tbDeets.ScaleFactor),
-                EffectiveTop = Convert.ToInt32(mTopFactor * tbDeets.ScaleFactor),
-                EffectiveLeft = Convert.ToInt32(mLeftFactor * tbDeets.ScaleFactor),
-                EffectiveWidth = Convert.ToInt32(rectTaskbarNew.Right - rectTaskbarNew.Left - (mRightFactor * tbDeets.ScaleFactor)) + 1,
-                EffectiveHeight = Convert.ToInt32(rectTaskbarNew.Bottom - rectTaskbarNew.Top - (mBottomFactor * tbDeets.ScaleFactor)) + 1
-            };
+                Debug.WriteLine($"Updating taskbar: {tbDeets.TaskbarHwnd}");
+                Types.TaskbarEffectiveRegion ter = new Types.TaskbarEffectiveRegion
+                {
+                    EffectiveCornerRadius = Convert.ToInt32(roundFactor * tbDeets.ScaleFactor),
+                    EffectiveTop = Convert.ToInt32(mTopFactor * tbDeets.ScaleFactor),
+                    EffectiveLeft = Convert.ToInt32(mLeftFactor * tbDeets.ScaleFactor),
+                    EffectiveWidth = Convert.ToInt32(rectTaskbarNew.Right - rectTaskbarNew.Left - (mRightFactor * tbDeets.ScaleFactor)) + 1,
+                    EffectiveHeight = Convert.ToInt32(rectTaskbarNew.Bottom - rectTaskbarNew.Top - (mBottomFactor * tbDeets.ScaleFactor)) + 1
+                };
 
-            if (ter.EffectiveWidth < 48 && isDynamic)
-            {
-                Debug.WriteLine($"Taskbar decided to be unreasonably small ({ter.EffectiveWidth}px)");
-                return false;
-            }
-            if (ter.EffectiveWidth > 10000 & isDynamic)
-            {
-                Debug.WriteLine($"Taskbar decided to be unreasonably large ({ter.EffectiveWidth}px)");
-                return false;
-            }
-            if (!isDynamic)
-            {
-                IntPtr rgn = LocalPInvoke.CreateRoundRectRgn(ter.EffectiveLeft, ter.EffectiveTop, ter.EffectiveWidth, ter.EffectiveHeight, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius);
-                LocalPInvoke.SetWindowRgn(tbDeets.TaskbarHwnd, rgn, true);
-                if (mw.activeSettings.CompositionCompat)
+                if (ter.EffectiveWidth < 48 && isDynamic)
                 {
-                    SystemFns.UpdateTranslucentTB(tbDeets.TaskbarHwnd);
-                }
-                return true;
-            }
-            else
-            {
-                IntPtr rgn = IntPtr.Zero;
-                IntPtr finalRgn = LocalPInvoke.CreateRoundRectRgn(1, 1, 1, 1, 0, 0);
-                int dynDistance = rectTaskbarNew.Right - tbDeets.AppListRect.Right - Convert.ToInt32(2 * tbDeets.ScaleFactor);
-                
-                if (!mw.isWindows11)
-                {
-                    dynDistance -= Convert.ToInt32(20 * tbDeets.ScaleFactor); // If on Windows 10, add an extra 20 logical pixels for the grabhandle
-                }
-                
-                if (dynChangeDistance > (50 * tbDeets.ScaleFactor) && tbDeets.TrayHwnd != IntPtr.Zero && tbDeets.FailCount <= 3)
-                {
-                    Debug.WriteLine($"----||FUCKUP||----");
-                    Debug.WriteLine($"DYNDIST = {dynDistance}");
-                    Debug.WriteLine($"DYNCHANGE = {dynChangeDistance}");
-                    Debug.WriteLine($"TBDIST FROM RIGHT = {rectTaskbarNew.Right}");
-                    Debug.WriteLine($"APPLST FROM RIGHT = {tbDeets.AppListRect.Right}");
-                    Debug.WriteLine($"------------------");
+                    Debug.WriteLine($"Taskbar decided to be unreasonably small ({ter.EffectiveWidth}px)");
                     return false;
                 }
-                if (tbDeets.TrayHwnd != IntPtr.Zero && tbDeets.AppListRect.Left == 0)
+                if (ter.EffectiveWidth > 10000 & isDynamic)
                 {
-                    Debug.WriteLine($"Taskbar is aligned to left: {tbDeets.AppListRect.Left}");
+                    Debug.WriteLine($"Taskbar decided to be unreasonably large ({ter.EffectiveWidth}px)");
+                    return false;
                 }
-                else if (tbDeets.TrayHwnd != IntPtr.Zero)
+                if (!isDynamic)
                 {
-                    Debug.WriteLine($"Taskbar is centred: {tbDeets.AppListRect.Left}");
-                }
-
-                if (isCentred)
-                {
-                    // If the taskbar is centered, take the right-to-right distance off from both sides, as well as the margin
-                    rgn = LocalPInvoke.CreateRoundRectRgn(dynDistance + ter.EffectiveLeft, ter.EffectiveTop, ter.EffectiveWidth - dynDistance, ter.EffectiveHeight, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius);
+                    IntPtr rgn = LocalPInvoke.CreateRoundRectRgn(ter.EffectiveLeft, ter.EffectiveTop, ter.EffectiveWidth, ter.EffectiveHeight, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius);
+                    LocalPInvoke.SetWindowRgn(tbDeets.TaskbarHwnd, rgn, true);
+                    if (mw.activeSettings.CompositionCompat)
+                    {
+                        SystemFns.UpdateTranslucentTB(tbDeets.TaskbarHwnd);
+                    }
+                    return true;
                 }
                 else
                 {
-                    // If not, just take it from one side.
-                    rgn = LocalPInvoke.CreateRoundRectRgn(ter.EffectiveLeft, ter.EffectiveTop, ter.EffectiveWidth - dynDistance, ter.EffectiveHeight, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius);
-                }
+                    IntPtr rgn = IntPtr.Zero;
+                    IntPtr finalRgn = LocalPInvoke.CreateRoundRectRgn(1, 1, 1, 1, 0, 0);
+                    int dynDistance = rectTaskbarNew.Right - tbDeets.AppListRect.Right - Convert.ToInt32(2 * tbDeets.ScaleFactor);
 
-                if (showTrayDynamic && tbDeets.TrayHwnd != IntPtr.Zero)
-                {
-                    IntPtr trayRgn = LocalPInvoke.CreateRoundRectRgn(tbDeets.TrayRect.Left - ter.EffectiveLeft, ter.EffectiveTop, ter.EffectiveWidth, ter.EffectiveHeight, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius);
+                    if (!mw.isWindows11)
+                    {
+                        dynDistance -= Convert.ToInt32(20 * tbDeets.ScaleFactor); // If on Windows 10, add an extra 20 logical pixels for the grabhandle
+                    }
 
-                    LocalPInvoke.CombineRgn(finalRgn, trayRgn, rgn, 2);
-                    rgn = finalRgn;
+                    if (dynChangeDistance > (50 * tbDeets.ScaleFactor) && tbDeets.TrayHwnd != IntPtr.Zero && tbDeets.FailCount <= 3)
+                    {
+                        Debug.WriteLine($"----||FUCKUP||----");
+                        Debug.WriteLine($"DYNDIST = {dynDistance}");
+                        Debug.WriteLine($"DYNCHANGE = {dynChangeDistance}");
+                        Debug.WriteLine($"TBDIST FROM RIGHT = {rectTaskbarNew.Right}");
+                        Debug.WriteLine($"APPLST FROM RIGHT = {tbDeets.AppListRect.Right}");
+                        Debug.WriteLine($"------------------");
+                        return false;
+                    }
+                    if (tbDeets.TrayHwnd != IntPtr.Zero && tbDeets.AppListRect.Left == 0)
+                    {
+                        Debug.WriteLine($"Taskbar is aligned to left: {tbDeets.AppListRect.Left}");
+                    }
+                    else if (tbDeets.TrayHwnd != IntPtr.Zero)
+                    {
+                        Debug.WriteLine($"Taskbar is centred: {tbDeets.AppListRect.Left}");
+                    }
 
+                    if (isCentred)
+                    {
+                        // If the taskbar is centered, take the right-to-right distance off from both sides, as well as the margin
+                        rgn = LocalPInvoke.CreateRoundRectRgn(dynDistance + ter.EffectiveLeft, ter.EffectiveTop, ter.EffectiveWidth - dynDistance, ter.EffectiveHeight, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius);
+                    }
+                    else
+                    {
+                        // If not, just take it from one side.
+                        rgn = LocalPInvoke.CreateRoundRectRgn(ter.EffectiveLeft, ter.EffectiveTop, ter.EffectiveWidth - dynDistance, ter.EffectiveHeight, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius);
+                    }
+
+                    if (showTrayDynamic && tbDeets.TrayHwnd != IntPtr.Zero)
+                    {
+                        IntPtr trayRgn = LocalPInvoke.CreateRoundRectRgn(tbDeets.TrayRect.Left - ter.EffectiveLeft, ter.EffectiveTop, ter.EffectiveWidth, ter.EffectiveHeight, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius);
+
+                        LocalPInvoke.CombineRgn(finalRgn, trayRgn, rgn, 2);
+                        rgn = finalRgn;
+
+                    }
+                    LocalPInvoke.SetWindowRgn(tbDeets.TaskbarHwnd, rgn, true);
+                    if (mw.activeSettings.CompositionCompat)
+                    {
+                        SystemFns.UpdateTranslucentTB(tbDeets.TaskbarHwnd);
+                    }
+                    return true;
                 }
-                LocalPInvoke.SetWindowRgn(tbDeets.TaskbarHwnd, rgn, true);
-                if (mw.activeSettings.CompositionCompat)
-                {
-                    SystemFns.UpdateTranslucentTB(tbDeets.TaskbarHwnd);
-                }
-                return true;
             }
-
+            return false;
 
             // IntPtr effectHandle = new WindowInteropHelper(tbDeets.TaskbarEffectWindow).Handle;
             //GetWindowRect(FindWindowExA(FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Shell_TrayWnd", null), IntPtr.Zero, "TrayNotifyWnd", null), out RECT trayRect);
@@ -315,6 +336,7 @@ namespace RoundedTB
         // Generates info about existing taskbars
         public void GenerateTaskbarInfo()
         {
+            Debug.WriteLine("#########################\nREGENERATING TASKBAR INFO\n#########################");
             mw.taskbarDetails.Clear(); // Clear taskbar list to start from scratch
 
 
@@ -340,7 +362,8 @@ namespace RoundedTB
                 RecoveryHrgn = hrgnMain,
                 ScaleFactor = Convert.ToDouble(LocalPInvoke.GetDpiForWindow(hwndMain)) / 96.00,
                 TaskbarRes = $"{rectMain.Right - rectMain.Left} x {rectMain.Bottom - rectMain.Top}",
-                FailCount = 0
+                FailCount = 0,
+                Ignored = false
                 // TaskbarEffectWindow = new TaskbarEffect()
             });
 
@@ -374,7 +397,8 @@ namespace RoundedTB
                         RecoveryHrgn = hrgnCurrent,
                         ScaleFactor = Convert.ToDouble(LocalPInvoke.GetDpiForWindow(hwndCurrent)) / 96.00,
                         TaskbarRes = $"{rectCurrent.Right - rectCurrent.Left} x {rectCurrent.Bottom - rectCurrent.Top}",
-                        FailCount = 0
+                        FailCount = 0,
+                        Ignored = false
                         // TaskbarEffectWindow = new TaskbarEffect()
                     });
                 }

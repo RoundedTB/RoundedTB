@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Threading;
+using System.Drawing;
 
 namespace RoundedTB
 {
@@ -142,5 +143,16 @@ namespace RoundedTB
             return IntPtr.Zero;
         }
 
+        public static bool IsAutoHideEnabled()
+        {
+            return Math.Abs(SystemParameters.PrimaryScreenHeight - SystemParameters.WorkArea.Height) > 0;
+        }
+
+        public bool IsTaskbarVisibleOnMonitor(LocalPInvoke.RECT tbRectP, LocalPInvoke.RECT monitorRectP)
+        {
+            Rectangle tbRect = new Rectangle(tbRectP.Left + 3, tbRectP.Top + 3, tbRectP.Right - tbRectP.Left - 3, tbRectP.Bottom - tbRectP.Top - 3);
+            Rectangle monitorRect = new Rectangle(monitorRectP.Left, monitorRectP.Top, monitorRectP.Right - monitorRectP.Left, monitorRectP.Bottom - monitorRectP.Top);
+            return tbRect.IntersectsWith(monitorRect);
+        }
     }
 }
