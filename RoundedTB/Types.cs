@@ -29,6 +29,7 @@ namespace RoundedTB
         public class Settings
         {
             public int CornerRadius { get; set; }
+            public int MarginBasic { get; set; }
             public int MarginBottom { get; set; }
             public int MarginLeft { get; set; }
             public int MarginRight { get; set; }
@@ -37,6 +38,7 @@ namespace RoundedTB
             public bool IsCentred { get; set; }
             public bool ShowTray { get; set; }
             public bool CompositionCompat { get; set; }
+            public bool IsNotFirstLaunch { get; set; }
         }
 
         public class TaskbarEffectiveRegion

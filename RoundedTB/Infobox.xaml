@@ -9,7 +9,7 @@
         xmlns:ui="http://schemas.modernwpf.com/2019"
         ui:WindowHelper.UseModernWindowStyle="True" Visibility ="Visible" ResizeMode="NoResize" Opacity="1.001">
     <Grid>
-        <Button x:Name="button" Content="OK" Margin="0,0,10,10" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="37" Click="button_Click"/>
+        <Button x:Name="okButton" Content="OK" Margin="0,0,10,10" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="37" Click="okButton_Click"/>
         <TextBlock x:Name="titleBlock" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="InformationTitle" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="14"/>
         <TextBlock x:Name="bodyBlock" Margin="10,34,10,47" TextWrapping="Wrap" Text="Body of information that's quite interesting. Honestly I'm not sure how you found this as it should never appear in normal use. Are you peeking through the source? I really wouldn't recommend that tbh" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14"/>
 

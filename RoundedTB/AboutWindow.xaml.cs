@@ -11,15 +11,16 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Navigation;
 
 namespace RoundedTB
 {
     /// <summary>
-    /// Interaction logic for Infobox.xaml
+    /// Interaction logic for AboutWindow.xaml
     /// </summary>
-    public partial class Infobox : Window
+    public partial class AboutWindow : Window
     {
-        public Infobox()
+        public AboutWindow()
         {
             InitializeComponent();
         }
@@ -27,6 +28,10 @@ namespace RoundedTB
         private void okButton_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            System.Diagnostics.Process.Start(e.Uri.ToString());
         }
     }
 }

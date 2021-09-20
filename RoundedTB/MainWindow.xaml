@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="RoundedTB" Height="320" Width="169"
         xmlns:ui="http://schemas.modernwpf.com/2019"
-        ui:WindowHelper.UseModernWindowStyle="True" Visibility ="Visible" ResizeMode="NoResize" Opacity="0.001">
+        ui:WindowHelper.UseModernWindowStyle="True" Visibility = "Visible" ResizeMode="NoResize" Opacity="0.001">
     <!--169, 393-->
     <Grid HorizontalAlignment="Left" Margin="11,-6,0,0" Width="357">
         <tb:TaskbarIcon x:Name="TrayIcon" Visibility ="Visible" ToolTipText="RoundedTB" Height="304" VerticalAlignment="Top" Margin="0,6,0,0">
@@ -25,7 +25,9 @@
         </Grid>
         <Label x:Name="marginLabel" Content="Margin" HorizontalAlignment="Left" Width="119" Margin="10,6,0,0" Height="19" VerticalAlignment="Top"/>
         <Label x:Name="cornerRadiusLabel" Content="Corner radius" HorizontalAlignment="Left" Height="19" VerticalAlignment="Top" Width="119" Margin="10,104,0,0"/>
+
         <TextBox x:Name="marginInput" TextWrapping="NoWrap" Text="" Margin="10,62,0,0" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" Width="125"/>
+        <Button x:Name="advancedMarginsButton" Content="..." Style="{StaticResource AccentButtonStyle}" Visibility="Hidden" Margin="106,65,0,0" VerticalAlignment="Top" Height="26" Width="26" FontSize="12" Click="advancedMarginsButton_Click"/>
         <Slider x:Name="marginSlider" Margin="10,30,0,0" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" Width="125" ValueChanged="marginSlider_ValueChanged" LargeChange="0" SmallChange="1" Focusable="False" Maximum="24" Orientation="Horizontal" Thumb.DragCompleted="marginSlider_DragCompleted"/>
         <TextBox x:Name="cornerRadiusInput" TextWrapping="NoWrap" Text="" Margin="10,160,0,0" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" Width="125"/>
         <Slider x:Name="cornerRadiusSlider" Margin="10,128,0,0" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" Width="125" ValueChanged="cornerRadiusSlider_ValueChanged" LargeChange="0" SmallChange="1" Focusable="False" Maximum="48" Orientation="Horizontal" Thumb.DragCompleted="cornerRadiusSlider_DragCompleted"/>
@@ -45,13 +47,15 @@
             <Label x:Name="mRightLabel" Content="Right Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="107,61,0,0" Width="85"/>
             <TextBox x:Name="mRightInput" HorizontalAlignment="Left" Margin="107,85,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False"/>
 
-            <CheckBox x:Name="dynamicCheckBox" Content="Dynamic mode" Margin="0,117,0,0" Checked="dynamicCheckBox_Checked" Unchecked="dynamicCheckBox_Unchecked" VerticalAlignment="Top"/>
+            <CheckBox x:Name="dynamicCheckBox" Content="Dynamic mode" Margin="0,122,0,0" Checked="dynamicCheckBox_Checked" Unchecked="dynamicCheckBox_Unchecked" VerticalAlignment="Top"/>
             <Button x:Name="splitHelpButton" Content="?" Style="{StaticResource AccentButtonStyle}" Margin="147,122,0,0" Click="splitHelpButton_Click"  Height="54" Width="54" VerticalAlignment="Top" FontSize="24" FontWeight="Normal" FontFamily="Segoe UI Semibold" Visibility="Hidden"/>
 
             <CheckBox x:Name="centredCheckBox" Content="Centred taskbar?" Margin="10,62,0,0" VerticalAlignment="Top" Visibility="Hidden"/>
-            <CheckBox x:Name="showTrayCheckBox" Content="Show system tray" Margin="0,149,0,0" VerticalAlignment="Top"/>
-            <CheckBox x:Name="compositionFixCheckBox" Content="TranslucentTB compatibility" Margin="0,181,0,0" VerticalAlignment="Top" IsChecked="False"/>
-            <TextBlock x:Name="previewWarningLabel" Text="WARNING: this build is buggy and unfinished! In the event the taskbar is inaccessible, kill RoundedTB.exe from Task Manager, and restart Explorer." TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,213,0,0" Width="201" Height="91" Visibility="Visible" FontSize="10"/>
+            <CheckBox x:Name="showTrayCheckBox" Content="Show system tray" Margin="0,159,0,0" VerticalAlignment="Top"/>
+            <CheckBox x:Name="compositionFixCheckBox" Content="TranslucentTB compatibility" Margin="0,196,0,0" VerticalAlignment="Top" IsChecked="False" Checked="compositionFixCheckBox_Checked"/>
+
+            <TextBlock x:Name="previewWarningLabel" Text="WARNING: this build is buggy and unfinished! In the event the taskbar is inaccessible, kill RoundedTB.exe from Task Manager, and restart Explorer." TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,213,0,0" Width="201" Height="91" Visibility="Hidden" FontSize="10"/>
+            <Button x:Name="aboutButton" Content="About RoundedTB" Margin="0,241,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" Width="201" Click="aboutButton_Click"/>
         </Grid>
     </Grid>
 </Window>

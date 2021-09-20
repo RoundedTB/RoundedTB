@@ -5,16 +5,20 @@ using System.IO;
 using System.Windows;
 using System.Threading;
 using System.Drawing;
+using System.Runtime.InteropServices;
 
 namespace RoundedTB
 {
     public class SystemFns
     {
         public MainWindow mw;
+        public string logPath;
+        string m = "";
 
         public SystemFns()
         {
             mw = (MainWindow)Application.Current.MainWindow;
+            logPath = Path.Combine(mw.localFolder, "rtb.log");
         }
 
         public Types.Settings ReadJSON()
@@ -42,19 +46,44 @@ namespace RoundedTB
 
         public void FileSystem()
         {
+            File.Create(logPath).Close();
             if (!File.Exists(Path.Combine(mw.localFolder, "rtb.json")))
             {
-                mw.activeSettings = new Types.Settings()
+                if (mw.isWindows11)
                 {
-                    CornerRadius = 16,
-                    MarginBottom = 2,
-                    MarginTop = 2,
-                    MarginLeft = 2,
-                    MarginRight = 2,
-                    IsDynamic = false,
-                    IsCentred = false,
-                    ShowTray = false
-                };
+                    mw.activeSettings = new Types.Settings()
+                    {
+                        CornerRadius = 7,
+                        MarginBasic = 3,
+                        MarginBottom = 0,
+                        MarginTop = 0,
+                        MarginLeft = 0,
+                        MarginRight = 0,
+                        IsDynamic = false,
+                        IsCentred = false,
+                        ShowTray = false,
+                        CompositionCompat = false,
+                        IsNotFirstLaunch = false
+                    };
+                }
+                else
+                {
+                    mw.activeSettings = new Types.Settings()
+                    {
+                        CornerRadius = 16,
+                        MarginBasic = 2,
+                        MarginBottom = 0,
+                        MarginTop = 0,
+                        MarginLeft = 0,
+                        MarginRight = 0,
+                        IsDynamic = false,
+                        IsCentred = false,
+                        ShowTray = false,
+                        CompositionCompat = false,
+                        IsNotFirstLaunch = false
+                    };
+                }
+                
                 WriteJSON(); // butts - Missy Quarry, 2020
             }
             if (File.ReadAllText(Path.Combine(mw.localFolder, "rtb.json")) == "" || File.ReadAllText(Path.Combine(mw.localFolder, "rtb.json")) == null)
@@ -62,6 +91,12 @@ namespace RoundedTB
                 WriteJSON(); // Initialises empty file
             }
 
+        }
+
+        public void addLog(string message)
+        {
+            m = $"[{DateTime.Now}] {message}\n";
+            File.AppendAllText(logPath, m);
         }
 
         public static bool IsTranslucentTBRunning()
@@ -153,6 +188,75 @@ namespace RoundedTB
             Rectangle tbRect = new Rectangle(tbRectP.Left + 3, tbRectP.Top + 3, tbRectP.Right - tbRectP.Left - 3, tbRectP.Bottom - tbRectP.Top - 3);
             Rectangle monitorRect = new Rectangle(monitorRectP.Left, monitorRectP.Top, monitorRectP.Right - monitorRectP.Left, monitorRectP.Bottom - monitorRectP.Top);
             return tbRect.IntersectsWith(monitorRect);
+        }
+
+        public enum TaskbarPosition
+        {
+            Unknown = -1,
+            Left,
+            Top,
+            Right,
+            Bottom,
+        }
+
+        public sealed class Taskbar
+        {
+            public Rectangle Bounds
+            {
+                get;
+                private set;
+            }
+            public TaskbarPosition Position
+            {
+                get;
+                private set;
+            }
+            public System.Drawing.Point Location
+            {
+                get
+                {
+                    return Bounds.Location;
+                }
+            }
+            public System.Drawing.Size Size
+            {
+                get
+                {
+                    return Bounds.Size;
+                }
+            }
+
+            //Always returns false under Windows 7
+            public bool AlwaysOnTop
+            {
+                get;
+                private set;
+            }
+            public bool AutoHide
+            {
+                get;
+                private set;
+            }
+
+            public Taskbar(IntPtr taskbarHandle)
+            {
+
+                LocalPInvoke.APPBARDATA data = new LocalPInvoke.APPBARDATA();
+                data.cbSize = (uint)Marshal.SizeOf(typeof(LocalPInvoke.APPBARDATA));
+                data.hWnd = taskbarHandle;
+                IntPtr result = LocalPInvoke.SHAppBarMessage(LocalPInvoke.ABM.GetTaskbarPos, ref data);
+                if (result == IntPtr.Zero)
+                    throw new InvalidOperationException();
+
+                Position = (TaskbarPosition)data.uEdge;
+                Bounds = Rectangle.FromLTRB(data.rc.Left, data.rc.Top, data.rc.Right, data.rc.Bottom);
+
+                data.cbSize = (uint)Marshal.SizeOf(typeof(LocalPInvoke.APPBARDATA));
+                result = LocalPInvoke.SHAppBarMessage(LocalPInvoke.ABM.GetState, ref data);
+                int state = result.ToInt32();
+                AlwaysOnTop = (state & LocalPInvoke.ABS.AlwaysOnTop) == LocalPInvoke.ABS.AlwaysOnTop;
+                AutoHide = (state & LocalPInvoke.ABS.Autohide) == LocalPInvoke.ABS.Autohide;
+            }
         }
     }
 }

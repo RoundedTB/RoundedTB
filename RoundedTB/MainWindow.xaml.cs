@@ -97,21 +97,47 @@ namespace RoundedTB
             
             // Load settings into memory/UI
             sf.FileSystem();
+            sf.addLog($"RoundedTB started!");
             activeSettings = sf.ReadJSON();
+            sf.addLog($"Settings loaded:");
+            sf.addLog(
+                $"\nCornerRadius: {activeSettings.CornerRadius}\n" +
+                $"MarginBasic: {activeSettings.MarginBasic}\n" +
+                $"MarginBottom: {activeSettings.MarginBottom}\n" +
+                $"MarginLeft: {activeSettings.MarginLeft}\n" +
+                $"MarginRight: {activeSettings.MarginRight}\n" +
+                $"MarginTop: {activeSettings.MarginTop}\n" +
+                $"IsDynamic: {activeSettings.IsDynamic}\n" +
+                $"IsCentred: {activeSettings.IsCentred}\n" +
+                $"ShowTray: {activeSettings.ShowTray}\n" +
+                $"CompositionCompat: {activeSettings.CompositionCompat}\n" +
+                $"IsNotFirstLaunch: {activeSettings.IsNotFirstLaunch}\n"
+                );
+            if (activeSettings.MarginBasic == -384)
+            {
+                marginInput.Text = "Advanced";
+                marginSlider.IsEnabled = false;
+                marginInput.IsEnabled = false;
+                mTopInput.IsEnabled = true;
+                mLeftInput.IsEnabled = true;
+                mBottomInput.IsEnabled = true;
+                mRightInput.IsEnabled = true;
 
-            if (marginInput.Text.ToLower() != "advanced")
-            {
-                marginInput.Text = activeSettings.MarginTop.ToString();
-                marginInput.Text = activeSettings.MarginLeft.ToString();
-                marginInput.Text = activeSettings.MarginBottom.ToString();
-                marginInput.Text = activeSettings.MarginRight.ToString();
-            }
-            else
-            {
                 mTopInput.Text = activeSettings.MarginTop.ToString();
                 mLeftInput.Text = activeSettings.MarginLeft.ToString();
                 mBottomInput.Text = activeSettings.MarginBottom.ToString();
                 mRightInput.Text = activeSettings.MarginRight.ToString();
+
+            }
+            else
+            {
+                marginInput.Text = activeSettings.MarginBasic.ToString();
+                marginSlider.IsEnabled = true;
+                marginInput.IsEnabled = true;
+                mTopInput.IsEnabled = false;
+                mLeftInput.IsEnabled = false;
+                mBottomInput.IsEnabled = false;
+                mRightInput.IsEnabled = false;
             }
 
             try
@@ -129,10 +155,14 @@ namespace RoundedTB
                         {
                             isCentred = false;
                         }
+                        sf.addLog($"Taskbar centred? {isCentred}");
                     }
                 }
             }
-            catch (Exception) { }
+            catch (Exception aaaa)
+            {
+                sf.addLog(aaaa.Message);
+            }
 
             dynamicCheckBox.IsChecked = activeSettings.IsDynamic;
             centredCheckBox.IsChecked = activeSettings.IsCentred;
@@ -171,6 +201,14 @@ namespace RoundedTB
                 previewWarningLabel.Visibility = Visibility.Visible;
                 Visibility = Visibility.Visible;
             }
+            if (activeSettings.IsNotFirstLaunch != true)
+            {
+                activeSettings.IsNotFirstLaunch = true;
+                AboutWindow aw = new AboutWindow();
+                aw.ShowDialog();
+                Visibility = Visibility.Visible;
+                ShowMenuItem.Header = "Hide RoundedTB";
+            }
         }
 
         private TypedEventHandler<ThemeManager, object> TrayIconCheck()
@@ -196,18 +234,19 @@ namespace RoundedTB
             int mb = 0;
             int mr = 0;
 
-            if (!int.TryParse(cornerRadiusInput.Text, out int roundFactor) || (!int.TryParse(marginInput.Text, out int marginFactor) && marginInput.Text.ToLower() != "advanced"))
+            if (!int.TryParse(cornerRadiusInput.Text, out int roundFactor) || (!int.TryParse(marginInput.Text, out int marginFactor) && activeSettings.MarginBasic != -384))
             {
                 return;
             }
 
             activeSettings.CornerRadius = roundFactor;
-            if (marginInput.Text.ToLower() != "advanced")
+            if (marginInput.IsEnabled)
             {
                 mt = marginFactor;
                 ml = marginFactor;
                 mb = marginFactor;
                 mr = marginFactor;
+                activeSettings.MarginBasic = marginFactor;
             }
             else
             {
@@ -215,6 +254,7 @@ namespace RoundedTB
                 {
                     return;
                 }
+                activeSettings.MarginBasic = -384;
             }
             activeSettings.MarginTop = mt;
             activeSettings.MarginLeft = ml;
@@ -230,11 +270,11 @@ namespace RoundedTB
                 bf.UpdateTaskbar(tbDeets, mt, ml, mb, mr, roundFactor, tbDeets.TaskbarRect, activeSettings.IsDynamic, isCentred, activeSettings.ShowTray, 0);
             }
 
-            if (bw.IsBusy == false && marginInput.Text.ToLower() != "advanced")
+            if (bw.IsBusy == false)
             {
-                bw.RunWorkerAsync((marginFactor, roundFactor));
+                bw.RunWorkerAsync((mt, ml, mb, mr, roundFactor));
             }
-            else if (marginInput.Text.ToLower() != "advanced")
+            else
             {
                 bw.CancelAsync();
                 while (bw.IsBusy == true)
@@ -242,11 +282,7 @@ namespace RoundedTB
                     System.Windows.Forms.Application.DoEvents();
                     System.Threading.Thread.Sleep(100);
                 }
-                bw.RunWorkerAsync((marginFactor, roundFactor));
-            }
-            else
-            {
-                bw.CancelAsync();
+                bw.RunWorkerAsync((mt, ml, mb, mr, roundFactor));
             }
 
             sf.WriteJSON();
@@ -508,17 +544,15 @@ namespace RoundedTB
         {
             if (Width < 300)
             {
-                //marginInput.Text = "Dynamic";
-                //marginInput.IsEnabled = false;
                 Width = 393;
                 AdvancedGrid.Visibility = Visibility.Visible;
+                advancedMarginsButton.Visibility = Visibility.Visible;
             }
             else
             {
-                //marginInput.Text = "0";
-                //marginInput.IsEnabled = true;
                 Width = 169;
                 AdvancedGrid.Visibility = Visibility.Collapsed;
+                advancedMarginsButton.Visibility = Visibility.Hidden;
             }
         }
 
@@ -526,7 +560,9 @@ namespace RoundedTB
         {
             centredCheckBox.IsEnabled = true;
             showTrayCheckBox.IsEnabled = true;
-            
+            mLeftLabel.Content = "Outer Margin";
+            mRightLabel.Content = "Inner Margin";
+
             if (!isWindows11)
             {
                 splitHelpButton.Visibility = Visibility.Visible;
@@ -536,8 +572,11 @@ namespace RoundedTB
 
         private void dynamicCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
+
             centredCheckBox.IsEnabled = false;
             centredCheckBox.IsChecked = false;
+            mLeftLabel.Content = "Left Margin";
+            mRightLabel.Content = "Right Margin";
 
             showTrayCheckBox.IsEnabled = false;
             showTrayCheckBox.IsChecked = false;
@@ -594,6 +633,52 @@ namespace RoundedTB
             ib.titleBlock.Text = "How to use Split Mode";
             ib.bodyBlock.Text = "Split mode has a couple of limitations and requires a small amount of setup to get working properly.\n\nLimitations:\n1) Split mode doesn't resize itself automatically. This feature will be coming to RoundedTB for Windows 10 in the future.\n2) Toolbars are not compatible with split mode currently, and will need to be disabled apart from one (more on that in a moment).\n3) Split mode only works when the taskbar is horizontal at the top or bottom of the screen.\n\nSetup:\n1) Right-click the taskbar and disable \"Lock the taskbar\".\n2) Right-click it again and turn off any existing toolbars.\n3) Right-click a third time, select Toolbars > Desktop.\n4) Use the small || handle to resize the taskbar as you please.";
             ib.ShowDialog();
+        }
+
+        private void advancedMarginsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (marginInput.IsEnabled)
+            {
+                marginInput.Text = "Advanced";
+                activeSettings.MarginBasic = -384;
+                marginSlider.Value = 0;
+                marginSlider.IsEnabled = false;
+                marginInput.IsEnabled = false;
+                mTopInput.IsEnabled = true;
+                mLeftInput.IsEnabled = true;
+                mBottomInput.IsEnabled = true;
+                mRightInput.IsEnabled = true;
+            }
+            else
+            {
+                marginInput.Text = "0";
+                activeSettings.MarginBasic = 0;
+                marginSlider.IsEnabled = true;
+                marginInput.IsEnabled = true;
+                mTopInput.IsEnabled = false;
+                mLeftInput.IsEnabled = false;
+                mBottomInput.IsEnabled = false;
+                mRightInput.IsEnabled = false;
+            }
+        }
+
+        private void compositionFixCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            if (Opacity > 0.01)
+            {
+                Infobox ib = new Infobox();
+                ib.Height = 450;
+                ib.Title = "RoundedTB - TranslucentTB compatibility";
+                ib.titleBlock.Text = "Compatibility with TranslucentTB";
+                ib.bodyBlock.Text = "TranslucentTB is an awesome project that inspired me to make RoundedTB. It allows you to customise the opacity, blur and colour of the taskbar seamlessly with significantly finer control than anything else. Unfortunately, due to a bug with Windows' Desktop Window Manager (DWM), RoundedTB and TranslucentTB don't work properly together at the moment.\n\nThis bug is not the fault of RoundedTB or TranslucentTB, and I'm working closely with TranslucentTB's sole developer to find a proper solution. Until then however, this compatibility mitigation exists. For this to work, you will need a version of TranslucentTB above 5 (tag 2021.4.0.0).\n\nIf this option is enabled with a compatible version of TranslucentTB, you should see TranslucentTB's effects and colours apply correctly. However, there may be significant flickering when the taskbar moves or resizes.\n\nAs soon as I find a proper workaround to Windows' DWM bug, it will be implemented and this option will be removed. Until then, go show TranslucentTB some love! 💖";
+                ib.ShowDialog();
+            }
+        }
+
+        private void aboutButton_Click(object sender, RoutedEventArgs e)
+        {
+            AboutWindow aw = new AboutWindow();
+            aw.ShowDialog();
         }
     }
 }
