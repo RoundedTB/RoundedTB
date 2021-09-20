@@ -324,10 +324,18 @@ namespace RoundedTB
         private void CloseMenuItem_Click(object sender, RoutedEventArgs e)
         {
             shouldReallyDieNoReally = true;
-            foreach (var tbDeets in taskbarDetails)
+            try
             {
-                ResetTaskbar(tbDeets);
+                foreach (var tbDeets in taskbarDetails)
+                {
+                    ResetTaskbar(tbDeets);
+                }
             }
+            catch (InvalidOperationException aaaa)
+            {
+                sf.addLog($"Taskbar structure changed on exit:\n{aaaa.Message}");
+            }
+
 
             Close();
         }

@@ -23,6 +23,7 @@ namespace RoundedTB
         // Main method for the BackgroundWorker - runs indefinitely
         public void DoWork(object sender, DoWorkEventArgs e)
         {
+            bool alignmentChanged = false;
             mw.sf.addLog("in bw");
             BackgroundWorker worker = sender as BackgroundWorker;
             while (true)
@@ -44,7 +45,9 @@ namespace RoundedTB
                             {
                                 if (key != null)
                                 {
+                                    bool oldval = mw.isCentred;
                                     int val = (int)key.GetValue("TaskbarAl");
+
                                     if (val == 1)
                                     {
                                         mw.isCentred = true;
@@ -52,6 +55,15 @@ namespace RoundedTB
                                     else
                                     {
                                         mw.isCentred = false;
+                                    }
+                                    if (mw.isCentred != oldval)
+                                    {
+                                        alignmentChanged = true;
+                                        Debug.WriteLine($"Alignment changed: {oldval} to {mw.isCentred}");
+                                    }
+                                    else
+                                    {
+                                        alignmentChanged = false;
                                     }
                                 }
                             }
@@ -102,8 +114,6 @@ namespace RoundedTB
                                 }
                             }
 
-
-
                             // If the taskbar moves, reset it then restore it
                             if (
                                     taskbarRectCheck.Left != mw.taskbarDetails[a].TaskbarRect.Left ||
@@ -120,7 +130,7 @@ namespace RoundedTB
                                     trayRectCheck.Top != mw.taskbarDetails[a].TrayRect.Top ||
                                     trayRectCheck.Right != mw.taskbarDetails[a].TrayRect.Right ||
                                     trayRectCheck.Bottom != mw.taskbarDetails[a].TrayRect.Bottom ||
-
+                                    alignmentChanged == false ||
                                     mw.numberToForceRefresh > 0
                               )
                             {
@@ -278,6 +288,12 @@ namespace RoundedTB
                     {
                         //mw.sf.addLog($"Taskbar is centred: {tbDeets.AppListRect.Left}");
                     }
+                    if (mw.isWindows11 && tbDeets.AppListRect.Right - tbDeets.AppListRect.Left > tbDeets.TaskbarRect.Right - tbDeets.TaskbarRect.Left)
+                    {
+                        Debug.WriteLine($"Taskbar was detected overflowing off the screen. Display width: {tbDeets.TaskbarRect.Right - tbDeets.TaskbarRect.Left}, applist width: {tbDeets.AppListRect.Right}");
+                        mw.sf.addLog($"Taskbar was detected overflowing off the screen. Display width: {tbDeets.TaskbarRect.Right - tbDeets.TaskbarRect.Left}, applist width: {tbDeets.AppListRect.Right}");
+                        return false;
+                    }
 
                     if (isCentred)
                     {
@@ -306,6 +322,11 @@ namespace RoundedTB
 
                     if (showTrayDynamic && tbDeets.TrayHwnd != IntPtr.Zero)
                     {
+                        if (mw.isWindows11 && tbDeets.AppListRect.Right == tbDeets.TrayRect.Left)
+                        {
+                            mw.sf.addLog($"Taskbar was detected nippling the tray");
+                            return false;
+                        }
                         IntPtr trayRgn = LocalPInvoke.CreateRoundRectRgn(
                             tbDeets.TrayRect.Left - tter.EffectiveLeft,
                             tter.EffectiveTop,
@@ -317,8 +338,8 @@ namespace RoundedTB
 
                         LocalPInvoke.CombineRgn(finalRgn, trayRgn, rgn, 2);
                         rgn = finalRgn;
-
                     }
+
                     LocalPInvoke.SetWindowRgn(tbDeets.TaskbarHwnd, rgn, true);
                     if (mw.activeSettings.CompositionCompat)
                     {

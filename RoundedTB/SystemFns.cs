@@ -245,9 +245,6 @@ namespace RoundedTB
                 data.cbSize = (uint)Marshal.SizeOf(typeof(LocalPInvoke.APPBARDATA));
                 data.hWnd = taskbarHandle;
                 IntPtr result = LocalPInvoke.SHAppBarMessage(LocalPInvoke.ABM.GetTaskbarPos, ref data);
-                if (result == IntPtr.Zero)
-                    throw new InvalidOperationException();
-
                 Position = (TaskbarPosition)data.uEdge;
                 Bounds = Rectangle.FromLTRB(data.rc.Left, data.rc.Top, data.rc.Right, data.rc.Bottom);
 
