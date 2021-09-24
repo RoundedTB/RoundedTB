@@ -99,6 +99,43 @@ namespace RoundedTB
             sf.FileSystem();
             sf.addLog($"RoundedTB started!");
             activeSettings = sf.ReadJSON();
+            if (activeSettings == null)
+            {
+                if (isWindows11)
+                {
+                    activeSettings = new Types.Settings()
+                    {
+                        CornerRadius = 7,
+                        MarginBasic = 3,
+                        MarginBottom = 0,
+                        MarginTop = 0,
+                        MarginLeft = 0,
+                        MarginRight = 0,
+                        IsDynamic = false,
+                        IsCentred = false,
+                        ShowTray = false,
+                        CompositionCompat = false,
+                        IsNotFirstLaunch = false
+                    };
+                }
+                else
+                {
+                    activeSettings = new Types.Settings()
+                    {
+                        CornerRadius = 16,
+                        MarginBasic = 2,
+                        MarginBottom = 0,
+                        MarginTop = 0,
+                        MarginLeft = 0,
+                        MarginRight = 0,
+                        IsDynamic = false,
+                        IsCentred = false,
+                        ShowTray = false,
+                        CompositionCompat = false,
+                        IsNotFirstLaunch = false
+                    };
+                }
+            }
             sf.addLog($"Settings loaded:");
             sf.addLog(
                 $"\nCornerRadius: {activeSettings.CornerRadius}\n" +

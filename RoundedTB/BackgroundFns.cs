@@ -59,7 +59,7 @@ namespace RoundedTB
                                     if (mw.isCentred != oldval)
                                     {
                                         alignmentChanged = true;
-                                        Debug.WriteLine($"Alignment changed: {oldval} to {mw.isCentred}");
+                                        Debug.WriteLine($"Alignment changed, isCentred: {oldval} to {mw.isCentred}");
                                     }
                                     else
                                     {
@@ -92,7 +92,7 @@ namespace RoundedTB
                             // This loop checks for if the taskbar is "hidden" offscreen
                             foreach (MonitorStuff.DisplayInfo Display in Displays)
                             {
-                                if (Display.Handle == currentMonitor) // Windows 11, only works when taskbar on bottom but smoother
+                                if (Display.Handle == currentMonitor)
                                 {
                                     bool isVisible = mw.sf.IsTaskbarVisibleOnMonitor(mw.taskbarDetails[a].TaskbarRect, Display.MonitorArea);
                                     if (!isVisible && mw.taskbarDetails[a].Ignored == false)
@@ -102,13 +102,8 @@ namespace RoundedTB
                                         mw.taskbarDetails[a].Ignored = true;
                                         goto LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH;
                                     }
-                                    //if (a == 0)
-                                    //{
-                                    //    mw.sf.addLog($"TB1-------------------\nVisible: {isVisible}\nBeing ignored by RTB: {mw.taskbarDetails[a].Ignored}");
-                                    //}
                                     if (isVisible && mw.taskbarDetails[a].Ignored == true)
                                     {
-                                        //mw.sf.addLog($"Taskbar {a} is no longer hidden - removing ignored mark.");
                                         mw.taskbarDetails[a].Ignored = false;
                                     }
                                 }
@@ -187,8 +182,14 @@ namespace RoundedTB
                                 {
                                     mw.taskbarDetails[a].FailCount = 0;
                                 }
-
-                                mw.numberToForceRefresh--;
+                                if (mw.numberToForceRefresh >= 0)
+                                {
+                                    mw.numberToForceRefresh--;
+                                }
+                                else
+                                {
+                                    mw.numberToForceRefresh = 0;
+                                }
                             }
 
                             //mw.sf.addLog("Detected taskbar shown");
@@ -393,7 +394,7 @@ namespace RoundedTB
         // Generates info about existing taskbars
         public void GenerateTaskbarInfo()
         {
-            mw.sf.addLog("#########################\nREGENERATING TASKBAR INFO\n#########################");
+            mw.sf.addLog("\n#########################\nREGENERATING TASKBAR INFO\n#########################");
             mw.taskbarDetails.Clear(); // Clear taskbar list to start from scratch
 
 
