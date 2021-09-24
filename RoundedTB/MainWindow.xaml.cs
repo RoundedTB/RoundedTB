@@ -302,10 +302,18 @@ namespace RoundedTB
             activeSettings.ShowTray = (bool)showTrayCheckBox.IsChecked;
             activeSettings.CompositionCompat = (bool)compositionFixCheckBox.IsChecked;
 
-            foreach (var tbDeets in taskbarDetails)
+            try
             {
-                bf.UpdateTaskbar(tbDeets, mt, ml, mb, mr, roundFactor, tbDeets.TaskbarRect, activeSettings.IsDynamic, isCentred, activeSettings.ShowTray, 0);
+                foreach (var tbDeets in taskbarDetails)
+                {
+                    bf.UpdateTaskbar(tbDeets, mt, ml, mb, mr, roundFactor, tbDeets.TaskbarRect, activeSettings.IsDynamic, isCentred, activeSettings.ShowTray, 0);
+                }
             }
+            catch (InvalidOperationException aaaa)
+            {
+                sf.addLog(aaaa.Message);
+            }
+
 
             if (bw.IsBusy == false)
             {
@@ -323,6 +331,7 @@ namespace RoundedTB
             }
 
             sf.WriteJSON();
+
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -333,6 +342,15 @@ namespace RoundedTB
                 e.Cancel = true;
                 Visibility = Visibility.Hidden;
                 ShowMenuItem.Header = "Show RoundedTB";
+            }
+            else
+            {
+                bw.CancelAsync();
+                while (bw.IsBusy == true)
+                {
+                    System.Windows.Forms.Application.DoEvents();
+                    System.Threading.Thread.Sleep(100);
+                }
             }
             if (!isAlreadyRunning)
             {
@@ -611,6 +629,10 @@ namespace RoundedTB
             if (!isWindows11)
             {
                 splitHelpButton.Visibility = Visibility.Visible;
+                if (Visibility == Visibility.Visible)
+                {
+                    splitHelpButton_Click(null, null);
+                }
             }
 
         }

@@ -196,7 +196,6 @@ namespace RoundedTB
                             LiterallyJustGoingDownToTheEndOfThisLoopStopHavingAHissyFitSMFH:
                             { };
                         }
-
                         System.Threading.Thread.Sleep(100);
                     }
                 }
