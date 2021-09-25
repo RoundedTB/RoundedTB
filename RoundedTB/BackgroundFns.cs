@@ -253,7 +253,7 @@ namespace RoundedTB
                     mw.sf.addLog($"Taskbar decided to be unreasonably large ({ter.EffectiveWidth}px)");
                     return false;
                 }
-                if (!isDynamic)
+                if (!isDynamic || (!mw.isWindows11 && tbDeets.TrayHwnd == IntPtr.Zero))
                 {
                     IntPtr rgn = LocalPInvoke.CreateRoundRectRgn(ter.EffectiveLeft, ter.EffectiveTop, ter.EffectiveWidth, ter.EffectiveHeight, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius);
                     LocalPInvoke.SetWindowRgn(tbDeets.TaskbarHwnd, rgn, true);
