@@ -13,31 +13,31 @@
 
         <Button x:Name="okButton" Content="OK" Margin="0,0,10,10" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="37" Click="okButton_Click"/>
         <TextBlock x:Name="titleBlock" HorizontalAlignment="Left" Margin="10,0,0,0" TextWrapping="Wrap" Text="Welcome to RoundedTB!" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="32" Opacity="0.795"/>
-        <TextBlock x:Name="subtitleBlock" HorizontalAlignment="Left" Margin="10,45,0,0" TextWrapping="Wrap" Text="Prerelease 3.2 (v1.2.47.1000)" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="22" Opacity="0.795"/>
+        <TextBlock x:Name="subtitleBlock" HorizontalAlignment="Left" Margin="10,45,0,0" TextWrapping="Wrap" Text="Release 3 (v1.3.0.1000)" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="22" Opacity="0.795"/>
 
         <TextBlock x:Name="bodyBlock" Margin="10,97,10,47" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14">
             <Bold>Thanks for downloading RoundedTB. Here's a quick heads-up on the available options and what they do:</Bold>
             <LineBreak/>
-            <Bold>• Margin</Bold> - makes the taskbar slimmer on all sides by this many logical pixels
+            <Bold>• Margin</Bold> - makes the taskbar slimmer on all sides by this many logical pixels.
             <LineBreak/>
-            <Bold>• Corner radius</Bold> - controls the radius of the taskbar's rounded corners
+            <Bold>• Corner radius</Bold> - controls the radius of the taskbar's rounded corners.
             <LineBreak/>
-            <Bold>• Advanced</Bold> - toggles a menu of advanced and experimental features
+            <Bold>• Advanced</Bold> - toggles a menu of advanced and experimental features.
             <LineBreak/>
-            <Bold>• Apply</Bold> - applies and saves any unset changes
+            <Bold>• Apply</Bold> - applies and saves any unset changes.
             <LineBreak/>
             <LineBreak/>
             <Bold>Advanced features (these may not be finished or perfectly stable):</Bold>
             <LineBreak/>
-            <Bold>• [...] Margins</Bold> - individually sets the margin for each side of the taskbar
+            <Bold>• [...] Margins</Bold> - individually sets the margin for each side of the taskbar.
             <LineBreak/>
-            <Bold>• Dynamic mode (Windows 11)</Bold> - Dynamically adjusts the size of the taskbar depending on how many apps are open
+            <Bold>• Dynamic mode (Windows 11)</Bold> - Dynamically adjusts the size of the taskbar depending on how many apps are open.
             <LineBreak/>
-            <Bold>• Split mode (Windows 10)</Bold> - allows you to resize the taskbar. Like dynamic mode, but manually adjustable; some setup is required, enable for more info
+            <Bold>• Split mode (Windows 10)</Bold> - allows you to resize the taskbar. Like dynamic mode, but manually adjustable; some setup is required, enable for more info.
             <LineBreak/>
-            <Bold>• Show system tray</Bold> - Displays the system tray in dynamic/split mode, can be toggled at any time with Win+F2
+            <Bold>• Show system tray</Bold> - Displays the system tray in dynamic/split mode, can be toggled at any time with Win+F2.
             <LineBreak/>
-            <Bold>• TranslucentTB compatibility</Bold> - enables experimental compatibility with TranslucentTB. For more info, enable this option
+            <Bold>• TranslucentTB compatibility</Bold> - enables experimental compatibility with TranslucentTB >v5. For more info, enable this option.
             <LineBreak/>
             <LineBreak/>
             <Bold>Known issues:</Bold>
@@ -47,6 +47,8 @@
             • Other taskbar mods are not yet supported.
             <LineBreak/>
             • Autohide is flickery and may not work perfectly, especially with dynamic/split mode and multiple monitors.
+            <LineBreak/>
+            • Dynamic mode may occasionally "get stuck". This can be fixed by opening/closing a window on that monitor or briefly changing the taskbar alignment.
             <LineBreak/>
             <LineBreak/>
             If you're unsure, or just want to talk about RoundedTB, feel free to join

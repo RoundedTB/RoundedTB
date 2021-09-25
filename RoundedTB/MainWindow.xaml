@@ -6,9 +6,9 @@
         xmlns:local="clr-namespace:RoundedTB"
         xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
-        Title="RoundedTB" Height="320" Width="393"
+        Title="RoundedTB" Height="320" Width="169"
         xmlns:ui="http://schemas.modernwpf.com/2019"
-        ui:WindowHelper.UseModernWindowStyle="True" Visibility = "Visible" ResizeMode="NoResize" Opacity="1.001">
+        ui:WindowHelper.UseModernWindowStyle="True" Visibility = "Hidden" ResizeMode="NoResize" Opacity="0.001">
     <!--169, 393-->
     <Grid HorizontalAlignment="Left" Margin="11,-6,0,0" Width="357">
         <tb:TaskbarIcon x:Name="TrayIcon" Visibility ="Visible" ToolTipText="RoundedTB" Height="304" VerticalAlignment="Top" Margin="0,6,0,0">
