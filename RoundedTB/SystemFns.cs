@@ -12,18 +12,16 @@ namespace RoundedTB
     public class SystemFns
     {
         public MainWindow mw;
-        public string logPath;
         string m = "";
 
         public SystemFns()
         {
             mw = (MainWindow)Application.Current.MainWindow;
-            logPath = Path.Combine(mw.localFolder, "rtb.log");
         }
 
         public Types.Settings ReadJSON()
         {
-            string jsonSettings = File.ReadAllText(Path.Combine(mw.localFolder, "rtb.json"));
+            string jsonSettings = File.ReadAllText(mw.configPath);
             Types.Settings settings = JsonConvert.DeserializeObject<Types.Settings>(jsonSettings);
             return settings;
         }
@@ -40,14 +38,14 @@ namespace RoundedTB
 
         public void WriteJSON()
         {
-            File.Create(Path.Combine(mw.localFolder, "rtb.json")).Close();
-            File.WriteAllText(Path.Combine(mw.localFolder, "rtb.json"), JsonConvert.SerializeObject(mw.activeSettings, Formatting.Indented));
+            File.Create(mw.configPath).Close();
+            File.WriteAllText(mw.configPath, JsonConvert.SerializeObject(mw.activeSettings, Formatting.Indented));
         }
 
         public void FileSystem()
         {
-            File.Create(logPath).Close();
-            if (!File.Exists(Path.Combine(mw.localFolder, "rtb.json")))
+            File.Create(mw.logPath).Close();
+            if (!File.Exists(mw.configPath))
             {
                 if (mw.isWindows11)
                 {
@@ -86,7 +84,7 @@ namespace RoundedTB
                 
                 WriteJSON(); // butts - Missy Quarry, 2020
             }
-            if (File.ReadAllText(Path.Combine(mw.localFolder, "rtb.json")) == "" || File.ReadAllText(Path.Combine(mw.localFolder, "rtb.json")) == null)
+            if (File.ReadAllText(mw.configPath) == "" || File.ReadAllText(mw.configPath) == null)
             {
                 WriteJSON(); // Initialises empty file
             }
@@ -96,7 +94,7 @@ namespace RoundedTB
         public void addLog(string message)
         {
             m = $"[{DateTime.Now}] {message}\n";
-            File.AppendAllText(logPath, m);
+            File.AppendAllText(mw.logPath, m);
         }
 
         public static bool IsTranslucentTBRunning()

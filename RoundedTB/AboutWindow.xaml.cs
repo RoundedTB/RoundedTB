@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Navigation;
+using System.Diagnostics;
 
 namespace RoundedTB
 {
@@ -31,7 +32,17 @@ namespace RoundedTB
         }
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
-            System.Diagnostics.Process.Start(e.Uri.ToString());
+            Process.Start(e.Uri.ToString());
+        }
+
+        private void configButton_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(((MainWindow)Application.Current.MainWindow).configPath);
+        }
+
+        private void logButton_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(((MainWindow)Application.Current.MainWindow).logPath);
         }
     }
 }

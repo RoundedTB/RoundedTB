@@ -26,7 +26,9 @@ namespace RoundedTB
         public bool isWindows11;
         public List<Types.Taskbar> taskbarDetails = new List<Types.Taskbar>();
         public bool shouldReallyDieNoReally = false;
-        public string localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        //public string localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        public string configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "rtb.json");
+        public string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "rtb.log");
         public Types.Settings activeSettings = new Types.Settings();
         public BackgroundWorker bw = new BackgroundWorker();
         public IntPtr hwndDesktopButton = IntPtr.Zero;
@@ -45,7 +47,7 @@ namespace RoundedTB
         {
             InitializeComponent();
             
-            // Check OS build, as behaviours differ between Windows 11 and Windows 10
+            // Check OS build, as behaviours rather-annoyingly differ between Windows 11 and Windows 10
             RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
             var buildNumber = registryKey.GetValue("CurrentBuild").ToString();
             if (Convert.ToInt32(buildNumber) >= 21996)
@@ -77,27 +79,29 @@ namespace RoundedTB
             {
                 #pragma warning disable CS4014
                 StartupInit(true);
-                localFolder = Windows.Storage.ApplicationData.Current.RoamingFolder.Path;
+                //localFolder = Windows.Storage.ApplicationData.Current.RoamingFolder.Path;
+                configPath = Path.Combine(Windows.Storage.ApplicationData.Current.RoamingFolder.Path, "rtb.json");
+                logPath = Path.Combine(Windows.Storage.ApplicationData.Current.RoamingFolder.Path, "rtb.log");
             }
             if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")) && !IsRunningAsUWP())
             {
                 StartupCheckBox.IsChecked = true;
                 ShowMenuItem.Header = "Show RoundedTB";
             }
-            else
-            {
-                if (!IsRunningAsUWP())
-                {
-                    
-                }
-            }
-            bw.DoWork +=bf.DoWork;
             bw.WorkerSupportsCancellation = true;
             bw.WorkerReportsProgress = true;
-            
+            bw.DoWork +=bf.DoWork;
+
             // Load settings into memory/UI
             sf.FileSystem();
-            sf.addLog($"RoundedTB started!");
+            if (!IsRunningAsUWP())
+            {
+                sf.addLog($"RoundedTB started!");
+            }
+            else
+            {
+                sf.addLog($"RoundedTB started in UWP mode!");
+            }
             activeSettings = sf.ReadJSON();
             if (activeSettings == null)
             {
@@ -242,6 +246,7 @@ namespace RoundedTB
             {
                 activeSettings.IsNotFirstLaunch = true;
                 AboutWindow aw = new AboutWindow();
+                aw.expander0.IsExpanded = true;
                 aw.ShowDialog();
                 Visibility = Visibility.Visible;
                 ShowMenuItem.Header = "Hide RoundedTB";
@@ -345,12 +350,20 @@ namespace RoundedTB
             }
             else
             {
-                bw.CancelAsync();
+                try
+                {
+                    bw.CancelAsync();
+                }
+                catch (Exception aaaa)
+                {
+                    sf.addLog(aaaa.Message);
+                }
                 while (bw.IsBusy == true)
                 {
                     System.Windows.Forms.Application.DoEvents();
                     System.Threading.Thread.Sleep(100);
                 }
+                sf.addLog("Exiting RoundedTB.");
             }
             if (!isAlreadyRunning)
             {
@@ -358,11 +371,7 @@ namespace RoundedTB
             }
         }
 
-        // Handles keeping the taskbar updated in the background
-        
-
-        
-
+        // Handles resetting the taskbar
         public void ResetTaskbar(Types.Taskbar tbDeets)
         {
             LocalPInvoke.SetWindowRgn(tbDeets.TaskbarHwnd, tbDeets.RecoveryHrgn, true);
@@ -629,7 +638,7 @@ namespace RoundedTB
             if (!isWindows11)
             {
                 splitHelpButton.Visibility = Visibility.Visible;
-                if (Visibility == Visibility.Visible)
+                if (Opacity > 0.5)
                 {
                     splitHelpButton_Click(null, null);
                 }
@@ -737,7 +746,7 @@ namespace RoundedTB
                 ib.Height = 450;
                 ib.Title = "RoundedTB - TranslucentTB compatibility";
                 ib.titleBlock.Text = "Compatibility with TranslucentTB";
-                ib.bodyBlock.Text = "TranslucentTB is an awesome project that inspired me to make RoundedTB. It allows you to customise the opacity, blur and colour of the taskbar seamlessly with significantly finer control than anything else. Unfortunately, due to a bug with Windows' Desktop Window Manager (DWM), RoundedTB and TranslucentTB don't work properly together at the moment.\n\nThis bug is not the fault of RoundedTB or TranslucentTB, and I'm working closely with TranslucentTB's sole developer to find a proper solution. Until then however, this compatibility mitigation exists. For this to work, you will need a version of TranslucentTB above 5 (tag 2021.4.0.0).\n\nIf this option is enabled with a compatible version of TranslucentTB, you should see TranslucentTB's effects and colours apply correctly. However, there may be significant flickering when the taskbar moves or resizes.\n\nAs soon as I find a proper workaround to Windows' DWM bug, it will be implemented and this option will be removed. Until then, go show TranslucentTB some love! 💖";
+                ib.bodyBlock.Text = "TranslucentTB is an awesome project that inspired me to make RoundedTB. It allows you to customise the opacity, blur and colour of the taskbar seamlessly with significantly finer control than anything else. Unfortunately, due to a bug with Windows' Desktop Window Manager (DWM), RoundedTB and TranslucentTB don't work properly together at the moment.\n\nThis bug is not the fault of RoundedTB or TranslucentTB, and I'm working closely with TranslucentTB's sole developer to find a proper solution. Until then however, this compatibility mitigation exists. For this to work, you will need TranslucentTB version 2021.5 or higher.\n\nIf this option is enabled with a compatible version of TranslucentTB, you should see TranslucentTB's effects and colours apply correctly. However, there may be significant flickering when the taskbar moves or resizes.\n\nAs soon as I find a proper workaround to Windows' DWM bug, it will be implemented and this option will be removed. Until then, go show TranslucentTB some love! 💖";
                 ib.ShowDialog();
             }
         }

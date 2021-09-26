@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Threading;
-
+using Newtonsoft.Json;
 
 namespace RoundedTB
 {
@@ -213,7 +213,6 @@ namespace RoundedTB
         {
             if (!tbDeets.Ignored)
             {
-                mw.sf.addLog($"Updating taskbar: {tbDeets.TaskbarHwnd}");
                 // Basic effective region
                 Types.TaskbarEffectiveRegion ter = new Types.TaskbarEffectiveRegion
                 {
@@ -350,15 +349,6 @@ namespace RoundedTB
             }
             return false;
 
-            // IntPtr effectHandle = new WindowInteropHelper(tbDeets.TaskbarEffectWindow).Handle;
-            //GetWindowRect(FindWindowExA(FindWindowExA(IntPtr.Zero, IntPtr.Zero, "Shell_TrayWnd", null), IntPtr.Zero, "TrayNotifyWnd", null), out RECT trayRect);
-            //IntPtr trayRgn = CreateRoundRectRgn(trayRect.Left - ter.EffectiveTop, ter.EffectiveTop, trayRect.Right - ter.EffectiveTop, (trayRect.Bottom - trayRect.Top) - ter.EffectiveTop, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius);
-            //IntPtr tbRgn = CreateRoundRectRgn(ter.EffectiveLeft, ter.EffectiveTop, ter.EffectiveRight, ter.EffectiveBottom, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius);
-            //IntPtr finalRgn = CreateRoundRectRgn(1,1,1,1,0,0);
-            //CombineRgn(finalRgn, trayRgn, tbRgn, 2);
-            //SetWindowRgn(tbDeets.TaskbarHwnd, finalRgn, true);
-            // SetWindowRgn(effectHandle, CreateRoundRectRgn(ter.EffectiveLeft, ter.EffectiveTop, ter.EffectiveRight, ter.EffectiveBottom, ter.EffectiveCornerRadius, ter.EffectiveCornerRadius), true);
-            // MoveWindow(effectHandle, rectNew.Left, rectNew.Top, rectNew.Right - rectNew.Left, rectNew.Bottom - rectNew.Top, true);
         }
 
         // Checks for new taskbars
@@ -459,8 +449,9 @@ namespace RoundedTB
                         // TaskbarEffectWindow = new TaskbarEffect()
                     });
                 }
-            }
 
+            }
+            mw.sf.addLog("\n" + JsonConvert.SerializeObject(mw.taskbarDetails, Formatting.Indented) + "\n#########################\nTASKBAR INFO REGENERATED!\n#########################");
         }
     }
 }
