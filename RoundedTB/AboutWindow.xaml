@@ -95,7 +95,7 @@
                     <Grid>
                         <TextBlock Margin="0,5,0,0" x:Name="bodyBlock4" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="21">
                     • More in-depth instructions, tips and tricks are available in the 
-                    <Hyperlink NavigateUri="https://github.com/torchgm/RoundedTB" RequestNavigate="Hyperlink_RequestNavigate">
+                    <Hyperlink NavigateUri="https://github.com/torchgm/RoundedTB#readme" RequestNavigate="Hyperlink_RequestNavigate">
                         README
                     </Hyperlink>.
                     <LineBreak/>
