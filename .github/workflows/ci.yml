@@ -27,17 +27,13 @@ jobs:
         cd ${{ github.workspace }}
         msbuild "-property:Configuration=Release" -t:RoundedTB
 
-    - name: Pack output
+    - name: Add commit hash to output folder
       run: |
-        cd ${{ github.workspace }}
-        cd RoundedTB\bin\Release
-        7z a ..\..\..\build.zip .\*
-        cd ${{ github.workspace }}
+        Rename-Item -Path ".\RoundedTB\bin\Release" -NewName "RoundedTB-$(git rev-parse --short ${{ github.sha }})"
         
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: artifacts
+        name: rtb-artifacts
         path: |
-          .\build.zip
-          
+          .\RoundedTB\bin\RoundedTB-*\
