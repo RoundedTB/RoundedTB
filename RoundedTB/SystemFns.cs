@@ -91,6 +91,18 @@ namespace RoundedTB
 
         }
 
+        public static bool SetWorkspace(LocalPInvoke.RECT rect)
+        {
+            bool result = LocalPInvoke.SystemParametersInfo(LocalPInvoke.SPI_SETWORKAREA, 0, ref rect, LocalPInvoke.SPIF_change);
+            if (!result)
+            {
+                // Find out the error code
+                Debug.WriteLine("The last error was: " + Marshal.GetLastWin32Error().ToString());
+            }
+
+            return result;
+        }
+
         public void addLog(string message)
         {
             m = $"[{DateTime.Now}] {message}\n";

@@ -251,6 +251,16 @@ namespace RoundedTB
                 Visibility = Visibility.Visible;
                 ShowMenuItem.Header = "Hide RoundedTB";
             }
+
+            LocalPInvoke.RECT scrRect = new LocalPInvoke.RECT()
+            {
+                Left = 0,
+                Top = 0,
+                Right = 3839,
+                Bottom = 2159
+            };
+
+            SystemFns.SetWorkspace(scrRect);
         }
 
         private TypedEventHandler<ThemeManager, object> TrayIconCheck()

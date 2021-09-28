@@ -13,6 +13,8 @@ namespace RoundedTB
     {
         // Just have a reference point for the Dispatcher
         public MainWindow mw;
+        LocalPInvoke.POINT p = new LocalPInvoke.POINT();
+        bool tbShown = true;
 
         public BackgroundFns()
         {
@@ -28,6 +30,10 @@ namespace RoundedTB
             BackgroundWorker worker = sender as BackgroundWorker;
             while (true)
             {
+
+                
+
+
                 try
                 {
                     if (worker.CancellationPending == true)
@@ -76,6 +82,27 @@ namespace RoundedTB
                         MonitorStuff.DisplayInfoCollection Displays = MonitorStuff.GetDisplays();
                         for (int a = 0; a < mw.taskbarDetails.Count; a++)
                         {
+                            tbShown = LocalPInvoke.IsWindowVisible(mw.taskbarDetails[a].TaskbarHwnd);
+                            LocalPInvoke.GetCursorPos(out p);
+                            LocalPInvoke.RECT r = mw.taskbarDetails[a].TaskbarRect;
+                            if (LocalPInvoke.PtInRect(ref r, p))
+                            {
+                                Debug.WriteLine($"Mouse is hovering over taskbar {a}");
+                                if (!tbShown)
+                                {
+                                    LocalPInvoke.ShowWindow(mw.taskbarDetails[a].TaskbarHwnd, LocalPInvoke.SW_SHOW);
+                                }
+                            }
+                            else
+                            {
+                                Debug.WriteLine($"Mouse is not hovering over a taskbar: {tbShown}");
+                                if (tbShown)
+                                {
+                                    LocalPInvoke.ShowWindow(mw.taskbarDetails[a].TaskbarHwnd, LocalPInvoke.SW_HIDE);
+                                }
+                            }
+
+
                             if (!LocalPInvoke.IsWindow(mw.taskbarDetails[a].TaskbarHwnd) || AreThereNewTaskbars(mw.taskbarDetails[a].TaskbarHwnd))
                             {
                                 Displays = MonitorStuff.GetDisplays();
@@ -214,7 +241,7 @@ namespace RoundedTB
             if (!tbDeets.Ignored)
             {
                 // Basic effective region
-                Types.TaskbarEffectiveRegion ter = new Types.TaskbarEffectiveRegion
+                Types.TaskbarEffectiveRegion ter = new Types.TaskbarEffectiveRegion // basic taskbar effective region
                 {
                     EffectiveCornerRadius = Convert.ToInt32(roundFactor * tbDeets.ScaleFactor),
                     EffectiveTop = Convert.ToInt32(mTopFactor * tbDeets.ScaleFactor),
@@ -223,7 +250,7 @@ namespace RoundedTB
                     EffectiveHeight = Convert.ToInt32(rectTaskbarNew.Bottom - rectTaskbarNew.Top - (mBottomFactor * tbDeets.ScaleFactor)) + 1
                 };
                 // Dynamic effective region for taskbar
-                Types.TaskbarEffectiveRegion dter = new Types.TaskbarEffectiveRegion
+                Types.TaskbarEffectiveRegion dter = new Types.TaskbarEffectiveRegion // dynamic taskbar effective region
                 {
                     EffectiveCornerRadius = Convert.ToInt32(roundFactor * tbDeets.ScaleFactor),
                     EffectiveTop = Convert.ToInt32(mTopFactor * tbDeets.ScaleFactor),
@@ -232,7 +259,7 @@ namespace RoundedTB
                     EffectiveHeight = Convert.ToInt32(rectTaskbarNew.Bottom - rectTaskbarNew.Top - (mBottomFactor * tbDeets.ScaleFactor)) + 1
                 };
                 // Dynamic effective region for tray
-                Types.TaskbarEffectiveRegion tter = new Types.TaskbarEffectiveRegion
+                Types.TaskbarEffectiveRegion tter = new Types.TaskbarEffectiveRegion // tray taskbar effective region
                 {
                     EffectiveCornerRadius = Convert.ToInt32(roundFactor * tbDeets.ScaleFactor),
                     EffectiveTop = Convert.ToInt32(mTopFactor * tbDeets.ScaleFactor),
@@ -240,7 +267,6 @@ namespace RoundedTB
                     EffectiveWidth = Convert.ToInt32(rectTaskbarNew.Right - rectTaskbarNew.Left - (mLeftFactor * tbDeets.ScaleFactor)) + 1,
                     EffectiveHeight = Convert.ToInt32(rectTaskbarNew.Bottom - rectTaskbarNew.Top - (mBottomFactor * tbDeets.ScaleFactor)) + 1
                 };
-
 
                 if (ter.EffectiveWidth < 48 && isDynamic)
                 {
@@ -264,7 +290,7 @@ namespace RoundedTB
                 }
                 else
                 {
-                    IntPtr rgn = IntPtr.Zero;
+                    IntPtr rgn;
                     IntPtr finalRgn = LocalPInvoke.CreateRoundRectRgn(1, 1, 1, 1, 0, 0);
                     int dynDistance = rectTaskbarNew.Right - tbDeets.AppListRect.Right - Convert.ToInt32(2 * tbDeets.ScaleFactor);
 
@@ -293,7 +319,6 @@ namespace RoundedTB
                         mw.sf.addLog($"Taskbar was detected overflowing off the screen. Display width: {tbDeets.TaskbarRect.Right - tbDeets.TaskbarRect.Left}, applist width: {tbDeets.AppListRect.Right}");
                         return false;
                     }
-
                     if (isCentred)
                     {
                         // If the taskbar is centered, take the right-to-right distance off from both sides, as well as the margin

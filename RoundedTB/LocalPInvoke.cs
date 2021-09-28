@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace RoundedTB
@@ -39,6 +40,9 @@ namespace RoundedTB
         [DllImport("gdi32.dll")]
         public static extern IntPtr CreateRoundRectRgn(int x1, int y1, int x2, int y2, int w, int h);
 
+        [DllImport("gdi32.dll")]
+        public static extern IntPtr CreateRectRgn(int x1, int y1, int x2, int y2);
+
         [DllImport("user32.dll")]
         public static extern IntPtr FindWindowExA(IntPtr hWndParent, IntPtr hWndChildAfter, string lpszClass, string lpszWindow);
 
@@ -64,12 +68,34 @@ namespace RoundedTB
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern int RegisterWindowMessage(string lpString);
 
-
         [DllImport("shell32.dll", SetLastError = true)]
         public static extern IntPtr SHAppBarMessage(ABM dwMessage, [In] ref APPBARDATA pData);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetCursorPos(out POINT lpPoint);
+
+        [DllImport("user32.dll")]
+        public static extern int ShowWindow(int hwnd, int command);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SystemParametersInfo(int uiAction, int uiParam, ref RECT pvParam, int fWinIni);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsWindowVisible(IntPtr hWnd);
+
+        public const int SPIF_SENDWININICHANGE = 2;
+        public const int SPIF_UPDATEINIFILE = 1;
+        public const int SPIF_change = SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE;
+        public const int SPI_SETWORKAREA = 47;
+        public const int SPI_GETWORKAREA = 48;
+        public const int SW_HIDE = 0;
+        public const int SW_SHOW = 1;
 
         public struct POINT
         {
