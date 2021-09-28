@@ -19,19 +19,25 @@ jobs:
       
     - name: NuGet Restore
       run: |
+        cd ${{ github.workspace }}
         nuget restore RoundedTB.sln
       
     - name: Build
       run: |
+        cd ${{ github.workspace }}
         msbuild "-property:Configuration=Release" -t:RoundedTB
-    - name: Get short commit hash
-      id: shorthash
+
+    - name: Pack output
       run: |
-        echo "short_hash=$(git rev-parse --short ${{ github.sha }})" >> $env:GITHUB_ENV
+        cd ${{ github.workspace }}
+        cd RoundedTB\bin\Release
+        7z a ..\..\..\build.zip .\*
+        cd ${{ github.workspace }}
         
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: rtb-artifacts-${{ env.short_hash }}
+        name: artifacts
         path: |
-          ${{ github.workspace }}\RoundedTB\bin\Release\*
+          .\build.zip
+          
