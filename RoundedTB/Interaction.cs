@@ -221,14 +221,14 @@ namespace RoundedTB
                 get;
                 private set;
             }
-            public global::System.Drawing.Point Location
+            public System.Drawing.Point Location
             {
                 get
                 {
                     return Bounds.Location;
                 }
             }
-            public global::System.Drawing.Size Size
+            public System.Drawing.Size Size
             {
                 get
                 {

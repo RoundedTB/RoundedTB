@@ -84,7 +84,7 @@ namespace RoundedTB
                 configPath = Path.Combine(Windows.Storage.ApplicationData.Current.RoamingFolder.Path, "rtb.json");
                 logPath = Path.Combine(Windows.Storage.ApplicationData.Current.RoamingFolder.Path, "rtb.log");
             }
-            if (global::System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")) && !IsRunningAsUWP())
+            if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")) && !IsRunningAsUWP())
             {
                 StartupCheckBox.IsChecked = true;
                 ShowMenuItem.Header = "Show RoundedTB";
@@ -246,7 +246,7 @@ namespace RoundedTB
                 StartupCheckBox.Content = "Preview build";
                 try
                 {
-                    global::System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
+                    System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
                 }
                 catch (Exception) { }
                 Title = "RoundedTB Preview";
@@ -281,11 +281,11 @@ namespace RoundedTB
 
             if (ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Light)
             {
-                TrayIcon.Icon = new global::System.Drawing.Icon(Application.GetResourceStream(resLight).Stream);
+                TrayIcon.Icon = new System.Drawing.Icon(Application.GetResourceStream(resLight).Stream);
             }
             else
             {
-                TrayIcon.Icon = new global::System.Drawing.Icon(Application.GetResourceStream(resDark).Stream);
+                TrayIcon.Icon = new System.Drawing.Icon(Application.GetResourceStream(resDark).Stream);
             }
             return null;
         }
@@ -357,8 +357,8 @@ namespace RoundedTB
                 bw.CancelAsync();
                 while (bw.IsBusy == true)
                 {
-                    global::System.Windows.Forms.Application.DoEvents();
-                    global::System.Threading.Thread.Sleep(100);
+                    System.Windows.Forms.Application.DoEvents();
+                    System.Threading.Thread.Sleep(100);
                 }
                 bw.RunWorkerAsync((mt, ml, mb, mr, roundFactor));
             }
@@ -388,8 +388,8 @@ namespace RoundedTB
                 }
                 while (bw.IsBusy == true)
                 {
-                    global::System.Windows.Forms.Application.DoEvents();
-                    global::System.Threading.Thread.Sleep(100);
+                    System.Windows.Forms.Application.DoEvents();
+                    System.Threading.Thread.Sleep(100);
                 }
                 sf.AddLog("Exiting RoundedTB.");
             }
@@ -455,7 +455,7 @@ namespace RoundedTB
             }
             else
             {
-                if (!global::System.IO.File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Startup)))
+                if (!System.IO.File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Startup)))
                 {
                     EnableStartup();
                 }
@@ -463,7 +463,7 @@ namespace RoundedTB
                 {
                     try
                     {
-                        global::System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
+                        System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
                     }
                     catch (Exception) { }
                 }
@@ -632,7 +632,7 @@ namespace RoundedTB
             }
         }
 
-        private async void ContextMenu_MouseEnter(object sender, global::System.Windows.Input.MouseEventArgs e)
+        private async void ContextMenu_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
             if (IsRunningAsUWP())
             {
@@ -696,7 +696,7 @@ namespace RoundedTB
             marginInput.Text = Math.Round(marginSlider.Value).ToString();
         }
 
-        private void marginSlider_DragCompleted(object sender, global::System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        private void marginSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             ApplyButton_Click(null, null);
         }
@@ -706,7 +706,7 @@ namespace RoundedTB
             cornerRadiusInput.Text = Math.Round(cornerRadiusSlider.Value).ToString();
         }
 
-        private void cornerRadiusSlider_DragCompleted(object sender, global::System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        private void cornerRadiusSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             ApplyButton_Click(null, null);
         }
@@ -725,7 +725,7 @@ namespace RoundedTB
             Debug.WriteLine("KEY: " + wtf);
             Debug.WriteLine(handle);
             Debug.WriteLine((int)Types.KeyModifier.WinKey);
-            Debug.WriteLine(global::System.Windows.Forms.Keys.J.GetHashCode());
+            Debug.WriteLine(System.Windows.Forms.Keys.J.GetHashCode());
             Visibility = Visibility.Hidden;
             Opacity = 1;
         }
