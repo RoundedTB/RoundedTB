@@ -97,16 +97,17 @@
     <Compile Include="AboutWindow.xaml.cs">
       <DependentUpon>AboutWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="BackgroundFns.cs" />
+    <Compile Include="Background.cs" />
     <Compile Include="Infobox.xaml.cs">
       <DependentUpon>Infobox.xaml</DependentUpon>
     </Compile>
     <Compile Include="LocalPInvoke.cs" />
-    <Compile Include="SystemFns.cs" />
+    <Compile Include="Interaction.cs" />
     <Compile Include="IAppVisibility.cs" />
     <Compile Include="TaskbarEffect.xaml.cs">
       <DependentUpon>TaskbarEffect.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Taskbar.cs" />
     <Compile Include="Types.cs" />
     <Page Include="AboutWindow.xaml">
       <SubType>Designer</SubType>

@@ -9,12 +9,12 @@ using System.Runtime.InteropServices;
 
 namespace RoundedTB
 {
-    public class SystemFns
+    public class Interaction
     {
         public MainWindow mw;
         string m = "";
 
-        public SystemFns()
+        public Interaction()
         {
             mw = (MainWindow)Application.Current.MainWindow;
         }
@@ -103,7 +103,7 @@ namespace RoundedTB
             return result;
         }
 
-        public void addLog(string message)
+        public void AddLog(string message)
         {
             m = $"[{DateTime.Now}] {message}\n";
             File.AppendAllText(mw.logPath, m);
@@ -221,14 +221,14 @@ namespace RoundedTB
                 get;
                 private set;
             }
-            public System.Drawing.Point Location
+            public global::System.Drawing.Point Location
             {
                 get
                 {
                     return Bounds.Location;
                 }
             }
-            public System.Drawing.Size Size
+            public global::System.Drawing.Size Size
             {
                 get
                 {

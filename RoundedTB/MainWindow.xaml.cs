@@ -36,8 +36,8 @@ namespace RoundedTB
         public int numberToForceRefresh = 0;
         public bool isCentred = false;
         public bool isAlreadyRunning = false;
-        public BackgroundFns bf;
-        public SystemFns sf;
+        public Background bf;
+        public Interaction sf;
         private HwndSource source;
         public bool preview = false; // Controls whether or not to compile a preview build - janky way of doing it but hey
 
@@ -57,12 +57,13 @@ namespace RoundedTB
             else
             {
                 isWindows11 = false;
+                activeSettings.IsWindows11 = false;
                 dynamicCheckBox.Content = "Split mode";
             }
 
             // Initialise functions
-            bf = new BackgroundFns();
-            sf = new SystemFns();
+            bf = new Background();
+            sf = new Interaction();
             
             // Check if RoundedTB is already running, and if it is, do nothing.
             if (Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Length > 1)
@@ -83,7 +84,7 @@ namespace RoundedTB
                 configPath = Path.Combine(Windows.Storage.ApplicationData.Current.RoamingFolder.Path, "rtb.json");
                 logPath = Path.Combine(Windows.Storage.ApplicationData.Current.RoamingFolder.Path, "rtb.log");
             }
-            if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")) && !IsRunningAsUWP())
+            if (global::System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")) && !IsRunningAsUWP())
             {
                 StartupCheckBox.IsChecked = true;
                 ShowMenuItem.Header = "Show RoundedTB";
@@ -96,13 +97,21 @@ namespace RoundedTB
             sf.FileSystem();
             if (!IsRunningAsUWP())
             {
-                sf.addLog($"RoundedTB started!");
+                sf.AddLog($"RoundedTB started!");
             }
             else
             {
-                sf.addLog($"RoundedTB started in UWP mode!");
+                sf.AddLog($"RoundedTB started in UWP mode!");
             }
             activeSettings = sf.ReadJSON();
+            if (isWindows11)
+            {
+                activeSettings.IsWindows11 = true;
+            }
+            else
+            {
+                activeSettings.IsWindows11 = false;
+            }
             if (activeSettings == null)
             {
                 if (isWindows11)
@@ -117,6 +126,7 @@ namespace RoundedTB
                         MarginRight = 0,
                         IsDynamic = false,
                         IsCentred = false,
+                        IsWindows11 = true,
                         ShowTray = false,
                         CompositionCompat = false,
                         IsNotFirstLaunch = false
@@ -134,14 +144,15 @@ namespace RoundedTB
                         MarginRight = 0,
                         IsDynamic = false,
                         IsCentred = false,
+                        IsWindows11 = false,
                         ShowTray = false,
                         CompositionCompat = false,
                         IsNotFirstLaunch = false
                     };
                 }
             }
-            sf.addLog($"Settings loaded:");
-            sf.addLog(
+            sf.AddLog($"Settings loaded:");
+            sf.AddLog(
                 $"\nCornerRadius: {activeSettings.CornerRadius}\n" +
                 $"MarginBasic: {activeSettings.MarginBasic}\n" +
                 $"MarginBottom: {activeSettings.MarginBottom}\n" +
@@ -196,13 +207,13 @@ namespace RoundedTB
                         {
                             isCentred = false;
                         }
-                        sf.addLog($"Taskbar centred? {isCentred}");
+                        sf.AddLog($"Taskbar centred? {isCentred}");
                     }
                 }
             }
             catch (Exception aaaa)
             {
-                sf.addLog(aaaa.Message);
+                sf.AddLog(aaaa.Message);
             }
 
             dynamicCheckBox.IsChecked = activeSettings.IsDynamic;
@@ -210,7 +221,7 @@ namespace RoundedTB
             showTrayCheckBox.IsChecked = activeSettings.ShowTray;
             compositionFixCheckBox.IsChecked = activeSettings.CompositionCompat;
             cornerRadiusInput.Text = activeSettings.CornerRadius.ToString();
-            bf.GenerateTaskbarInfo();
+            taskbarDetails = Taskbar.GenerateTaskbarInfo();
             if (marginInput.Text != null && cornerRadiusInput.Text != null)
             {
                 ApplyButton_Click(null, null);
@@ -235,7 +246,7 @@ namespace RoundedTB
                 StartupCheckBox.Content = "Preview build";
                 try
                 {
-                    System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
+                    global::System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
                 }
                 catch (Exception) { }
                 Title = "RoundedTB Preview";
@@ -260,7 +271,7 @@ namespace RoundedTB
                 Bottom = 2159
             };
 
-            SystemFns.SetWorkspace(scrRect);
+            //Interaction.SetWorkspace(scrRect);
         }
 
         private TypedEventHandler<ThemeManager, object> TrayIconCheck()
@@ -270,11 +281,11 @@ namespace RoundedTB
 
             if (ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Light)
             {
-                TrayIcon.Icon = new System.Drawing.Icon(Application.GetResourceStream(resLight).Stream);
+                TrayIcon.Icon = new global::System.Drawing.Icon(Application.GetResourceStream(resLight).Stream);
             }
             else
             {
-                TrayIcon.Icon = new System.Drawing.Icon(Application.GetResourceStream(resDark).Stream);
+                TrayIcon.Icon = new global::System.Drawing.Icon(Application.GetResourceStream(resDark).Stream);
             }
             return null;
         }
@@ -313,20 +324,27 @@ namespace RoundedTB
             activeSettings.MarginBottom = mb;
             activeSettings.MarginRight = mr;
             activeSettings.IsDynamic = (bool)dynamicCheckBox.IsChecked;
-            activeSettings.IsCentred = (bool)centredCheckBox.IsChecked;
+            activeSettings.IsCentred = Taskbar.CheckIfCentred();
             activeSettings.ShowTray = (bool)showTrayCheckBox.IsChecked;
             activeSettings.CompositionCompat = (bool)compositionFixCheckBox.IsChecked;
 
             try
             {
-                foreach (var tbDeets in taskbarDetails)
+                foreach (Types.Taskbar tbDeets in taskbarDetails)
                 {
-                    bf.UpdateTaskbar(tbDeets, mt, ml, mb, mr, roundFactor, tbDeets.TaskbarRect, activeSettings.IsDynamic, isCentred, activeSettings.ShowTray, 0);
+                    if (!activeSettings.IsDynamic)
+                    {
+                        Taskbar.UpdateSimpleTaskbar(tbDeets, activeSettings);
+                    }
+                    else
+                    {
+                        Taskbar.UpdateDynamicTaskbar(tbDeets, activeSettings);
+                    }
                 }
             }
             catch (InvalidOperationException aaaa)
             {
-                sf.addLog(aaaa.Message);
+                sf.AddLog(aaaa.Message);
             }
 
 
@@ -339,8 +357,8 @@ namespace RoundedTB
                 bw.CancelAsync();
                 while (bw.IsBusy == true)
                 {
-                    System.Windows.Forms.Application.DoEvents();
-                    System.Threading.Thread.Sleep(100);
+                    global::System.Windows.Forms.Application.DoEvents();
+                    global::System.Threading.Thread.Sleep(100);
                 }
                 bw.RunWorkerAsync((mt, ml, mb, mr, roundFactor));
             }
@@ -366,14 +384,14 @@ namespace RoundedTB
                 }
                 catch (Exception aaaa)
                 {
-                    sf.addLog(aaaa.Message);
+                    sf.AddLog(aaaa.Message);
                 }
                 while (bw.IsBusy == true)
                 {
-                    System.Windows.Forms.Application.DoEvents();
-                    System.Threading.Thread.Sleep(100);
+                    global::System.Windows.Forms.Application.DoEvents();
+                    global::System.Threading.Thread.Sleep(100);
                 }
-                sf.addLog("Exiting RoundedTB.");
+                sf.AddLog("Exiting RoundedTB.");
             }
             if (!isAlreadyRunning)
             {
@@ -387,7 +405,7 @@ namespace RoundedTB
             LocalPInvoke.SetWindowRgn(tbDeets.TaskbarHwnd, tbDeets.RecoveryHrgn, true);
             if (activeSettings.CompositionCompat)
             {
-                SystemFns.UpdateTranslucentTB(tbDeets.TaskbarHwnd);
+                Interaction.UpdateTranslucentTB(tbDeets.TaskbarHwnd);
             }
         }
 
@@ -407,7 +425,7 @@ namespace RoundedTB
             }
             catch (InvalidOperationException aaaa)
             {
-                sf.addLog($"Taskbar structure changed on exit:\n{aaaa.Message}");
+                sf.AddLog($"Taskbar structure changed on exit:\n{aaaa.Message}");
             }
 
 
@@ -437,7 +455,7 @@ namespace RoundedTB
             }
             else
             {
-                if (!System.IO.File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Startup)))
+                if (!global::System.IO.File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Startup)))
                 {
                     EnableStartup();
                 }
@@ -445,7 +463,7 @@ namespace RoundedTB
                 {
                     try
                     {
-                        System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
+                        global::System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
                     }
                     catch (Exception) { }
                 }
@@ -614,7 +632,7 @@ namespace RoundedTB
             }
         }
 
-        private async void ContextMenu_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        private async void ContextMenu_MouseEnter(object sender, global::System.Windows.Input.MouseEventArgs e)
         {
             if (IsRunningAsUWP())
             {
@@ -678,7 +696,7 @@ namespace RoundedTB
             marginInput.Text = Math.Round(marginSlider.Value).ToString();
         }
 
-        private void marginSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        private void marginSlider_DragCompleted(object sender, global::System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             ApplyButton_Click(null, null);
         }
@@ -688,7 +706,7 @@ namespace RoundedTB
             cornerRadiusInput.Text = Math.Round(cornerRadiusSlider.Value).ToString();
         }
 
-        private void cornerRadiusSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        private void cornerRadiusSlider_DragCompleted(object sender, global::System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             ApplyButton_Click(null, null);
         }
@@ -707,7 +725,7 @@ namespace RoundedTB
             Debug.WriteLine("KEY: " + wtf);
             Debug.WriteLine(handle);
             Debug.WriteLine((int)Types.KeyModifier.WinKey);
-            Debug.WriteLine(System.Windows.Forms.Keys.J.GetHashCode());
+            Debug.WriteLine(global::System.Windows.Forms.Keys.J.GetHashCode());
             Visibility = Visibility.Hidden;
             Opacity = 1;
         }

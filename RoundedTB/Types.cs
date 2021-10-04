@@ -21,7 +21,6 @@ namespace RoundedTB
             public string TaskbarRes { get; set; } // Resolution of the taskbar as text
             public int FailCount { get; set; } // Number of times the taskbar has had an "erroneous" size at applytime
             public bool Ignored { get; set; } // Specifies if the taskbar should be ignored when applying changes
-
             public int AppListWidth { get; set; }
             public TaskbarEffect TaskbarEffectWindow { get; set; }
         }
@@ -36,18 +35,19 @@ namespace RoundedTB
             public int MarginTop { get; set; }
             public bool IsDynamic { get; set; }
             public bool IsCentred { get; set; }
+            public bool IsWindows11 { get; set; }
             public bool ShowTray { get; set; }
             public bool CompositionCompat { get; set; }
             public bool IsNotFirstLaunch { get; set; }
         }
 
-        public class TaskbarEffectiveRegion
+        public class EffectiveRegion
         {
-            public int EffectiveCornerRadius { get; set; }
-            public int EffectiveTop { get; set; }
-            public int EffectiveLeft { get; set; }
-            public int EffectiveWidth { get; set; }
-            public int EffectiveHeight { get; set; }
+            public int CornerRadius { get; set; }
+            public int Top { get; set; }
+            public int Left { get; set; }
+            public int Width { get; set; }
+            public int Height { get; set; }
         }
 
         public enum KeyModifier
