@@ -38,11 +38,11 @@
             <Label x:Name="mTopLabel" Content="Top Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Width="94"/>
             <TextBox x:Name="mTopInput" HorizontalAlignment="Left" Margin="0,24,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False"/>
 
-            <Label x:Name="mLeftLabel" Content="Left Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,61,0,0" Width="94"/>
-            <TextBox x:Name="mLeftInput" HorizontalAlignment="Left" Margin="0,85,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False"/>
-
             <Label x:Name="mBottomLabel" Content="Bottom Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="107,0,0,0" Width="94"/>
             <TextBox x:Name="mBottomInput" HorizontalAlignment="Left" Margin="107,24,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False"/>
+            
+            <Label x:Name="mLeftLabel" Content="Left Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,61,0,0" Width="94"/>
+            <TextBox x:Name="mLeftInput" HorizontalAlignment="Left" Margin="0,85,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False"/>
 
             <Label x:Name="mRightLabel" Content="Right Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="107,61,0,0" Width="85"/>
             <TextBox x:Name="mRightInput" HorizontalAlignment="Left" Margin="107,85,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False"/>

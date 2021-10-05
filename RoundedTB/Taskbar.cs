@@ -202,6 +202,16 @@ namespace RoundedTB
                     Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.MarginBottom * taskbar.ScaleFactor)) + 1
                 };
 
+                // Create an effective region to be applied to the taskbar for the applist
+                Types.EffectiveRegion centredEffectiveRegion = new Types.EffectiveRegion
+                {
+                    CornerRadius = Convert.ToInt32(settings.CornerRadius * taskbar.ScaleFactor),
+                    Top = Convert.ToInt32(settings.MarginTop * taskbar.ScaleFactor),
+                    Left = Convert.ToInt32(settings.MarginRight * taskbar.ScaleFactor),
+                    Width = Convert.ToInt32(taskbar.TaskbarRect.Right - taskbar.TaskbarRect.Left - (settings.MarginRight * taskbar.ScaleFactor)) + 1,
+                    Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.MarginBottom * taskbar.ScaleFactor)) + 1
+                };
+
                 // Create an effective region to be applied to the taskbar for the tray
                 Types.EffectiveRegion trayEffectiveRegion = new Types.EffectiveRegion
                 {
@@ -224,12 +234,12 @@ namespace RoundedTB
                 if (settings.IsCentred)
                 {
                     mainRegion = LocalPInvoke.CreateRoundRectRgn(
-                        centredDistanceFromEdge + taskbarEffectiveRegion.Left,
-                        taskbarEffectiveRegion.Top,
-                        taskbarEffectiveRegion.Width - centredDistanceFromEdge,
-                        taskbarEffectiveRegion.Height,
-                        taskbarEffectiveRegion.CornerRadius,
-                        taskbarEffectiveRegion.CornerRadius
+                        centredDistanceFromEdge + centredEffectiveRegion.Left,
+                        centredEffectiveRegion.Top,
+                        centredEffectiveRegion.Width - centredDistanceFromEdge,
+                        centredEffectiveRegion.Height,
+                        centredEffectiveRegion.CornerRadius,
+                        centredEffectiveRegion.CornerRadius
                         );
                 }
                 
@@ -338,22 +348,22 @@ namespace RoundedTB
             int newAppListWidth = newTB.AppListRect.Right - newTB.AppListRect.Left;
             int currentAppListWidth = currentTB.AppListRect.Right - currentTB.AppListRect.Left;
 
-            if (Math.Abs(newAppListWidth - currentAppListWidth) > 50 * currentTB.ScaleFactor && newTB.AppListRect.Right >= newTB.TrayRect.Left)
+            if (newTB.AppListRect.Right >= newTB.TrayRect.Left && newTB.TrayRect.Left != 0)
             {
                 return false;
             }
 
-            if (newAppListWidth == newTB.TrayRect.Left)
+            if (newAppListWidth == newTB.TrayRect.Left && newTB.TrayRect.Left != 0)
             {
                 return false;
             }
 
-            if (newAppListWidth <= 40 * currentTB.ScaleFactor)
+            if (newAppListWidth <= 20 * currentTB.ScaleFactor && newAppListWidth != 0)
             {
                 return false;
             }
 
-            if (newAppListWidth >= newTB.TaskbarRect.Right - newTB.TaskbarRect.Left)
+            if (newAppListWidth >= newTB.TaskbarRect.Right - newTB.TaskbarRect.Left && newAppListWidth != 0)
             {
                 return false;
             }

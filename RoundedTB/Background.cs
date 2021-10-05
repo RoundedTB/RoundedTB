@@ -1,11 +1,8 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
-using System.Windows.Threading;
-using Newtonsoft.Json;
 
 namespace RoundedTB
 {
@@ -13,8 +10,6 @@ namespace RoundedTB
     {
         // Just have a reference point for the Dispatcher
         public MainWindow mw;
-        LocalPInvoke.POINT p = new LocalPInvoke.POINT();
-        bool tbShown = true;
 
         public Background()
         {
@@ -60,6 +55,12 @@ namespace RoundedTB
 
                         for (int current = 0; current < taskbars.Count; current++)
                         {
+                            if (taskbars[current].TaskbarHwnd == IntPtr.Zero || taskbars[current].AppListHwnd == IntPtr.Zero)
+                            {
+                                taskbars = Taskbar.GenerateTaskbarInfo();
+                                Debug.WriteLine("Regenerating taskbar info due to a missing handle");
+                                break;
+                            }
                             // Get the latest quick details of this taskbar
                             Types.Taskbar newTaskbar = Taskbar.GetQuickTaskbarRects(taskbars[current].TaskbarHwnd, taskbars[current].TrayHwnd, taskbars[current].AppListHwnd);
 
