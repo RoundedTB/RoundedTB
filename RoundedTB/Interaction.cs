@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -198,6 +199,45 @@ namespace RoundedTB
             Rectangle tbRect = new Rectangle(tbRectP.Left + 3, tbRectP.Top + 3, tbRectP.Right - tbRectP.Left - 3, tbRectP.Bottom - tbRectP.Top - 3);
             Rectangle monitorRect = new Rectangle(monitorRectP.Left, monitorRectP.Top, monitorRectP.Right - monitorRectP.Left, monitorRectP.Bottom - monitorRectP.Top);
             return tbRect.IntersectsWith(monitorRect);
+        }
+
+        public delegate bool CallBack(int hwnd, int lParam);
+
+        public delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
+
+        public static List<IntPtr> GetTopLevelWindows()
+        {
+            List<IntPtr> AllActiveHandles = new List<IntPtr>();
+            GCHandle listHandle = GCHandle.Alloc(AllActiveHandles);
+            try
+            {
+                EnumWindowsProc tlProc = new EnumWindowsProc(EnumWindow);
+                LocalPInvoke.EnumWindows(tlProc, GCHandle.ToIntPtr(listHandle));
+            }
+            finally
+            {
+                if (listHandle.IsAllocated)
+                {
+                    listHandle.Free();
+                }
+            }
+            return AllActiveHandles;
+        }
+
+        private static bool EnumWindow(IntPtr handle, IntPtr pointer)
+        {
+            GCHandle gch = GCHandle.FromIntPtr(pointer);
+            if (!(gch.Target is List<IntPtr> list))
+            {
+                throw new InvalidCastException("GCHandle Target could not be cast as List<IntPtr>");
+            }
+            list.Add(handle);
+            return true;
+        }
+
+        public static bool TaskbarOnMonitorWithMaximisedWindow(IntPtr taskbarHwnd)
+        {
+            return true;
         }
 
         public enum TaskbarPosition

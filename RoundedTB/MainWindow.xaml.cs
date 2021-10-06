@@ -39,9 +39,6 @@ namespace RoundedTB
         public Background bf;
         public Interaction sf;
         private HwndSource source;
-        public bool preview = false; // Controls whether or not to compile a preview build - janky way of doing it but hey
-
-
 
         public MainWindow()
         {
@@ -237,22 +234,6 @@ namespace RoundedTB
                 splitHelpButton.Visibility = Visibility.Hidden;
             }
 
-            if (preview) 
-            {
-                MessageBox.Show("This is an unreleased preview build of RoundedTB!\n\nThings are likely horribly broken." +
-                    "This build is not ready for normal daily use. As such, this message box will appear every time you launch the app," +
-                    "and the startup checkbox has been disabled.", "RoundedTB Dev");
-                StartupCheckBox.IsEnabled = false;
-                StartupCheckBox.Content = "Preview build";
-                try
-                {
-                    System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
-                }
-                catch (Exception) { }
-                Title = "RoundedTB Preview";
-                previewWarningLabel.Visibility = Visibility.Visible;
-                Visibility = Visibility.Visible;
-            }
             if (activeSettings.IsNotFirstLaunch != true)
             {
                 activeSettings.IsNotFirstLaunch = true;
@@ -272,6 +253,17 @@ namespace RoundedTB
             };
 
             //Interaction.SetWorkspace(scrRect);
+
+            List<IntPtr> l = Interaction.GetTopLevelWindows();
+            foreach (var item in l)
+            {
+                if (LocalPInvoke.IsWindowVisible(item))
+                {
+                    Debug.WriteLine(item);
+                }
+            }
+            Debug.WriteLine("-----------------------------");
+
         }
 
         private TypedEventHandler<ThemeManager, object> TrayIconCheck()
@@ -402,7 +394,7 @@ namespace RoundedTB
         // Handles resetting the taskbar
         public void ResetTaskbar(Types.Taskbar tbDeets)
         {
-            LocalPInvoke.SetWindowRgn(tbDeets.TaskbarHwnd, tbDeets.RecoveryHrgn, true);
+            LocalPInvoke.SetWindowRgn(tbDeets.TaskbarHwnd, IntPtr.Zero, true);
             if (activeSettings.CompositionCompat)
             {
                 Interaction.UpdateTranslucentTB(tbDeets.TaskbarHwnd);
@@ -475,10 +467,6 @@ namespace RoundedTB
 
         public void EnableStartup()
         {
-            if (preview)
-            {
-                return;
-            }
             try
             {
                 string shortcutFolder = Environment.GetFolderPath(Environment.SpecialFolder.Startup);

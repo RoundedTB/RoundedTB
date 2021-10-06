@@ -89,6 +89,10 @@ namespace RoundedTB
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool IsWindowVisible(IntPtr hWnd);
 
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool EnumWindows(Interaction.EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
         public const int SPIF_SENDWININICHANGE = 2;
         public const int SPIF_UPDATEINIFILE = 1;
         public const int SPIF_change = SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE;
