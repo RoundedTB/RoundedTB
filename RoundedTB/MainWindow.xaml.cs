@@ -362,6 +362,7 @@ namespace RoundedTB
         protected override void OnClosing(CancelEventArgs e)
         {
             base.OnClosing(e);
+
             if (shouldReallyDieNoReally == false)
             {
                 e.Cancel = true;
@@ -407,6 +408,12 @@ namespace RoundedTB
 
         private void CloseMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            // Close any popups - leave main window for now
+            for (int windowCount = App.Current.Windows.Count - 1; windowCount >= 0; windowCount--)
+            {
+                App.Current.Windows[windowCount].Close();
+            }
+
             shouldReallyDieNoReally = true;
             try
             {
@@ -433,6 +440,11 @@ namespace RoundedTB
             }
             else
             {
+                // Close any popups - leave main window for now
+                for (int windowCount = App.Current.Windows.Count - 1; windowCount >= 0; windowCount--)
+                {
+                    App.Current.Windows[windowCount].Close();
+                }
                 Visibility = Visibility.Hidden;
                 ShowMenuItem.Header = "Show RoundedTB";
             }

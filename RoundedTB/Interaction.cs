@@ -123,9 +123,17 @@ namespace RoundedTB
             }
         }
 
+        // Request that TranslucentTB forefully refesh the taskbar
         public static IntPtr UpdateTranslucentTB(IntPtr taskbarHwnd)
         {
             return LocalPInvoke.SendMessage(LocalPInvoke.FindWindow("TTB_WorkerWindow", "TTB_WorkerWindow"), LocalPInvoke.RegisterWindowMessage("TTB_ForceRefreshTaskbar"), 0, taskbarHwnd);
+        }
+        
+        // Attempt to forcefully refresh the taskbar
+        public static void UpdateLegacyTB(IntPtr taskbarHwnd)
+        {
+            const int WM_DWMCOMPOSITIONCHANGED = 789;
+            LocalPInvoke.SendMessage(taskbarHwnd, WM_DWMCOMPOSITIONCHANGED, 1, IntPtr.Zero);
         }
 
         /// <summary>
