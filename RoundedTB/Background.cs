@@ -20,7 +20,7 @@ namespace RoundedTB
         // Main method for the BackgroundWorker - runs indefinitely
         public void DoWork(object sender, DoWorkEventArgs e)
         {
-            mw.sf.AddLog("in bw");
+            mw.interaction.AddLog("in bw");
             BackgroundWorker worker = sender as BackgroundWorker;
             while (true)
             {
@@ -28,7 +28,7 @@ namespace RoundedTB
                 {
                     if (worker.CancellationPending == true)
                     {
-                        mw.sf.AddLog("cancelling");
+                        mw.interaction.AddLog("cancelling");
                         e.Cancel = true;
                         break;
                     }
@@ -52,7 +52,6 @@ namespace RoundedTB
                             Debug.WriteLine("Regenerating taskbar info");
                         }
 
-
                         for (int current = 0; current < taskbars.Count; current++)
                         {
                             if (taskbars[current].TaskbarHwnd == IntPtr.Zero || taskbars[current].AppListHwnd == IntPtr.Zero)
@@ -64,12 +63,22 @@ namespace RoundedTB
                             // Get the latest quick details of this taskbar
                             Types.Taskbar newTaskbar = Taskbar.GetQuickTaskbarRects(taskbars[current].TaskbarHwnd, taskbars[current].TrayHwnd, taskbars[current].AppListHwnd);
 
-                            
+                            // If the taskbar has a maximised window, reset it so it's "filled"
+                            if (Taskbar.TaskbarShouldBeFilled(taskbars[current].TaskbarHwnd))
+                            {
+                                if (taskbars[current].Ignored == false)
+                                {
+                                    Taskbar.ResetTaskbar(taskbars[current], settings);
+                                    taskbars[current].Ignored = true;
+                                }
+                                continue;
+                            }
                             
                             // If the taskbar's overall rect has changed, update it. If it's simple, just update. If it's dynamic, check it's a valid change, then update it.
-                            if (Taskbar.TaskbarRefreshRequired(taskbars[current], newTaskbar))
+                            if (Taskbar.TaskbarRefreshRequired(taskbars[current], newTaskbar) || taskbars[current].Ignored == true)
                             {
                                 Debug.WriteLine($"Refresh required on taskbar {current}");
+                                taskbars[current].Ignored = false;
                                 if (!settings.IsDynamic)
                                 {
                                     // Add the rect changes to the temporary list of taskbars
@@ -101,8 +110,8 @@ namespace RoundedTB
                 }
                 catch (TypeInitializationException ex)
                 {
-                    mw.sf.AddLog(ex.Message);
-                    mw.sf.AddLog(ex.InnerException.Message);
+                    mw.interaction.AddLog(ex.Message);
+                    mw.interaction.AddLog(ex.InnerException.Message);
                     throw ex;
                 }
             }

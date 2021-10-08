@@ -169,6 +169,15 @@ namespace RoundedTB
             }
         }
 
+        public static void ResetTaskbar(Types.Taskbar taskbar, Types.Settings settings)
+        {
+            LocalPInvoke.SetWindowRgn(taskbar.TaskbarHwnd, IntPtr.Zero, true);
+            if (settings.CompositionCompat)
+            {
+                Interaction.UpdateTranslucentTB(taskbar.TaskbarHwnd);
+            }
+        }
+
         /// <summary>
         /// Creates a dynamic region for a specific taskbar and applies it.
         /// </summary>
@@ -440,6 +449,38 @@ namespace RoundedTB
                     });
                 }
             }
+
+            foreach (var tb in retVal)
+            {
+                TaskbarShouldBeFilled(tb.TaskbarHwnd);
+            }
+            return retVal;
+        }
+
+        public static bool TaskbarShouldBeFilled(IntPtr taskbarHwnd)
+        {
+            bool retVal = false;
+            List<IntPtr> windowList = Interaction.GetTopLevelWindows();
+            foreach (IntPtr windowHwnd in windowList)
+            {
+                if (LocalPInvoke.IsWindowVisible(windowHwnd))
+                {
+                    if (LocalPInvoke.MonitorFromWindow(taskbarHwnd, 2) == LocalPInvoke.MonitorFromWindow(windowHwnd, 2))
+                    {
+                        LocalPInvoke.DwmGetWindowAttribute(windowHwnd, LocalPInvoke.DWMWINDOWATTRIBUTE.Cloaked, out bool isCloaked, 0x4);
+                        if (!isCloaked)
+                        {
+                            LocalPInvoke.WINDOWPLACEMENT lpwndpl = new LocalPInvoke.WINDOWPLACEMENT();
+                            LocalPInvoke.GetWindowPlacement(windowHwnd, ref lpwndpl);
+                            if (lpwndpl.ShowCmd == LocalPInvoke.ShowWindowCommands.ShowMaximized)
+                            {
+                                retVal = true;
+                            }
+                        }
+                    }
+                }
+            }
+
             return retVal;
         }
     }

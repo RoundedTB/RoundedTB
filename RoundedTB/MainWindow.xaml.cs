@@ -26,7 +26,6 @@ namespace RoundedTB
         public bool isWindows11;
         public List<Types.Taskbar> taskbarDetails = new List<Types.Taskbar>();
         public bool shouldReallyDieNoReally = false;
-        //public string localFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         public string configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "rtb.json");
         public string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "rtb.log");
         public Types.Settings activeSettings = new Types.Settings();
@@ -36,8 +35,8 @@ namespace RoundedTB
         public int numberToForceRefresh = 0;
         public bool isCentred = false;
         public bool isAlreadyRunning = false;
-        public Background bf;
-        public Interaction sf;
+        public Background background;
+        public Interaction interaction;
         private HwndSource source;
 
         public MainWindow()
@@ -59,8 +58,8 @@ namespace RoundedTB
             }
 
             // Initialise functions
-            bf = new Background();
-            sf = new Interaction();
+            background = new Background();
+            interaction = new Interaction();
             
             // Check if RoundedTB is already running, and if it is, do nothing.
             if (Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Length > 1)
@@ -77,7 +76,6 @@ namespace RoundedTB
             {
                 #pragma warning disable CS4014
                 StartupInit(true);
-                //localFolder = Windows.Storage.ApplicationData.Current.RoamingFolder.Path;
                 configPath = Path.Combine(Windows.Storage.ApplicationData.Current.RoamingFolder.Path, "rtb.json");
                 logPath = Path.Combine(Windows.Storage.ApplicationData.Current.RoamingFolder.Path, "rtb.log");
             }
@@ -88,19 +86,19 @@ namespace RoundedTB
             }
             bw.WorkerSupportsCancellation = true;
             bw.WorkerReportsProgress = true;
-            bw.DoWork +=bf.DoWork;
+            bw.DoWork +=background.DoWork;
 
             // Load settings into memory/UI
-            sf.FileSystem();
+            interaction.FileSystem();
             if (!IsRunningAsUWP())
             {
-                sf.AddLog($"RoundedTB started!");
+                interaction.AddLog($"RoundedTB started!");
             }
             else
             {
-                sf.AddLog($"RoundedTB started in UWP mode!");
+                interaction.AddLog($"RoundedTB started in UWP mode!");
             }
-            activeSettings = sf.ReadJSON();
+            activeSettings = interaction.ReadJSON();
             if (isWindows11)
             {
                 activeSettings.IsWindows11 = true;
@@ -148,8 +146,8 @@ namespace RoundedTB
                     };
                 }
             }
-            sf.AddLog($"Settings loaded:");
-            sf.AddLog(
+            interaction.AddLog($"Settings loaded:");
+            interaction.AddLog(
                 $"\nCornerRadius: {activeSettings.CornerRadius}\n" +
                 $"MarginBasic: {activeSettings.MarginBasic}\n" +
                 $"MarginBottom: {activeSettings.MarginBottom}\n" +
@@ -204,13 +202,13 @@ namespace RoundedTB
                         {
                             isCentred = false;
                         }
-                        sf.AddLog($"Taskbar centred? {isCentred}");
+                        interaction.AddLog($"Taskbar centred? {isCentred}");
                     }
                 }
             }
             catch (Exception aaaa)
             {
-                sf.AddLog(aaaa.Message);
+                interaction.AddLog(aaaa.Message);
             }
 
             dynamicCheckBox.IsChecked = activeSettings.IsDynamic;
@@ -254,15 +252,7 @@ namespace RoundedTB
 
             //Interaction.SetWorkspace(scrRect);
 
-            List<IntPtr> l = Interaction.GetTopLevelWindows();
-            foreach (var item in l)
-            {
-                if (LocalPInvoke.IsWindowVisible(item))
-                {
-                    Debug.WriteLine(item);
-                }
-            }
-            Debug.WriteLine("-----------------------------");
+            
 
         }
 
@@ -336,7 +326,7 @@ namespace RoundedTB
             }
             catch (InvalidOperationException aaaa)
             {
-                sf.AddLog(aaaa.Message);
+                interaction.AddLog(aaaa.Message);
             }
 
 
@@ -355,7 +345,7 @@ namespace RoundedTB
                 bw.RunWorkerAsync((mt, ml, mb, mr, roundFactor));
             }
 
-            sf.WriteJSON();
+            interaction.WriteJSON();
 
         }
 
@@ -377,33 +367,22 @@ namespace RoundedTB
                 }
                 catch (Exception aaaa)
                 {
-                    sf.AddLog(aaaa.Message);
+                    interaction.AddLog(aaaa.Message);
                 }
                 while (bw.IsBusy == true)
                 {
                     System.Windows.Forms.Application.DoEvents();
                     System.Threading.Thread.Sleep(100);
                 }
-                sf.AddLog("Exiting RoundedTB.");
+                interaction.AddLog("Exiting RoundedTB.");
             }
             if (!isAlreadyRunning)
             {
-                sf.WriteJSON();
+                interaction.WriteJSON();
             }
         }
 
         // Handles resetting the taskbar
-        public void ResetTaskbar(Types.Taskbar tbDeets)
-        {
-            LocalPInvoke.SetWindowRgn(tbDeets.TaskbarHwnd, IntPtr.Zero, true);
-            if (activeSettings.CompositionCompat)
-            {
-                Interaction.UpdateTranslucentTB(tbDeets.TaskbarHwnd);
-            }
-        }
-
-        
-
 
 
         private void CloseMenuItem_Click(object sender, RoutedEventArgs e)
@@ -419,12 +398,12 @@ namespace RoundedTB
             {
                 foreach (var tbDeets in taskbarDetails)
                 {
-                    ResetTaskbar(tbDeets);
+                    Taskbar.ResetTaskbar(tbDeets, activeSettings);
                 }
             }
             catch (InvalidOperationException aaaa)
             {
-                sf.AddLog($"Taskbar structure changed on exit:\n{aaaa.Message}");
+                interaction.AddLog($"Taskbar structure changed on exit:\n{aaaa.Message}");
             }
 
 
@@ -474,8 +453,6 @@ namespace RoundedTB
             }
             
         }
-
-
 
         public void EnableStartup()
         {
@@ -719,7 +696,7 @@ namespace RoundedTB
 
             IntPtr handle = new WindowInteropHelper(this).Handle;
             source = HwndSource.FromHwnd(handle);
-            source.AddHook(sf.HwndHook);
+            source.AddHook(interaction.HwndHook);
             //bool wtf = LocalPInvoke.RegisterHotKey(handle, 9000, (int)Types.KeyModifier.WinKey, System.Windows.Forms.Keys.J.GetHashCode());
             bool wtf = LocalPInvoke.RegisterHotKey(handle, 9000, 0x8, 0x71);
             Debug.WriteLine("KEY: " + wtf);
