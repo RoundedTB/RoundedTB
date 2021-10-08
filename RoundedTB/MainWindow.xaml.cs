@@ -42,7 +42,8 @@ namespace RoundedTB
         public MainWindow()
         {
             InitializeComponent();
-            
+
+
             // Check OS build, as behaviours rather-annoyingly differ between Windows 11 and Windows 10
             RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
             var buildNumber = registryKey.GetValue("CurrentBuild").ToString();
@@ -242,13 +243,13 @@ namespace RoundedTB
                 ShowMenuItem.Header = "Hide RoundedTB";
             }
 
-            LocalPInvoke.RECT scrRect = new LocalPInvoke.RECT()
-            {
-                Left = 0,
-                Top = 0,
-                Right = 3839,
-                Bottom = 2159
-            };
+            //LocalPInvoke.RECT scrRect = new LocalPInvoke.RECT()
+            //{
+            //    Left = 0,
+            //    Top = 0,
+            //    Right = 3839,
+            //    Bottom = 2159
+            //};
 
             //Interaction.SetWorkspace(scrRect);
 
@@ -637,6 +638,7 @@ namespace RoundedTB
         {
             centredCheckBox.IsEnabled = true;
             showTrayCheckBox.IsEnabled = true;
+            showTrayCheckBox.IsChecked = true;
             mLeftLabel.Content = "Outer Margin";
             mRightLabel.Content = "Inner Margin";
 
