@@ -63,9 +63,14 @@ namespace RoundedTB
                             // Get the latest quick details of this taskbar
                             Types.Taskbar newTaskbar = Taskbar.GetQuickTaskbarRects(taskbars[current].TaskbarHwnd, taskbars[current].TrayHwnd, taskbars[current].AppListHwnd);
 
+                            LocalPInvoke.RECT pRect = taskbars[current].TrayRect;
+
+
+
                             // If the taskbar has a maximised window, reset it so it's "filled"
                             if (Taskbar.TaskbarShouldBeFilled(taskbars[current].TaskbarHwnd))
                             {
+
                                 if (taskbars[current].Ignored == false)
                                 {
                                     Taskbar.ResetTaskbar(taskbars[current], settings);
@@ -73,7 +78,20 @@ namespace RoundedTB
                                 }
                                 continue;
                             }
-                            
+
+                            LocalPInvoke.GetCursorPos(out LocalPInvoke.POINT msPt);
+                            bool b = LocalPInvoke.PtInRect(ref pRect, msPt);
+                            if (b)
+                            {
+                                settings.ShowTray = true;
+                                taskbars[current].Ignored = true;
+                            }
+                            else if (!b)
+                            {
+                                settings.ShowTray = false;
+                                taskbars[current].Ignored = true;
+                            }
+
                             // If the taskbar's overall rect has changed, update it. If it's simple, just update. If it's dynamic, check it's a valid change, then update it.
                             if (Taskbar.TaskbarRefreshRequired(taskbars[current], newTaskbar) || taskbars[current].Ignored == true)
                             {

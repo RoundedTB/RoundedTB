@@ -460,6 +460,22 @@ namespace RoundedTB
         public static bool TaskbarShouldBeFilled(IntPtr taskbarHwnd)
         {
             bool retVal = false;
+
+            // Attempt to check for if alt+tab/task switcher is open
+            IntPtr topHwnd = LocalPInvoke.WindowFromPoint(new LocalPInvoke.POINT() { x = 0, y = 0 });
+            StringBuilder windowClass = new StringBuilder(1024);
+            StringBuilder windowTitle = new StringBuilder(1024);
+            try
+            {
+                LocalPInvoke.GetClassName(topHwnd, windowClass, 1024);
+
+                if (windowClass.ToString() == "XamlExplorerHostIslandWindow")
+                {
+                    return true;
+                }
+            }
+            catch (Exception) { }
+
             List<IntPtr> windowList = Interaction.GetTopLevelWindows();
             foreach (IntPtr windowHwnd in windowList)
             {

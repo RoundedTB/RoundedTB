@@ -50,6 +50,20 @@ namespace RoundedTB
             public int Height { get; set; }
         }
 
+        public enum TrayMode
+        {
+            Show = 0,
+            Hide = 1,
+            AutoHide = 2,
+        }
+
+        public enum CompositionMode
+        {
+            None = 0,
+            TranslucentTB = 1,
+            Legacy = 2,
+        }
+
         public enum KeyModifier
         {
             None = 0,
