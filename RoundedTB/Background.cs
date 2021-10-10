@@ -10,6 +10,7 @@ namespace RoundedTB
     {
         // Just have a reference point for the Dispatcher
         public MainWindow mw;
+        bool redrawOverride = false;
 
         public Background()
         {
@@ -79,25 +80,29 @@ namespace RoundedTB
                                 continue;
                             }
 
-                            LocalPInvoke.GetCursorPos(out LocalPInvoke.POINT msPt);
-                            bool b = LocalPInvoke.PtInRect(ref pRect, msPt);
-                            if (b)
-                            {
-                                settings.ShowTray = true;
-                                taskbars[current].Ignored = true;
-                            }
-                            else if (!b)
-                            {
-                                settings.ShowTray = false;
-                                taskbars[current].Ignored = true;
-                            }
+                            // Unused for now, showhide tray on hover
+
+                            //LocalPInvoke.GetCursorPos(out LocalPInvoke.POINT msPt);
+                            //bool b = LocalPInvoke.PtInRect(ref pRect, msPt);
+                            //if (b)
+                            //{
+                            //    settings.ShowTray = true;
+                            //    taskbars[current].Ignored = true;
+                            //}
+                            //else if (!b)
+                            //{
+                            //    settings.ShowTray = false;
+                            //    taskbars[current].Ignored = true;
+                            //}
 
                             // If the taskbar's overall rect has changed, update it. If it's simple, just update. If it's dynamic, check it's a valid change, then update it.
-                            if (Taskbar.TaskbarRefreshRequired(taskbars[current], newTaskbar) || taskbars[current].Ignored == true)
+                            if (Taskbar.TaskbarRefreshRequired(taskbars[current], newTaskbar) || taskbars[current].Ignored || redrawOverride)
                             {
                                 Debug.WriteLine($"Refresh required on taskbar {current}");
                                 taskbars[current].Ignored = false;
-                                if (!settings.IsDynamic)
+                                int isFullTest = newTaskbar.TrayRect.Left - newTaskbar.AppListRect.Right;
+                                Debug.WriteLine($"Taskbar: {current} - AppList ends: {newTaskbar.AppListRect.Right} - Tray starts: {newTaskbar.TrayRect.Left} - Total gap: {isFullTest}");
+                                if (!settings.IsDynamic || isFullTest == taskbars[current].ScaleFactor * 13)
                                 {
                                     // Add the rect changes to the temporary list of taskbars
                                     taskbars[current].TaskbarRect = newTaskbar.TaskbarRect;

@@ -410,7 +410,6 @@ namespace RoundedTB
                 RecoveryHrgn = hrgnMain,
                 ScaleFactor = Convert.ToDouble(LocalPInvoke.GetDpiForWindow(hwndMain)) / 96.00,
                 TaskbarRes = $"{rectMain.Right - rectMain.Left} x {rectMain.Bottom - rectMain.Top}",
-                FailCount = 0,
                 Ignored = false
             });
 
@@ -444,7 +443,6 @@ namespace RoundedTB
                         RecoveryHrgn = hrgnCurrent,
                         ScaleFactor = Convert.ToDouble(LocalPInvoke.GetDpiForWindow(hwndCurrent)) / 96.00,
                         TaskbarRes = $"{rectCurrent.Right - rectCurrent.Left} x {rectCurrent.Bottom - rectCurrent.Top}",
-                        FailCount = 0,
                         Ignored = false
                     });
                 }
@@ -461,10 +459,9 @@ namespace RoundedTB
         {
             bool retVal = false;
 
-            // Attempt to check for if alt+tab/task switcher is open
+            // Attempt to check for if alt+tab/task switcher is open (Windows 11 only)
             IntPtr topHwnd = LocalPInvoke.WindowFromPoint(new LocalPInvoke.POINT() { x = 0, y = 0 });
             StringBuilder windowClass = new StringBuilder(1024);
-            StringBuilder windowTitle = new StringBuilder(1024);
             try
             {
                 LocalPInvoke.GetClassName(topHwnd, windowClass, 1024);

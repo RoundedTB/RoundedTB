@@ -313,15 +313,16 @@ namespace RoundedTB
 
             try
             {
-                foreach (Types.Taskbar tbDeets in taskbarDetails)
+                foreach (Types.Taskbar taskbar in taskbarDetails)
                 {
-                    if (!activeSettings.IsDynamic)
+                    int isFullTest = taskbar.TrayRect.Left - taskbar.AppListRect.Right;
+                    if (!activeSettings.IsDynamic || isFullTest == taskbar.ScaleFactor * 13)
                     {
-                        Taskbar.UpdateSimpleTaskbar(tbDeets, activeSettings);
+                        Taskbar.UpdateSimpleTaskbar(taskbar, activeSettings);
                     }
                     else
                     {
-                        Taskbar.UpdateDynamicTaskbar(tbDeets, activeSettings);
+                        Taskbar.UpdateDynamicTaskbar(taskbar, activeSettings);
                     }
                 }
             }

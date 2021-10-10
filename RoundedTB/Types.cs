@@ -19,10 +19,11 @@ namespace RoundedTB
             public IntPtr RecoveryHrgn { get; set; } // Pointer to the recovery region for any given taskbar. Defaults to IntPtr.Zero
             public double ScaleFactor { get; set; } // The scale factor of the monitor the taskbar is on
             public string TaskbarRes { get; set; } // Resolution of the taskbar as text
-            public int FailCount { get; set; } // Number of times the taskbar has had an "erroneous" size at applytime
             public bool Ignored { get; set; } // Specifies if the taskbar should be ignored when applying changes
+            public bool TrayHidden { get; set; } // Specifies if the tray is currently hidden by RTB on this taskbar
             public int AppListWidth { get; set; } // Specifies the width of the app list
             public TaskbarEffect TaskbarEffectWindow { get; set; }
+            
         }
 
         public class Settings
