@@ -59,7 +59,7 @@ namespace RoundedTB
         /// <returns>
         /// a bool indicating if the taskbar's, applist's, and tray's rects rects have changed.
         /// </returns>
-        public static bool TaskbarRefreshRequired(Types.Taskbar currentTB, Types.Taskbar newTB)
+        public static bool TaskbarRefreshRequired(Types.Taskbar currentTB, Types.Taskbar newTB, bool isDynamic)
         {
             // REMINDER: newTB will only have rect & hwnd info. Everything else will be null.
 
@@ -93,13 +93,17 @@ namespace RoundedTB
                 trayRectChanged = false;
             }
 
-            if (taskbarRectChanged == false && appListRectChanged == false && trayRectChanged == false)
+            if (isDynamic && (taskbarRectChanged || appListRectChanged || trayRectChanged))
             {
-                return false;
+                return true;
+            }
+            else if (!isDynamic && taskbarRectChanged)
+            {
+                return true;
             }
             else
             {
-                return true;
+                return false;
             }
         }
 

@@ -96,7 +96,7 @@ namespace RoundedTB
                             //}
 
                             // If the taskbar's overall rect has changed, update it. If it's simple, just update. If it's dynamic, check it's a valid change, then update it.
-                            if (Taskbar.TaskbarRefreshRequired(taskbars[current], newTaskbar) || taskbars[current].Ignored || redrawOverride)
+                            if (Taskbar.TaskbarRefreshRequired(taskbars[current], newTaskbar, settings.IsDynamic) || taskbars[current].Ignored || redrawOverride)
                             {
                                 Debug.WriteLine($"Refresh required on taskbar {current}");
                                 taskbars[current].Ignored = false;
