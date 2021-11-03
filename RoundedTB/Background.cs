@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace RoundedTB
 {
@@ -11,6 +13,7 @@ namespace RoundedTB
         // Just have a reference point for the Dispatcher
         public MainWindow mw;
         bool redrawOverride = false;
+        int infrequentCount = 0;
 
         public Background()
         {
@@ -37,6 +40,45 @@ namespace RoundedTB
                     // Primary loop for the running process
                     else
                     {
+                        // Section for running less important things without requiring an additional thread
+                        infrequentCount++;
+                        if (infrequentCount == 10)
+                        {
+                            // Check to see if settings need to be shown
+                            List<IntPtr> windowList = Interaction.GetTopLevelWindows();
+                            foreach (IntPtr hwnd in windowList)
+                            {
+                                StringBuilder windowClass = new StringBuilder(1024);
+                                StringBuilder windowTitle = new StringBuilder(1024);
+                                try
+                                {
+                                    LocalPInvoke.GetClassName(hwnd, windowClass, 1024);
+                                    LocalPInvoke.GetWindowText(hwnd, windowTitle, 1024);
+
+                                    if (windowClass.ToString().Contains("HwndWrapper[RoundedTB.exe") && windowTitle.ToString() == "RoundedTB_SettingsRequest")
+                                    {
+                                        mw.Dispatcher.Invoke(() =>
+                                        {
+                                            if (mw.Visibility != Visibility.Visible)
+                                            {
+                                                mw.ShowMenuItem_Click(null, null);
+                                            }
+                                        });
+                                        LocalPInvoke.SetWindowText(hwnd, "RoundedTB");
+                                    }
+                                }
+                                catch (Exception) { }
+                            }
+
+                            // Update tray icon
+                            mw.Dispatcher.Invoke(() =>
+                            {
+                                mw.TrayIconCheck();
+                            });
+
+                            infrequentCount = 0;
+                        }
+
                         // Check if the taskbar is centred, and if it is, directly update the settings; using an interim bool to avoid delaying because I'm lazy
                         bool isCentred = Taskbar.CheckIfCentred();
                         mw.activeSettings.IsCentred = isCentred;
@@ -69,9 +111,8 @@ namespace RoundedTB
 
 
                             // If the taskbar has a maximised window, reset it so it's "filled"
-                            if (Taskbar.TaskbarShouldBeFilled(taskbars[current].TaskbarHwnd))
+                            if (Taskbar.TaskbarShouldBeFilled(taskbars[current].TaskbarHwnd, settings))
                             {
-
                                 if (taskbars[current].Ignored == false)
                                 {
                                     Taskbar.ResetTaskbar(taskbars[current], settings);

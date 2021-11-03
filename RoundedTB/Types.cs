@@ -40,6 +40,8 @@ namespace RoundedTB
             public bool ShowTray { get; set; }
             public bool CompositionCompat { get; set; }
             public bool IsNotFirstLaunch { get; set; }
+            public bool FillOnMaximise { get; set; }
+            public bool FillOnTaskSwitch {  get; set; }
         }
 
         public class EffectiveRegion

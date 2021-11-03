@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using System.Diagnostics;
 using Microsoft.Win32;
+using System.Text;
 
 namespace RoundedTB
 {
@@ -29,7 +30,7 @@ namespace RoundedTB
         public string configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "rtb.json");
         public string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "rtb.log");
         public Types.Settings activeSettings = new Types.Settings();
-        public BackgroundWorker bw = new BackgroundWorker();
+        public BackgroundWorker taskbarThread = new BackgroundWorker();
         public IntPtr hwndDesktopButton = IntPtr.Zero;
         public int lastDynDistance = 0;
         public int numberToForceRefresh = 0;
@@ -56,18 +57,37 @@ namespace RoundedTB
                 isWindows11 = false;
                 activeSettings.IsWindows11 = false;
                 dynamicCheckBox.Content = "Split mode";
+                fillAltTabCheckBox.Content = "[Unavailable]";
             }
 
             // Initialise functions
             background = new Background();
             interaction = new Interaction();
-            
+
             // Check if RoundedTB is already running, and if it is, do nothing.
-            if (Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Length > 1)
+            Process[] matchingProcesses = Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName);
+            
+            if (matchingProcesses.Length > 1)
             {
+                List<IntPtr> windowList = Interaction.GetTopLevelWindows();
+                foreach (IntPtr hwnd in windowList)
+                {
+                    StringBuilder windowClass = new StringBuilder(1024);
+                    StringBuilder windowTitle = new StringBuilder(1024);
+                    try
+                    {
+                        LocalPInvoke.GetClassName(hwnd, windowClass, 1024);
+                        LocalPInvoke.GetWindowText(hwnd, windowTitle, 1024);
+
+                        if (windowClass.ToString().Contains("HwndWrapper[RoundedTB.exe") && windowTitle.ToString() == "RoundedTB")
+                        {
+                            LocalPInvoke.SetWindowText(hwnd, "RoundedTB_SettingsRequest");
+                        }
+                    }
+                    catch (Exception) { }
+                }
                 shouldReallyDieNoReally = true;
                 isAlreadyRunning = true;
-                MessageBox.Show("Only one instance of RoundedTB can be run at once.", "RoundedTB", MessageBoxButton.OK);
                 Close();
                 return;
             }
@@ -85,9 +105,9 @@ namespace RoundedTB
                 StartupCheckBox.IsChecked = true;
                 ShowMenuItem.Header = "Show RoundedTB";
             }
-            bw.WorkerSupportsCancellation = true;
-            bw.WorkerReportsProgress = true;
-            bw.DoWork +=background.DoWork;
+            taskbarThread.WorkerSupportsCancellation = true;
+            taskbarThread.WorkerReportsProgress = true;
+            taskbarThread.DoWork +=background.DoWork;
 
             // Load settings into memory/UI
             interaction.FileSystem();
@@ -100,6 +120,7 @@ namespace RoundedTB
                 interaction.AddLog($"RoundedTB started in UWP mode!");
             }
             activeSettings = interaction.ReadJSON();
+
             if (isWindows11)
             {
                 activeSettings.IsWindows11 = true;
@@ -125,7 +146,9 @@ namespace RoundedTB
                         IsWindows11 = true,
                         ShowTray = false,
                         CompositionCompat = false,
-                        IsNotFirstLaunch = false
+                        IsNotFirstLaunch = false,
+                        FillOnMaximise = true,
+                        FillOnTaskSwitch = true
                     };
                 }
                 else
@@ -143,7 +166,9 @@ namespace RoundedTB
                         IsWindows11 = false,
                         ShowTray = false,
                         CompositionCompat = false,
-                        IsNotFirstLaunch = false
+                        IsNotFirstLaunch = false,
+                        FillOnMaximise = true,
+                        FillOnTaskSwitch = false
                     };
                 }
             }
@@ -159,7 +184,9 @@ namespace RoundedTB
                 $"IsCentred: {activeSettings.IsCentred}\n" +
                 $"ShowTray: {activeSettings.ShowTray}\n" +
                 $"CompositionCompat: {activeSettings.CompositionCompat}\n" +
-                $"IsNotFirstLaunch: {activeSettings.IsNotFirstLaunch}\n"
+                $"IsNotFirstLaunch: {activeSettings.IsNotFirstLaunch}\n" +
+                $"FillOnMaximise: {activeSettings.FillOnMaximise}\n" +
+                $"FillOnTaskSwitch: {activeSettings.FillOnTaskSwitch}\n"
                 );
             if (activeSettings.MarginBasic == -384)
             {
@@ -212,9 +239,15 @@ namespace RoundedTB
                 interaction.AddLog(aaaa.Message);
             }
 
+            if (!isWindows11)
+            {
+                activeSettings.IsCentred = false;
+            }
+
             dynamicCheckBox.IsChecked = activeSettings.IsDynamic;
             centredCheckBox.IsChecked = activeSettings.IsCentred;
             showTrayCheckBox.IsChecked = activeSettings.ShowTray;
+            fillMaximisedCheckBox.IsChecked = activeSettings.FillOnMaximise;
             compositionFixCheckBox.IsChecked = activeSettings.CompositionCompat;
             cornerRadiusInput.Text = activeSettings.CornerRadius.ToString();
             taskbarDetails = Taskbar.GenerateTaskbarInfo();
@@ -222,6 +255,14 @@ namespace RoundedTB
             {
                 ApplyButton_Click(null, null);
             }
+
+            if (!activeSettings.FillOnMaximise)
+            {
+                activeSettings.FillOnTaskSwitch = false;
+                fillAltTabCheckBox.IsEnabled = false;
+            }
+            fillAltTabCheckBox.IsChecked = activeSettings.FillOnTaskSwitch;
+
 
             //Showhide the split mode help button
             if (!isWindows11 && activeSettings.IsDynamic)
@@ -257,7 +298,7 @@ namespace RoundedTB
 
         }
 
-        private TypedEventHandler<ThemeManager, object> TrayIconCheck()
+        public TypedEventHandler<ThemeManager, object> TrayIconCheck()
         {
             Uri resLight = new Uri("pack://application:,,,/res/traylight.ico");
             Uri resDark = new Uri("pack://application:,,,/res/traydark.ico");
@@ -310,6 +351,8 @@ namespace RoundedTB
             activeSettings.IsCentred = Taskbar.CheckIfCentred();
             activeSettings.ShowTray = (bool)showTrayCheckBox.IsChecked;
             activeSettings.CompositionCompat = (bool)compositionFixCheckBox.IsChecked;
+            activeSettings.FillOnMaximise = (bool)fillMaximisedCheckBox.IsChecked;
+            activeSettings.FillOnTaskSwitch = (bool)fillAltTabCheckBox.IsChecked;
 
             try
             {
@@ -332,22 +375,23 @@ namespace RoundedTB
             }
 
 
-            if (bw.IsBusy == false)
+            if (taskbarThread.IsBusy == false)
             {
-                bw.RunWorkerAsync((mt, ml, mb, mr, roundFactor));
+                taskbarThread.RunWorkerAsync((mt, ml, mb, mr, roundFactor));
             }
             else
             {
-                bw.CancelAsync();
-                while (bw.IsBusy == true)
+                taskbarThread.CancelAsync();
+                while (taskbarThread.IsBusy == true)
                 {
                     System.Windows.Forms.Application.DoEvents();
                     System.Threading.Thread.Sleep(100);
                 }
-                bw.RunWorkerAsync((mt, ml, mb, mr, roundFactor));
+                taskbarThread.RunWorkerAsync((mt, ml, mb, mr, roundFactor));
             }
 
             interaction.WriteJSON();
+            TrayIconCheck();
 
         }
 
@@ -365,13 +409,13 @@ namespace RoundedTB
             {
                 try
                 {
-                    bw.CancelAsync();
+                    taskbarThread.CancelAsync();
                 }
                 catch (Exception aaaa)
                 {
                     interaction.AddLog(aaaa.Message);
                 }
-                while (bw.IsBusy == true)
+                while (taskbarThread.IsBusy == true)
                 {
                     System.Windows.Forms.Application.DoEvents();
                     System.Threading.Thread.Sleep(100);
@@ -412,7 +456,7 @@ namespace RoundedTB
             Close();
         }
 
-        private void ShowMenuItem_Click(object sender, RoutedEventArgs e)
+        public void ShowMenuItem_Click(object sender, RoutedEventArgs e)
         {
             if (IsVisible == false)
             {
@@ -763,6 +807,21 @@ namespace RoundedTB
         {
             AboutWindow aw = new AboutWindow();
             aw.ShowDialog();
+        }
+
+        private void fillMaximisedCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            if (isWindows11)
+            {
+                fillAltTabCheckBox.IsEnabled = true;
+            }
+        }
+
+        private void fillMaximisedCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            fillAltTabCheckBox.IsEnabled = false;
+            fillAltTabCheckBox.IsChecked = false;
+
         }
     }
 }

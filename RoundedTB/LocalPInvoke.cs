@@ -108,9 +108,19 @@ namespace RoundedTB
         public static extern IntPtr WindowFromPoint(POINT p);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+        public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
+        [DllImport("user32.dll")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
 
+        [DllImport("user32.dll")]
+        public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        public static extern bool IsIconic(IntPtr hWnd);
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern bool SetWindowText(IntPtr hwnd, string lpString);
 
         public enum DWMWINDOWATTRIBUTE : uint
         {
@@ -157,6 +167,12 @@ namespace RoundedTB
         public const int SPI_GETWORKAREA = 48;
         public const int SW_HIDE = 0;
         public const int SW_SHOW = 1;
+        public const int SW_SHOWNORMAL = 1;
+        public const int SW_SHOWMINIMIZED = 2;
+        public const int SW_SHOWMAXIMIZED = 3;
+        public const int SW_SHOWNOACTIVATE = 4;
+        public const int SW_RESTORE = 9;
+        public const int SW_SHOWDEFAULT = 10;
 
         public struct POINT
         {

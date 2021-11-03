@@ -452,46 +452,49 @@ namespace RoundedTB
                 }
             }
 
-            foreach (var tb in retVal)
-            {
-                TaskbarShouldBeFilled(tb.TaskbarHwnd);
-            }
+            //foreach (var tb in retVal)
+            //{
+            //    TaskbarShouldBeFilled(tb.TaskbarHwnd);
+            //}
             return retVal;
         }
 
-        public static bool TaskbarShouldBeFilled(IntPtr taskbarHwnd)
+        public static bool TaskbarShouldBeFilled(IntPtr taskbarHwnd, Types.Settings settings)
         {
             bool retVal = false;
 
-            // Attempt to check for if alt+tab/task switcher is open (Windows 11 only)
-            IntPtr topHwnd = LocalPInvoke.WindowFromPoint(new LocalPInvoke.POINT() { x = 0, y = 0 });
-            StringBuilder windowClass = new StringBuilder(1024);
-            try
+            if (settings.FillOnMaximise)
             {
-                LocalPInvoke.GetClassName(topHwnd, windowClass, 1024);
-
-                if (windowClass.ToString() == "XamlExplorerHostIslandWindow")
+                // Attempt to check for if alt+tab/task switcher is open (Windows 11 only)
+                IntPtr topHwnd = LocalPInvoke.WindowFromPoint(new LocalPInvoke.POINT() { x = 0, y = 0 });
+                StringBuilder windowClass = new StringBuilder(1024);
+                try
                 {
-                    return true;
-                }
-            }
-            catch (Exception) { }
+                    LocalPInvoke.GetClassName(topHwnd, windowClass, 1024);
 
-            List<IntPtr> windowList = Interaction.GetTopLevelWindows();
-            foreach (IntPtr windowHwnd in windowList)
-            {
-                if (LocalPInvoke.IsWindowVisible(windowHwnd))
-                {
-                    if (LocalPInvoke.MonitorFromWindow(taskbarHwnd, 2) == LocalPInvoke.MonitorFromWindow(windowHwnd, 2))
+                    if (windowClass.ToString() == "XamlExplorerHostIslandWindow" && settings.FillOnTaskSwitch)
                     {
-                        LocalPInvoke.DwmGetWindowAttribute(windowHwnd, LocalPInvoke.DWMWINDOWATTRIBUTE.Cloaked, out bool isCloaked, 0x4);
-                        if (!isCloaked)
+                        return true;
+                    }
+                }
+                catch (Exception) { }
+
+                List<IntPtr> windowList = Interaction.GetTopLevelWindows();
+                foreach (IntPtr windowHwnd in windowList)
+                {
+                    if (LocalPInvoke.IsWindowVisible(windowHwnd))
+                    {
+                        if (LocalPInvoke.MonitorFromWindow(taskbarHwnd, 2) == LocalPInvoke.MonitorFromWindow(windowHwnd, 2))
                         {
-                            LocalPInvoke.WINDOWPLACEMENT lpwndpl = new LocalPInvoke.WINDOWPLACEMENT();
-                            LocalPInvoke.GetWindowPlacement(windowHwnd, ref lpwndpl);
-                            if (lpwndpl.ShowCmd == LocalPInvoke.ShowWindowCommands.ShowMaximized)
+                            LocalPInvoke.DwmGetWindowAttribute(windowHwnd, LocalPInvoke.DWMWINDOWATTRIBUTE.Cloaked, out bool isCloaked, 0x4);
+                            if (!isCloaked)
                             {
-                                retVal = true;
+                                LocalPInvoke.WINDOWPLACEMENT lpwndpl = new LocalPInvoke.WINDOWPLACEMENT();
+                                LocalPInvoke.GetWindowPlacement(windowHwnd, ref lpwndpl);
+                                if (lpwndpl.ShowCmd == LocalPInvoke.ShowWindowCommands.ShowMaximized)
+                                {
+                                    retVal = true;
+                                }
                             }
                         }
                     }
