@@ -24,7 +24,7 @@
                 <Expander x:Name="expander0" HorizontalAlignment="Center" Header="What's new" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
                     <Grid>
                         <TextBlock Margin="0,5,0,0" x:Name="bodyBlock0" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="23">
-                    • Who knows? This is a Canary build. Some people say that if you check back here every now and then, you can find secret messages here.!
+                    • Who knows? This is a Canary build. Some people say that if you check back here every now and then, you can find secret messages here!
                     <LineBreak/>
                         </TextBlock>
                     </Grid>

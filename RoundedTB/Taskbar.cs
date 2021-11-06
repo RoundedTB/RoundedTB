@@ -317,7 +317,7 @@ namespace RoundedTB
 
             if (currentTaskbars[0] != mainTaskbarHandle)
             {
-                return false;
+                return true;
             }
 
             while (otherTaskbarsExist)
