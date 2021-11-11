@@ -248,6 +248,7 @@ namespace RoundedTB
             centredCheckBox.IsChecked = activeSettings.IsCentred;
             showTrayCheckBox.IsChecked = activeSettings.ShowTray;
             fillMaximisedCheckBox.IsChecked = activeSettings.FillOnMaximise;
+            fillAltTabCheckBox.IsChecked = activeSettings.FillOnTaskSwitch;
             compositionFixCheckBox.IsChecked = activeSettings.CompositionCompat;
             cornerRadiusInput.Text = activeSettings.CornerRadius.ToString();
             taskbarDetails = Taskbar.GenerateTaskbarInfo();
@@ -427,9 +428,6 @@ namespace RoundedTB
                 interaction.WriteJSON();
             }
         }
-
-        // Handles resetting the taskbar
-
 
         private void CloseMenuItem_Click(object sender, RoutedEventArgs e)
         {
@@ -628,10 +626,6 @@ namespace RoundedTB
             }
 
         }
-
-        
-
-        
 
         private void DebugMenuItem_Click(object sender, RoutedEventArgs e)
         {

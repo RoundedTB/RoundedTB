@@ -10,6 +10,8 @@ using System.Windows;
 using System.Windows.Threading;
 using Newtonsoft.Json;
 
+
+
 namespace RoundedTB
 {
     class Taskbar
@@ -69,9 +71,9 @@ namespace RoundedTB
             bool trayRectChanged = true;
 
             if (
-                currentTB.TaskbarRect.Left == newTB.TaskbarRect.Left && 
-                currentTB.TaskbarRect.Top == newTB.TaskbarRect.Top && 
-                currentTB.TaskbarRect.Right == newTB.TaskbarRect.Right && 
+                currentTB.TaskbarRect.Left == newTB.TaskbarRect.Left &&
+                currentTB.TaskbarRect.Top == newTB.TaskbarRect.Top &&
+                currentTB.TaskbarRect.Right == newTB.TaskbarRect.Right &&
                 currentTB.TaskbarRect.Bottom == newTB.TaskbarRect.Bottom)
             {
                 taskbarRectChanged = false;
@@ -130,6 +132,15 @@ namespace RoundedTB
             };
         }
 
+        public static void ResetTaskbar(Types.Taskbar taskbar, Types.Settings settings)
+        {
+            LocalPInvoke.SetWindowRgn(taskbar.TaskbarHwnd, IntPtr.Zero, true);
+            if (settings.CompositionCompat)
+            {
+                Interaction.UpdateTranslucentTB(taskbar.TaskbarHwnd);
+            }
+        }
+
         /// <summary>
         /// Creates a basic region for a specific taskbar and applies it.
         /// </summary>
@@ -170,15 +181,6 @@ namespace RoundedTB
             catch (Exception)
             {
                 return false;
-            }
-        }
-
-        public static void ResetTaskbar(Types.Taskbar taskbar, Types.Settings settings)
-        {
-            LocalPInvoke.SetWindowRgn(taskbar.TaskbarHwnd, IntPtr.Zero, true);
-            if (settings.CompositionCompat)
-            {
-                Interaction.UpdateTranslucentTB(taskbar.TaskbarHwnd);
             }
         }
 
@@ -230,17 +232,17 @@ namespace RoundedTB
                 {
                     CornerRadius = Convert.ToInt32(settings.CornerRadius * taskbar.ScaleFactor),
                     Top = Convert.ToInt32(settings.MarginTop * taskbar.ScaleFactor),
-                    Left = Convert.ToInt32(settings.MarginRight * taskbar.ScaleFactor),
+                    Left = Convert.ToInt32(taskbar.ScaleFactor), // Disable custom margin for taskbar left as there's no "padding" provided by Windows and always looks weird as soon as you trim it.
                     Width = Convert.ToInt32(taskbar.TaskbarRect.Right - taskbar.TaskbarRect.Left - (settings.MarginLeft * taskbar.ScaleFactor)) + 1,
                     Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.MarginBottom * taskbar.ScaleFactor)) + 1
                 };
-                
+
                 centredDistanceFromEdge = taskbar.TaskbarRect.Right - taskbar.AppListRect.Right - Convert.ToInt32(2 * taskbar.ScaleFactor);
 
                 // If on Windows 10, add an extra 20 logical pixels for the grabhandle
                 if (!settings.IsWindows11)
                 {
-                    centredDistanceFromEdge -= Convert.ToInt32(20 * taskbar.ScaleFactor); 
+                    centredDistanceFromEdge -= Convert.ToInt32(20 * taskbar.ScaleFactor);
                 }
 
                 // Create region for if the taskbar is centred by take the right-to-right distance (centredDistanceFromEdge) off from both sides, as well as the margin
@@ -255,7 +257,7 @@ namespace RoundedTB
                         centredEffectiveRegion.CornerRadius
                         );
                 }
-                
+
                 // Create a region for if the taskbar is left-aligned, right-to-right distance (centredDistanceFromEdge) off from the right-hand side, as well as the margin
                 else
                 {
@@ -292,14 +294,14 @@ namespace RoundedTB
                 {
                     Interaction.UpdateTranslucentTB(taskbar.TaskbarHwnd);
                 }
-                
+
                 return true;
             }
             catch (Exception)
             {
                 return false;
             }
-            
+
         }
 
         /// <summary>
