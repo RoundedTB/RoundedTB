@@ -142,7 +142,7 @@ namespace RoundedTB
                                 Debug.WriteLine($"Refresh required on taskbar {current}");
                                 taskbars[current].Ignored = false;
                                 int isFullTest = newTaskbar.TrayRect.Left - newTaskbar.AppListRect.Right;
-                                Debug.WriteLine($"Taskbar: {current} - AppList ends: {newTaskbar.AppListRect.Right} - Tray starts: {newTaskbar.TrayRect.Left} - Total gap: {isFullTest}");
+                                mw.interaction.AddLog($"Taskbar: {current} - AppList ends: {newTaskbar.AppListRect.Right} - Tray starts: {newTaskbar.TrayRect.Left} - Total gap: {isFullTest}");
                                 if (!settings.IsDynamic || (isFullTest <= taskbars[current].ScaleFactor * 20 && isFullTest > 0 && newTaskbar.TrayRect.Left != 0))
                                 {
                                     // Add the rect changes to the temporary list of taskbars
@@ -150,7 +150,7 @@ namespace RoundedTB
                                     taskbars[current].AppListRect = newTaskbar.AppListRect;
                                     taskbars[current].TrayRect = newTaskbar.TrayRect;
                                     Taskbar.UpdateSimpleTaskbar(taskbars[current], settings);
-                                    Debug.WriteLine($"Updated taskbar {current} simply");
+                                    mw.interaction.AddLog($"Updated taskbar {current} simply");
                                 }
                                 else
                                 {
@@ -161,7 +161,7 @@ namespace RoundedTB
                                         taskbars[current].AppListRect = newTaskbar.AppListRect;
                                         taskbars[current].TrayRect = newTaskbar.TrayRect;
                                         Taskbar.UpdateDynamicTaskbar(taskbars[current], settings);
-                                        Debug.WriteLine($"Updated taskbar {current} dynamically");
+                                        mw.interaction.AddLog($"Updated taskbar {current} dynamically");
                                     }
                                 }
                             }
