@@ -39,6 +39,10 @@ namespace RoundedTB
         public Background background;
         public Interaction interaction;
         private HwndSource source;
+        public int version = 1;
+        // -1: Canary
+        //  0: R3.0
+        //  1: P3.1B
 
         public MainWindow()
         {
@@ -100,6 +104,7 @@ namespace RoundedTB
                 configPath = Path.Combine(Windows.Storage.ApplicationData.Current.RoamingFolder.Path, "rtb.json");
                 logPath = Path.Combine(Windows.Storage.ApplicationData.Current.RoamingFolder.Path, "rtb.log");
             }
+
             if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")) && !IsRunningAsUWP())
             {
                 StartupCheckBox.IsChecked = true;
@@ -131,7 +136,8 @@ namespace RoundedTB
             }
             if (activeSettings == null)
             {
-                if (isWindows11)
+                
+                if (isWindows11) // Default settings for Windows 11
                 {
                     activeSettings = new Types.Settings()
                     {
@@ -148,10 +154,11 @@ namespace RoundedTB
                         CompositionCompat = false,
                         IsNotFirstLaunch = false,
                         FillOnMaximise = true,
-                        FillOnTaskSwitch = true
+                        FillOnTaskSwitch = true,
+                        ShowTrayOnHover = false
                     };
                 }
-                else
+                else // Default settings for Windows 10
                 {
                     activeSettings = new Types.Settings()
                     {
@@ -168,10 +175,18 @@ namespace RoundedTB
                         CompositionCompat = false,
                         IsNotFirstLaunch = false,
                         FillOnMaximise = true,
-                        FillOnTaskSwitch = false
+                        FillOnTaskSwitch = false,
+                        ShowTrayOnHover = false
                     };
                 }
             }
+
+            if (version != activeSettings.Version && version != -1)
+            {
+                activeSettings.IsNotFirstLaunch = false;
+            }
+            activeSettings.Version = version;
+
             interaction.AddLog($"Settings loaded:");
             interaction.AddLog(
                 $"\nCornerRadius: {activeSettings.CornerRadius}\n" +
@@ -186,7 +201,8 @@ namespace RoundedTB
                 $"CompositionCompat: {activeSettings.CompositionCompat}\n" +
                 $"IsNotFirstLaunch: {activeSettings.IsNotFirstLaunch}\n" +
                 $"FillOnMaximise: {activeSettings.FillOnMaximise}\n" +
-                $"FillOnTaskSwitch: {activeSettings.FillOnTaskSwitch}\n"
+                $"FillOnTaskSwitch: {activeSettings.FillOnTaskSwitch}\n" +
+                $"ShowTrayOnHover: {activeSettings.ShowTrayOnHover}\n"
                 );
             if (activeSettings.MarginBasic == -384)
             {
@@ -249,6 +265,7 @@ namespace RoundedTB
             showTrayCheckBox.IsChecked = activeSettings.ShowTray;
             fillMaximisedCheckBox.IsChecked = activeSettings.FillOnMaximise;
             fillAltTabCheckBox.IsChecked = activeSettings.FillOnTaskSwitch;
+            showTrayOnHoverCheckBox.IsChecked = activeSettings.ShowTrayOnHover;
             compositionFixCheckBox.IsChecked = activeSettings.CompositionCompat;
             cornerRadiusInput.Text = activeSettings.CornerRadius.ToString();
             taskbarDetails = Taskbar.GenerateTaskbarInfo();
@@ -262,8 +279,6 @@ namespace RoundedTB
                 activeSettings.FillOnTaskSwitch = false;
                 fillAltTabCheckBox.IsEnabled = false;
             }
-            fillAltTabCheckBox.IsChecked = activeSettings.FillOnTaskSwitch;
-
 
             //Showhide the split mode help button
             if (!isWindows11 && activeSettings.IsDynamic)
@@ -281,7 +296,14 @@ namespace RoundedTB
                 AboutWindow aw = new AboutWindow();
                 aw.expander0.IsExpanded = true;
                 aw.ShowDialog();
-                Visibility = Visibility.Visible;
+                try
+                {
+                    Visibility = Visibility.Visible;
+                }
+                catch (InvalidOperationException)
+                {
+
+                }
                 ShowMenuItem.Header = "Hide RoundedTB";
             }
 
@@ -354,6 +376,7 @@ namespace RoundedTB
             activeSettings.CompositionCompat = (bool)compositionFixCheckBox.IsChecked;
             activeSettings.FillOnMaximise = (bool)fillMaximisedCheckBox.IsChecked;
             activeSettings.FillOnTaskSwitch = (bool)fillAltTabCheckBox.IsChecked;
+            activeSettings.ShowTrayOnHover = (bool)showTrayOnHoverCheckBox.IsChecked;
 
             try
             {
@@ -676,6 +699,8 @@ namespace RoundedTB
         private void dynamicCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             centredCheckBox.IsEnabled = true;
+            showTrayOnHoverCheckBox.IsEnabled = true;
+            showTrayOnHoverCheckBox.IsChecked = false;
             showTrayCheckBox.IsEnabled = true;
             showTrayCheckBox.IsChecked = true;
             mLeftLabel.Content = "Outer Margin";
@@ -699,7 +724,8 @@ namespace RoundedTB
             centredCheckBox.IsChecked = false;
             mLeftLabel.Content = "Left Margin";
             mRightLabel.Content = "Right Margin";
-
+            showTrayOnHoverCheckBox.IsEnabled = false;
+            showTrayOnHoverCheckBox.IsChecked = false;
             showTrayCheckBox.IsEnabled = false;
             showTrayCheckBox.IsChecked = false;
             
@@ -816,6 +842,18 @@ namespace RoundedTB
             fillAltTabCheckBox.IsEnabled = false;
             fillAltTabCheckBox.IsChecked = false;
 
+        }
+
+        private void showTrayOnHoverCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            showTrayCheckBox.IsEnabled = false;
+            showTrayCheckBox.IsChecked = false;
+        }
+
+        private void showTrayOnHoverCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            showTrayCheckBox.IsEnabled = true;
+            showTrayCheckBox.IsChecked = true;
         }
     }
 }

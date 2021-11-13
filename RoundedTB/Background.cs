@@ -106,11 +106,8 @@ namespace RoundedTB
                             // Get the latest quick details of this taskbar
                             Types.Taskbar newTaskbar = Taskbar.GetQuickTaskbarRects(taskbars[current].TaskbarHwnd, taskbars[current].TrayHwnd, taskbars[current].AppListHwnd);
 
-                            LocalPInvoke.RECT pRect = taskbars[current].TrayRect;
 
-
-
-                            // If the taskbar has a maximised window, reset it so it's "filled"
+                            // If the taskbar's monitor has a maximised window, reset it so it's "filled"
                             if (Taskbar.TaskbarShouldBeFilled(taskbars[current].TaskbarHwnd, settings))
                             {
                                 if (taskbars[current].Ignored == false)
@@ -121,20 +118,28 @@ namespace RoundedTB
                                 continue;
                             }
 
-                            // Unused for now, showhide tray on hover
+                            // Showhide tray on hover
+                            if (settings.ShowTrayOnHover)
+                            {
+                                LocalPInvoke.RECT currentTrayRect = taskbars[current].TrayRect;
+                                if (currentTrayRect.Left != 0)
+                                {
+                                    LocalPInvoke.GetCursorPos(out LocalPInvoke.POINT msPt);
+                                    bool isHoveringOverTray = LocalPInvoke.PtInRect(ref currentTrayRect, msPt);
+                                    if (isHoveringOverTray && !settings.ShowTray)
+                                    {
+                                        settings.ShowTray = true;
+                                        taskbars[current].Ignored = true;
+                                    }
+                                    else if (!isHoveringOverTray && settings.ShowTray)
+                                    {
+                                        settings.ShowTray = false;
+                                        taskbars[current].Ignored = true;
+                                    }
 
-                            //LocalPInvoke.GetCursorPos(out LocalPInvoke.POINT msPt);
-                            //bool b = LocalPInvoke.PtInRect(ref pRect, msPt);
-                            //if (b)
-                            //{
-                            //    settings.ShowTray = true;
-                            //    taskbars[current].Ignored = true;
-                            //}
-                            //else if (!b)
-                            //{
-                            //    settings.ShowTray = false;
-                            //    taskbars[current].Ignored = true;
-                            //}
+                                }
+                            }
+
 
                             // If the taskbar's overall rect has changed, update it. If it's simple, just update. If it's dynamic, check it's a valid change, then update it.
                             if (Taskbar.TaskbarRefreshRequired(taskbars[current], newTaskbar, settings.IsDynamic) || taskbars[current].Ignored || redrawOverride)

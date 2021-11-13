@@ -28,6 +28,7 @@ namespace RoundedTB
 
         public class Settings
         {
+            public int Version {  get; set; }
             public int CornerRadius { get; set; }
             public int MarginBasic { get; set; }
             public int MarginBottom { get; set; }
@@ -42,6 +43,7 @@ namespace RoundedTB
             public bool IsNotFirstLaunch { get; set; }
             public bool FillOnMaximise { get; set; }
             public bool FillOnTaskSwitch {  get; set; }
+            public bool ShowTrayOnHover { get; set; }
         }
 
         public class EffectiveRegion

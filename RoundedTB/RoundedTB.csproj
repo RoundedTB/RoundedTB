@@ -237,5 +237,9 @@
   <ItemGroup>
     <Resource Include="res\HeadBanner.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="res\HeadBannerCan.png" />
+    <Resource Include="res\HeadBannerDev.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

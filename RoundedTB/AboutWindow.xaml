@@ -9,11 +9,12 @@
         xmlns:ui="http://schemas.modernwpf.com/2019"
         ui:WindowHelper.UseModernWindowStyle="True" Visibility ="Visible" ResizeMode="NoResize" Opacity="1.001">
     <Grid>
-        <Image x:Name="image" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBanner.png" Width="500" Stretch="UniformToFill" Margin="0,-37,0,0"/>
-
+        <Image x:Name="bannerMst" Visibility ="Hidden" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBanner.png" Width="500" Stretch="UniformToFill" Margin="0,-37,0,0"/>
+        <Image x:Name="bannerDev" Visibility ="Visible" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBannerDev.png" Width="500" Stretch="UniformToFill" Margin="0,-37,0,0"/>
+        <Image x:Name="bannerCan" Visibility ="Hidden" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBannerCan.png" Width="500" Stretch="UniformToFill" Margin="0,-37,0,0"/>
         <Button x:Name="okButton" Content="OK" Margin="0,0,10,10" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="37" Click="okButton_Click"/>
         <TextBlock x:Name="titleBlock" HorizontalAlignment="Left" Margin="10,2,0,0" TextWrapping="Wrap" Text="Welcome to RoundedTB!" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="36" Opacity="0.795"/>
-        <TextBlock x:Name="subtitleBlock" HorizontalAlignment="Left" Margin="10,50,0,0" TextWrapping="Wrap" Text="Canary" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="22" Opacity="0.795" Height="30"/>
+        <TextBlock x:Name="subtitleBlock" HorizontalAlignment="Left" Margin="10,50,0,0" TextWrapping="Wrap" Text="Prerelease 3.1 B" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="22" Opacity="0.795" Height="30"/>
 
         <TextBlock x:Name="bodyBlockMain" Margin="10,97,10,47" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI SemiBold" FontSize="14">
             <Bold>Thanks for downloading RoundedTB. Expand the following categories for more information.</Bold>
@@ -23,8 +24,26 @@
             <StackPanel>
                 <Expander x:Name="expander0" HorizontalAlignment="Center" Header="What's new" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
                     <Grid>
-                        <TextBlock Margin="0,5,0,0" x:Name="bodyBlock0" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="23">
-                    • Who knows? This is a Canary build. Some people say that if you check back here every now and then, you can find secret messages here!
+                        <TextBlock Margin="0,5,0,0" x:Name="bodyBlock0" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="23">            
+                    • Option to fill the taskbar when a window is maximised
+                    <LineBreak/>
+                    • Option to fill the taskbar when either alt+tab or the Task Switcher is summoned (Windows 11 only)
+                    <LineBreak/>
+                    • Option to show the tray when the mouse hovers over it in dynamic mode and split mode
+                    <LineBreak/>
+                    • Dynamic mode will now automatically disable if the taskbar runs out of space to display icons
+                    <LineBreak/>
+                    • Tray icon now updates with system theme dynamically
+                    <LineBreak/>
+                    • RoundedTB now properly detects if the taskbar icons are centred when dynamic mode is first enabled
+                    <LineBreak/>
+                    • General performance improvements due to complete refactoring
+                    <LineBreak/>
+                    • Many bugs fixed
+                    <LineBreak/>
+                    • Probably some bugs introduced
+                    <LineBreak/>
+                    <Bold>REMINDER: Autohide is currently not supported.</Bold>
                     <LineBreak/>
                         </TextBlock>
                     </Grid>
@@ -54,7 +73,13 @@
                     <LineBreak/>
                     <Bold>• Show system tray</Bold> - Displays the system tray in dynamic/split mode. This option can be toggled at any time by pressing <Bold>Win+F2</Bold>.
                     <LineBreak/>
-                    <Bold>• TranslucentTB compatibility</Bold> - enables experimental compatibility with TranslucentTB version 2021.5. For more info, enable this option.
+                    <Bold>• Show system tray on hover</Bold> - Displays the system tray in dynamic/split mode when the mouse hovers over it. This overrides the above option.
+                    <LineBreak/>
+                    <Bold>• TranslucentTB compatibility</Bold> - enables compatibility with TranslucentTB. For more info, enable this option.
+                    <LineBreak/>
+                    <Bold>• Fill taskbar when maximised</Bold> - Fills the taskbar when a window is maximised on that taskbar's monitor.
+                    <LineBreak/>
+                    <Bold>• Fill taskbar on alt+tab (Windows 11)</Bold> - Fills taskbars when alt+tab or the Task Switcher is invoked.
                     <LineBreak/>
                         </TextBlock>
                     </Grid>
@@ -62,13 +87,13 @@
                 <Expander x:Name="expander3" HorizontalAlignment="Center" Header="Known issues" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
                     <Grid>
                         <TextBlock Margin="0,5,0,0" x:Name="bodyBlock3" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="23">
+                    • Using RoundedTB with Windows' autohide feature can result in heavy flickering, bugs, an inability to access the taskbar and isn't supported. An upcoming version of RoundedTB will introduce a custom autohide feature that will work correctly.
+                    <LineBreak/>
                     • Dynamic mode and split mode only work correctly when the taskbar is at the top or bottom of the monitor.
                     <LineBreak/>
                     • Split mode on Windows 10 is currently only supported on the primary monitor.
                     <LineBreak/>
-                    • Taskbar mods other than TranslucentTB (version 2021.5 or above) are not yet officially supported. Let me know if you run into compatibility issues with other taskbar mods/tweaks.
-                    <LineBreak/>
-                    • Using RoundedTB with Windows' autohide feature can result in flickering and may not work perfectly, especially with dynamic/split mode and multiple monitors, and isn't officially supported yet.
+                    • Taskbar mods other than TranslucentTB are not yet officially supported. Let me know if you run into compatibility issues with other taskbar mods/tweaks.
                     <LineBreak/>
                     • When using dynamic mode, the taskbar may occasionally become too large, too small or not update. This can usually be fixed by moving a window to or from that monitor or briefly changing the taskbar alignment. These issues will be reduced in upcoming updates.
                         <LineBreak/>
