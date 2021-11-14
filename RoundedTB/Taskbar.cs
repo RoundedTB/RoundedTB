@@ -317,6 +317,11 @@ namespace RoundedTB
             IntPtr hwndPrevious = IntPtr.Zero;
             currentTaskbars.Add(LocalPInvoke.FindWindowExA(IntPtr.Zero, hwndPrevious, "Shell_TrayWnd", null));
 
+            if (currentTaskbars[0] == IntPtr.Zero)
+            {
+                return false;
+            }
+
             if (currentTaskbars[0] != mainTaskbarHandle)
             {
                 return true;

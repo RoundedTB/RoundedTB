@@ -21,6 +21,12 @@ namespace RoundedTB
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
+    /// 
+    /// Many thanks to
+    ///  - FloatingMilkshake
+    ///  - cardin
+    ///  for your gracious donations! 💖
+    ///  
     /// </summary>
     public partial class MainWindow : Window
     {
@@ -314,13 +320,13 @@ namespace RoundedTB
             //{
             //    Left = 0,
             //    Top = 0,
-            //    Right = 3839,
-            //    Bottom = 2159
+            //    Right = 3840,
+            //    Bottom = 2160
             //};
 
             //Interaction.SetWorkspace(scrRect);
 
-            
+
 
         }
 
@@ -667,19 +673,19 @@ namespace RoundedTB
         private void DebugMenuItem_Click(object sender, RoutedEventArgs e)
         {
             IntPtr hwndNext = LocalPInvoke.FindWindowExA(taskbarDetails[0].TaskbarHwnd, IntPtr.Zero, "Start", null);
-            List<IntPtr> bitsOfTaskbar = new List<IntPtr>();
-            bitsOfTaskbar.Add(hwndNext);
+            List<IntPtr> floatingMilkshakesBitsOfTaskbar = new List<IntPtr>();
+            floatingMilkshakesBitsOfTaskbar.Add(hwndNext);
             while (true) 
             {
                 hwndNext = LocalPInvoke.FindWindowExA(taskbarDetails[0].TaskbarHwnd, hwndNext, null, null);
-                if (bitsOfTaskbar.Contains(hwndNext))
+                if (floatingMilkshakesBitsOfTaskbar.Contains(hwndNext))
                 {
                     break;
                 }
-                bitsOfTaskbar.Add(hwndNext);
+                floatingMilkshakesBitsOfTaskbar.Add(hwndNext);
 
             }
-            foreach (IntPtr hwnd in bitsOfTaskbar)
+            foreach (IntPtr hwnd in floatingMilkshakesBitsOfTaskbar)
             {
                 LocalPInvoke.GetWindowRect(hwnd, out LocalPInvoke.RECT rect);
                 LocalPInvoke.MoveWindow(hwnd, rect.Left + 50, rect.Top, (rect.Right + 50) - (rect.Left + 50), rect.Bottom - rect.Top, true);
@@ -778,7 +784,6 @@ namespace RoundedTB
             IntPtr handle = new WindowInteropHelper(this).Handle;
             source = HwndSource.FromHwnd(handle);
             source.AddHook(interaction.HwndHook);
-            //bool wtf = LocalPInvoke.RegisterHotKey(handle, 9000, (int)Types.KeyModifier.WinKey, System.Windows.Forms.Keys.J.GetHashCode());
             bool wtf = LocalPInvoke.RegisterHotKey(handle, 9000, 0x8, 0x71);
             Debug.WriteLine("KEY: " + wtf);
             Debug.WriteLine(handle);
