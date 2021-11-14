@@ -45,12 +45,13 @@ namespace RoundedTB
         public Background background;
         public Interaction interaction;
         private HwndSource source;
-        public int version = -1;
+        public int version = 2;
         /// <summary>
         /// Versions:
         /// -1: Canary
         ///  0: R3.0
         ///  1: P3.1B
+        ///  2: R3.1
         /// </summary>
 
         public MainWindow()
@@ -505,7 +506,7 @@ namespace RoundedTB
             }
         }
 
-        private async void Startup_Unchecked(object sender, RoutedEventArgs e)
+        private async void Startup_Clicked(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine("Startup toggled");
             if (IsRunningAsUWP())
@@ -519,26 +520,11 @@ namespace RoundedTB
                 {
                     System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
                 }
-            }
-            
-        }
-
-        private async void Startup_Checked(object sender, RoutedEventArgs e)
-        {
-            Debug.WriteLine("Startup toggled");
-            if (IsRunningAsUWP())
-            {
-                await StartupToggle();
-                await StartupInit(false);
-            }
-            else
-            {
-                if (!System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")))
+                else
                 {
                     EnableStartup();
                 }
             }
-
         }
 
         public void EnableStartup()

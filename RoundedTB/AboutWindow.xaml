@@ -9,12 +9,12 @@
         xmlns:ui="http://schemas.modernwpf.com/2019"
         ui:WindowHelper.UseModernWindowStyle="True" Visibility ="Visible" ResizeMode="NoResize" Opacity="1.001">
     <Grid>
-        <Image x:Name="bannerMst" Visibility ="Hidden" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBanner.png" Width="500" Stretch="UniformToFill" Margin="0,-37,0,0"/>
+        <Image x:Name="bannerMst" Visibility ="Visible" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBanner.png" Width="500" Stretch="UniformToFill" Margin="0,-37,0,0"/>
         <Image x:Name="bannerDev" Visibility ="Hidden" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBannerDev.png" Width="500" Stretch="UniformToFill" Margin="0,-37,0,0"/>
-        <Image x:Name="bannerCan" Visibility ="Visible" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBannerCan.png" Width="500" Stretch="UniformToFill" Margin="0,-37,0,0"/>
+        <Image x:Name="bannerCan" Visibility ="Hidden" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBannerCan.png" Width="500" Stretch="UniformToFill" Margin="0,-37,0,0"/>
         <Button x:Name="okButton" Content="OK" Margin="0,0,10,10" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="37" Click="okButton_Click"/>
         <TextBlock x:Name="titleBlock" HorizontalAlignment="Left" Margin="10,2,0,0" TextWrapping="Wrap" Text="Welcome to RoundedTB!" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="36" Opacity="0.795"/>
-        <TextBlock x:Name="subtitleBlock" HorizontalAlignment="Left" Margin="10,50,0,0" TextWrapping="Wrap" Text="Canary" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="22" Opacity="0.795" Height="30"/>
+        <TextBlock x:Name="subtitleBlock" HorizontalAlignment="Left" Margin="10,50,0,0" TextWrapping="Wrap" Text="Release 3.1 (v1.3.1.0)" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="22" Opacity="0.795" Height="30"/>
 
         <TextBlock x:Name="bodyBlockMain" Margin="10,97,10,47" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI SemiBold" FontSize="14">
             <Bold>Thanks for downloading RoundedTB. Expand the following categories for more information.</Bold>
@@ -37,13 +37,11 @@
                     <LineBreak/>
                     • RoundedTB now properly detects if the taskbar icons are centred when dynamic mode is first enabled
                     <LineBreak/>
-                    • Opening RoundedTB whilst another copy is already running
+                    • Opening RoundedTB whilst another copy is already running will now open the app settings
                     <LineBreak/>
                     • General performance improvements due to complete refactoring
                     <LineBreak/>
-                    • Many bugs fixed
-                    <LineBreak/>
-                    • Probably some bugs introduced
+                    • Many bugs fixed, and probably some bugs introduced
                     <LineBreak/>
                     <Bold>REMINDER: Autohide is currently not supported.</Bold>
                     <LineBreak/>
