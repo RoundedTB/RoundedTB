@@ -222,7 +222,7 @@ namespace RoundedTB
                 {
                     CornerRadius = Convert.ToInt32(settings.CornerRadius * taskbar.ScaleFactor),
                     Top = Convert.ToInt32(settings.MarginTop * taskbar.ScaleFactor),
-                    Left = Convert.ToInt32(settings.MarginRight * taskbar.ScaleFactor),
+                    Left = Convert.ToInt32(settings.MarginRight * taskbar.ScaleFactor) - 1,
                     Width = Convert.ToInt32(taskbar.TaskbarRect.Right - taskbar.TaskbarRect.Left - (settings.MarginRight * taskbar.ScaleFactor)) + 1,
                     Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.MarginBottom * taskbar.ScaleFactor)) + 1
                 };

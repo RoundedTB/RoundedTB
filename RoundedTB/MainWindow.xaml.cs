@@ -39,10 +39,13 @@ namespace RoundedTB
         public Background background;
         public Interaction interaction;
         private HwndSource source;
-        public int version = 1;
-        // -1: Canary
-        //  0: R3.0
-        //  1: P3.1B
+        public int version = -1;
+        /// <summary>
+        /// Versions:
+        /// -1: Canary
+        ///  0: R3.0
+        ///  1: P3.1B
+        /// </summary>
 
         public MainWindow()
         {
@@ -496,8 +499,9 @@ namespace RoundedTB
             }
         }
 
-        private async void Startup_Checked(object sender, RoutedEventArgs e)
+        private async void Startup_Unchecked(object sender, RoutedEventArgs e)
         {
+            Debug.WriteLine("Startup toggled");
             if (IsRunningAsUWP())
             {
                 await StartupToggle();
@@ -505,20 +509,30 @@ namespace RoundedTB
             }
             else
             {
-                if (!System.IO.File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Startup)))
+                if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")))
                 {
-                    EnableStartup();
-                }
-                else
-                {
-                    try
-                    {
-                        System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
-                    }
-                    catch (Exception) { }
+                    System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
                 }
             }
             
+        }
+
+        private async void Startup_Checked(object sender, RoutedEventArgs e)
+        {
+            Debug.WriteLine("Startup toggled");
+            if (IsRunningAsUWP())
+            {
+                await StartupToggle();
+                await StartupInit(false);
+            }
+            else
+            {
+                if (!System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")))
+                {
+                    EnableStartup();
+                }
+            }
+
         }
 
         public void EnableStartup()
