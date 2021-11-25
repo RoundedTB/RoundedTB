@@ -393,13 +393,13 @@ namespace RoundedTB
                 foreach (Types.Taskbar taskbar in taskbarDetails)
                 {
                     int isFullTest = taskbar.TrayRect.Left - taskbar.AppListRect.Right;
-                    if (!activeSettings.IsDynamic || (isFullTest <= taskbar.ScaleFactor * 25 && isFullTest > 0 && taskbar.TrayRect.Left != 0))
-                    {
-                        Taskbar.UpdateSimpleTaskbar(taskbar, activeSettings);
-                    }
-                    else if (Taskbar.TaskbarShouldBeFilled(taskbar.TaskbarHwnd, activeSettings))
+                    if (Taskbar.TaskbarShouldBeFilled(taskbar.TaskbarHwnd, activeSettings))
                     {
                         Taskbar.ResetTaskbar(taskbar, activeSettings);
+                    }
+                    else if (!activeSettings.IsDynamic || (isFullTest <= taskbar.ScaleFactor * 25 && isFullTest > 0 && taskbar.TrayRect.Left != 0))
+                    {
+                        Taskbar.UpdateSimpleTaskbar(taskbar, activeSettings);
                     }
                     else
                     {
