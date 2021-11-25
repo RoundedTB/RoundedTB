@@ -397,6 +397,10 @@ namespace RoundedTB
                     {
                         Taskbar.UpdateSimpleTaskbar(taskbar, activeSettings);
                     }
+                    else if (Taskbar.TaskbarShouldBeFilled(taskbar.TaskbarHwnd, activeSettings))
+                    {
+                        Taskbar.ResetTaskbar(taskbar, activeSettings);
+                    }
                     else
                     {
                         Taskbar.UpdateDynamicTaskbar(taskbar, activeSettings);
