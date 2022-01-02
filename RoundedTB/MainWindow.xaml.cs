@@ -45,7 +45,7 @@ namespace RoundedTB
         public Background background;
         public Interaction interaction;
         private HwndSource source;
-        public int version = 2;
+        public int version = -1;
         /// <summary>
         /// Versions:
         /// -1: Canary
