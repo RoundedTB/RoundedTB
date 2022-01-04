@@ -122,6 +122,15 @@ namespace RoundedTB
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern bool SetWindowText(IntPtr hwnd, string lpString);
 
+        [DllImport("shell32.dll")]
+        static extern IntPtr SHAppBarMessage(uint dwMessage, [In] ref APPBARDATA pData);
+
+        public enum AppBarStates
+        {
+            AutoHide = 0x01,
+            AlwaysOnTop = 0x02
+        }
+
         public enum DWMWINDOWATTRIBUTE : uint
         {
             NCRenderingEnabled = 1,

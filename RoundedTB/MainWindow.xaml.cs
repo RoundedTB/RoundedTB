@@ -144,6 +144,7 @@ namespace RoundedTB
             {
                 activeSettings.IsWindows11 = false;
             }
+            // Default settings
             if (activeSettings == null)
             {
                 
@@ -197,6 +198,7 @@ namespace RoundedTB
             }
             activeSettings.Version = version;
 
+
             interaction.AddLog($"Settings loaded:");
             interaction.AddLog(
                 $"\nCornerRadius: {activeSettings.CornerRadius}\n" +
@@ -214,6 +216,8 @@ namespace RoundedTB
                 $"FillOnTaskSwitch: {activeSettings.FillOnTaskSwitch}\n" +
                 $"ShowTrayOnHover: {activeSettings.ShowTrayOnHover}\n"
                 );
+
+            // Checks if advanced margins are configured
             if (activeSettings.MarginBasic == -384)
             {
                 marginInput.Text = "Advanced";
@@ -241,6 +245,7 @@ namespace RoundedTB
                 mRightInput.IsEnabled = false;
             }
 
+            // Get whether or not taskbar is centred
             try
             {
                 using (RegistryKey key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced"))
@@ -264,12 +269,12 @@ namespace RoundedTB
             {
                 interaction.AddLog(aaaa.Message);
             }
-
             if (!isWindows11)
             {
                 activeSettings.IsCentred = false;
             }
 
+            // Copy and apply settings to UI
             dynamicCheckBox.IsChecked = activeSettings.IsDynamic;
             centredCheckBox.IsChecked = activeSettings.IsCentred;
             showTrayCheckBox.IsChecked = activeSettings.ShowTray;
@@ -317,18 +322,38 @@ namespace RoundedTB
                 ShowMenuItem.Header = "Hide RoundedTB";
             }
 
-            //LocalPInvoke.RECT scrRect = new LocalPInvoke.RECT()
-            //{
-            //    Left = 0,
-            //    Top = 0,
-            //    Right = 3840,
-            //    Bottom = 2160
-            //};
+            AutoHide(true, taskbarDetails);
+        }
 
-            //Interaction.SetWorkspace(scrRect);
+        public void AutoHide(bool enable, List<Types.Taskbar> taskbarDetails)
+        {
+            if (enable)
+            {
+                MonitorStuff.DisplayInfoCollection Displays = MonitorStuff.GetDisplays();
 
-
-
+                foreach (MonitorStuff.DisplayInfo display in Displays)
+                {
+                    LocalPInvoke.RECT workArea = display.MonitorArea;
+                    workArea.Bottom = workArea.Bottom - 2;
+                    Interaction.SetWorkspace(workArea);
+                    //Interaction.SetWorkspace(display.MonitorArea);
+                }
+                foreach (Types.Taskbar taskbar in taskbarDetails)
+                {
+                    LocalPInvoke.SetWindowPos(taskbar.TaskbarHwnd, new IntPtr(-1), 0, 0, 0, 0, LocalPInvoke.SetWindowPosFlags.IgnoreMove | LocalPInvoke.SetWindowPosFlags.IgnoreResize);
+                    Taskbar.SetTaskbarState(LocalPInvoke.AppBarStates.AlwaysOnTop, taskbar.TaskbarHwnd);
+                }
+            }
+            else
+            {
+                foreach (Types.Taskbar taskbar in taskbarDetails)
+                {
+                    LocalPInvoke.ShowWindow(taskbar.TaskbarHwnd, LocalPInvoke.SW_HIDE);
+                    LocalPInvoke.ShowWindow(taskbar.TaskbarHwnd, LocalPInvoke.SW_SHOW);
+                    LocalPInvoke.SetWindowPos(taskbar.TaskbarHwnd, new IntPtr(-1), 0, 0, 0, 0, LocalPInvoke.SetWindowPosFlags.IgnoreMove | LocalPInvoke.SetWindowPosFlags.IgnoreResize);
+                    Taskbar.SetTaskbarState(LocalPInvoke.AppBarStates.AlwaysOnTop, taskbar.TaskbarHwnd);
+                }
+            }
         }
 
         public TypedEventHandler<ThemeManager, object> TrayIconCheck()

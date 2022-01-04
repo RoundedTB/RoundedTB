@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Threading;
 using Newtonsoft.Json;
+using System.Runtime.InteropServices;
 
 
 
@@ -295,6 +296,11 @@ namespace RoundedTB
                     Interaction.UpdateTranslucentTB(taskbar.TaskbarHwnd);
                 }
 
+                // Force window to be always-on-top just in case
+                LocalPInvoke.SetWindowPos(taskbar.TaskbarHwnd, new IntPtr(-1), 0, 0, 0, 0, LocalPInvoke.SetWindowPosFlags.IgnoreMove | LocalPInvoke.SetWindowPosFlags.IgnoreResize);
+                SetTaskbarState(LocalPInvoke.AppBarStates.AlwaysOnTop, taskbar.TaskbarHwnd);
+                Debug.WriteLine("Forced always-on-top");
+
                 return true;
             }
             catch (Exception)
@@ -509,6 +515,15 @@ namespace RoundedTB
             }
 
             return retVal;
+        }
+
+        public static void SetTaskbarState(LocalPInvoke.AppBarStates option, IntPtr hwnd)
+        {
+            LocalPInvoke.APPBARDATA msgData = new LocalPInvoke.APPBARDATA();
+            msgData.cbSize = (uint)Marshal.SizeOf(msgData);
+            msgData.hWnd = hwnd;
+            msgData.lParam = (int)option;
+            LocalPInvoke.SHAppBarMessage(LocalPInvoke.ABM.SetState, ref msgData);
         }
     }
 }
