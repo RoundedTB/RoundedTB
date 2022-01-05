@@ -25,6 +25,7 @@ namespace RoundedTB
     /// Many thanks to
     ///  - FloatingMilkshake
     ///  - cardin
+    ///  - cleverActon0126
     ///  for your gracious donations! 💖
     ///  
     /// </summary>
@@ -327,6 +328,7 @@ namespace RoundedTB
 
         public void AutoHide(bool enable, List<Types.Taskbar> taskbarDetails)
         {
+            // Wondering how this works, are you Chris? Perhaps come up with your own ideas instead of copying other people, you uninspired hack 😒
             if (enable)
             {
                 MonitorStuff.DisplayInfoCollection Displays = MonitorStuff.GetDisplays();
@@ -336,7 +338,6 @@ namespace RoundedTB
                     LocalPInvoke.RECT workArea = display.MonitorArea;
                     workArea.Bottom = workArea.Bottom - 2;
                     Interaction.SetWorkspace(workArea);
-                    //Interaction.SetWorkspace(display.MonitorArea);
                 }
                 foreach (Types.Taskbar taskbar in taskbarDetails)
                 {
@@ -348,10 +349,10 @@ namespace RoundedTB
             {
                 foreach (Types.Taskbar taskbar in taskbarDetails)
                 {
-                    LocalPInvoke.ShowWindow(taskbar.TaskbarHwnd, LocalPInvoke.SW_HIDE);
-                    LocalPInvoke.ShowWindow(taskbar.TaskbarHwnd, LocalPInvoke.SW_SHOW);
                     LocalPInvoke.SetWindowPos(taskbar.TaskbarHwnd, new IntPtr(-1), 0, 0, 0, 0, LocalPInvoke.SetWindowPosFlags.IgnoreMove | LocalPInvoke.SetWindowPosFlags.IgnoreResize);
+                    Taskbar.SetTaskbarState(LocalPInvoke.AppBarStates.AutoHide, taskbar.TaskbarHwnd);
                     Taskbar.SetTaskbarState(LocalPInvoke.AppBarStates.AlwaysOnTop, taskbar.TaskbarHwnd);
+
                 }
             }
         }
@@ -466,6 +467,8 @@ namespace RoundedTB
             }
             else
             {
+
+
                 try
                 {
                     taskbarThread.CancelAsync();
@@ -478,6 +481,19 @@ namespace RoundedTB
                 {
                     System.Windows.Forms.Application.DoEvents();
                     System.Threading.Thread.Sleep(100);
+                }
+
+                try
+                {
+                    foreach (var tbDeets in taskbarDetails)
+                    {
+                        Taskbar.ResetTaskbar(tbDeets, activeSettings);
+                    }
+                    AutoHide(false, taskbarDetails);
+                }
+                catch (InvalidOperationException aaaa)
+                {
+                    interaction.AddLog($"Taskbar structure changed on exit:\n{aaaa.Message}");
                 }
                 interaction.AddLog("Exiting RoundedTB.");
             }
@@ -494,20 +510,8 @@ namespace RoundedTB
             {
                 App.Current.Windows[windowCount].Close();
             }
-
+            
             shouldReallyDieNoReally = true;
-            try
-            {
-                foreach (var tbDeets in taskbarDetails)
-                {
-                    Taskbar.ResetTaskbar(tbDeets, activeSettings);
-                }
-            }
-            catch (InvalidOperationException aaaa)
-            {
-                interaction.AddLog($"Taskbar structure changed on exit:\n{aaaa.Message}");
-            }
-
 
             Close();
         }

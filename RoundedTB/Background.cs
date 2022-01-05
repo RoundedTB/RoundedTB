@@ -45,35 +45,43 @@ namespace RoundedTB
                         if (infrequentCount == 10)
                         {
                             // Check to see if settings need to be shown
-                            List<IntPtr> windowList = Interaction.GetTopLevelWindows();
-                            foreach (IntPtr hwnd in windowList)
-                            {
-                                StringBuilder windowClass = new StringBuilder(1024);
-                                StringBuilder windowTitle = new StringBuilder(1024);
-                                try
-                                {
-                                    LocalPInvoke.GetClassName(hwnd, windowClass, 1024);
-                                    LocalPInvoke.GetWindowText(hwnd, windowTitle, 1024);
+                            //List<IntPtr> windowList = Interaction.GetTopLevelWindows();
+                            //foreach (IntPtr hwnd in windowList)
+                            //{
+                            //    StringBuilder windowClass = new StringBuilder(1024);
+                            //    StringBuilder windowTitle = new StringBuilder(1024);
+                            //    try
+                            //    {
+                            //        LocalPInvoke.GetClassName(hwnd, windowClass, 1024);
+                            //        LocalPInvoke.GetWindowText(hwnd, windowTitle, 1024);
 
-                                    if (windowClass.ToString().Contains("HwndWrapper[RoundedTB.exe") && windowTitle.ToString() == "RoundedTB_SettingsRequest")
-                                    {
-                                        mw.Dispatcher.Invoke(() =>
-                                        {
-                                            if (mw.Visibility != Visibility.Visible)
-                                            {
-                                                mw.ShowMenuItem_Click(null, null);
-                                            }
-                                        });
-                                        LocalPInvoke.SetWindowText(hwnd, "RoundedTB");
-                                    }
-                                }
-                                catch (Exception) { }
-                            }
+                            //        if (windowClass.ToString().Contains("HwndWrapper[RoundedTB.exe") && windowTitle.ToString() == "RoundedTB_SettingsRequest")
+                            //        {
+                            //            mw.Dispatcher.Invoke(() =>
+                            //            {
+                            //                if (mw.Visibility != Visibility.Visible)
+                            //                {
+                            //                    mw.ShowMenuItem_Click(null, null);
+                            //                }
+                            //            });
+                            //            LocalPInvoke.SetWindowText(hwnd, "RoundedTB");
+                            //        }
+                            //    }
+                            //    catch (Exception) { }
+                            //}
 
                             // Update tray icon
                             mw.Dispatcher.Invoke(() =>
                             {
-                                mw.TrayIconCheck();
+                                try
+                                {
+                                    mw.TrayIconCheck();
+
+                                }
+                                catch (Exception)
+                                {
+
+                                }
                             });
 
                             infrequentCount = 0;
@@ -131,12 +139,74 @@ namespace RoundedTB
                                         settings.ShowTray = true;
                                         taskbars[current].Ignored = true;
                                     }
-                                    else if (!isHoveringOverTray && settings.ShowTray)
+                                    else if (!isHoveringOverTray)
                                     {
                                         settings.ShowTray = false;
                                         taskbars[current].Ignored = true;
                                     }
 
+                                }
+                            }
+
+                            // TODO: add an actual setting for autohide
+                            if (true)
+                            {
+                                LocalPInvoke.RECT currentTaskbarRect = taskbars[current].TaskbarRect;
+                                LocalPInvoke.GetCursorPos(out LocalPInvoke.POINT msPt);
+                                bool isHoveringOverTaskbar;
+                                if (taskbars[current].TaskbarHidden)
+                                {
+                                    currentTaskbarRect.Top = currentTaskbarRect.Bottom - 2;
+                                    isHoveringOverTaskbar = LocalPInvoke.PtInRect(ref currentTaskbarRect, msPt);
+
+                                }
+                                else
+                                {
+                                    isHoveringOverTaskbar = LocalPInvoke.PtInRect(ref currentTaskbarRect, msPt);
+                                }
+                                if (isHoveringOverTaskbar)
+                                {
+                                    Debug.WriteLine("___");
+                                }
+                                int animSpeed = 15;
+                                byte taskbarOpacity = 0;
+                                LocalPInvoke.GetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, out _, out taskbarOpacity, out _);
+                                //Debug.WriteLine($"Taskbar opacity:  {taskbarOpacity}");
+                                if (isHoveringOverTaskbar && taskbarOpacity == 1)
+                                {
+                                    int style = LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32();
+                                    if ((style & LocalPInvoke.WS_EX_TRANSPARENT) == LocalPInvoke.WS_EX_TRANSPARENT)
+                                    {
+                                        LocalPInvoke.SetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE, LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32() ^ LocalPInvoke.WS_EX_TRANSPARENT);
+                                    }
+                                    LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 63, LocalPInvoke.LWA_ALPHA);
+                                    System.Threading.Thread.Sleep(animSpeed);
+                                    LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 127, LocalPInvoke.LWA_ALPHA);
+                                    System.Threading.Thread.Sleep(animSpeed);
+                                    LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 191, LocalPInvoke.LWA_ALPHA);
+                                    System.Threading.Thread.Sleep(animSpeed);
+                                    LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 255, LocalPInvoke.LWA_ALPHA);
+                                    taskbars[current].Ignored = true;
+                                    taskbars[current].TaskbarHidden = false;
+                                    Debug.WriteLine("MouseOver TB");
+                                }
+                                else if (!isHoveringOverTaskbar && taskbarOpacity == 255)
+                                {
+                                    LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 191, LocalPInvoke.LWA_ALPHA);
+                                    System.Threading.Thread.Sleep(animSpeed);
+                                    LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 127, LocalPInvoke.LWA_ALPHA);
+                                    System.Threading.Thread.Sleep(animSpeed);
+                                    LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 63, LocalPInvoke.LWA_ALPHA);
+                                    System.Threading.Thread.Sleep(animSpeed);
+                                    LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 1, LocalPInvoke.LWA_ALPHA);
+                                    int style = LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32();
+                                    if ((style & LocalPInvoke.WS_EX_TRANSPARENT) != LocalPInvoke.WS_EX_TRANSPARENT)
+                                    {
+                                        LocalPInvoke.SetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE, LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32() ^ LocalPInvoke.WS_EX_TRANSPARENT);
+                                    }
+                                    taskbars[current].Ignored = true;
+                                    taskbars[current].TaskbarHidden = true;
+                                    Debug.WriteLine("MouseOff TB");
                                 }
                             }
 

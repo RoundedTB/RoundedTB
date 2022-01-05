@@ -133,9 +133,24 @@ namespace RoundedTB
             };
         }
 
+        /// <summary>
+        /// Resets the specified taskbar.
+        /// </summary>
         public static void ResetTaskbar(Types.Taskbar taskbar, Types.Settings settings)
         {
             LocalPInvoke.SetWindowRgn(taskbar.TaskbarHwnd, IntPtr.Zero, true);
+            LocalPInvoke.SetLayeredWindowAttributes(taskbar.TaskbarHwnd, 0, 255, LocalPInvoke.LWA_ALPHA);
+            int style = LocalPInvoke.GetWindowLong(taskbar.TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32();
+            if ((style & LocalPInvoke.WS_EX_LAYERED) == LocalPInvoke.WS_EX_LAYERED)
+            {
+                LocalPInvoke.SetWindowLong(taskbar.TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE, LocalPInvoke.GetWindowLong(taskbar.TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32() ^ LocalPInvoke.WS_EX_LAYERED);
+            }
+            style = LocalPInvoke.GetWindowLong(taskbar.TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32();
+            if ((style & LocalPInvoke.WS_EX_TRANSPARENT) == LocalPInvoke.WS_EX_TRANSPARENT)
+            {
+                LocalPInvoke.SetWindowLong(taskbar.TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE, LocalPInvoke.GetWindowLong(taskbar.TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32() ^ LocalPInvoke.WS_EX_TRANSPARENT);
+            }
+
             if (settings.CompositionCompat)
             {
                 Interaction.UpdateTranslucentTB(taskbar.TaskbarHwnd);
@@ -297,9 +312,9 @@ namespace RoundedTB
                 }
 
                 // Force window to be always-on-top just in case
-                LocalPInvoke.SetWindowPos(taskbar.TaskbarHwnd, new IntPtr(-1), 0, 0, 0, 0, LocalPInvoke.SetWindowPosFlags.IgnoreMove | LocalPInvoke.SetWindowPosFlags.IgnoreResize);
-                SetTaskbarState(LocalPInvoke.AppBarStates.AlwaysOnTop, taskbar.TaskbarHwnd);
-                Debug.WriteLine("Forced always-on-top");
+                //LocalPInvoke.SetWindowPos(taskbar.TaskbarHwnd, new IntPtr(-1), 0, 0, 0, 0, LocalPInvoke.SetWindowPosFlags.IgnoreMove | LocalPInvoke.SetWindowPosFlags.IgnoreResize);
+                //SetTaskbarState(LocalPInvoke.AppBarStates.AlwaysOnTop, taskbar.TaskbarHwnd);
+                //Debug.WriteLine("Forced always-on-top");
 
                 return true;
             }
@@ -354,6 +369,12 @@ namespace RoundedTB
             return false;
         }
 
+        /// <summary>
+        /// Checks if the provided update is valid.
+        /// </summary>
+        /// <returns>
+        /// A bool indicating if the update is valid.
+        /// </returns>
         public static bool CheckDynamicUpdateIsValid(Types.Taskbar currentTB, Types.Taskbar newTB)
         {
             // REMINDER: newTB will only have rect & hwnd info. Everything else will be null.
@@ -429,6 +450,18 @@ namespace RoundedTB
                 TaskbarRes = $"{rectMain.Right - rectMain.Left} x {rectMain.Bottom - rectMain.Top}",
                 Ignored = false
             });
+            int style = LocalPInvoke.GetWindowLong(hwndMain, LocalPInvoke.GWL_EXSTYLE).ToInt32();
+            if ((style & LocalPInvoke.WS_EX_LAYERED) == LocalPInvoke.WS_EX_LAYERED)
+            {
+                Debug.WriteLine("Taskbar is set to layered.");
+            }
+            else
+            {
+                LocalPInvoke.SetWindowLong(hwndMain, LocalPInvoke.GWL_EXSTYLE, LocalPInvoke.GetWindowLong(hwndMain, LocalPInvoke.GWL_EXSTYLE).ToInt32() ^ LocalPInvoke.WS_EX_LAYERED);
+                Debug.WriteLine("Taskbar isn't set to layered.");
+            }
+
+
 
             bool i = true;
             IntPtr hwndPrevious = IntPtr.Zero;
@@ -462,6 +495,16 @@ namespace RoundedTB
                         TaskbarRes = $"{rectCurrent.Right - rectCurrent.Left} x {rectCurrent.Bottom - rectCurrent.Top}",
                         Ignored = false
                     });
+                    style = LocalPInvoke.GetWindowLong(hwndCurrent, LocalPInvoke.GWL_EXSTYLE).ToInt32();
+                    if ((style & LocalPInvoke.WS_EX_LAYERED) == LocalPInvoke.WS_EX_LAYERED)
+                    {
+                        Debug.WriteLine("Taskbar is set to layered.");
+                    }
+                    else
+                    {
+                        LocalPInvoke.SetWindowLong(hwndCurrent, LocalPInvoke.GWL_EXSTYLE, LocalPInvoke.GetWindowLong(hwndCurrent, LocalPInvoke.GWL_EXSTYLE).ToInt32() ^ LocalPInvoke.WS_EX_LAYERED);
+                        Debug.WriteLine("Taskbar isn't set to layered.");
+                    }
                 }
             }
 
@@ -472,6 +515,12 @@ namespace RoundedTB
             return retVal;
         }
 
+        /// <summary>
+        /// Checks if the given taskbar should be filled to the edge of the screen.
+        /// </summary>
+        /// <returns>
+        /// A bool indicating whether or not the taskbar needs to be filled.
+        /// </returns>
         public static bool TaskbarShouldBeFilled(IntPtr taskbarHwnd, Types.Settings settings)
         {
             bool retVal = false;
@@ -517,6 +566,9 @@ namespace RoundedTB
             return retVal;
         }
 
+        /// <summary>
+        /// Sets the appbar properties of the taskbar.
+        /// </summary>
         public static void SetTaskbarState(LocalPInvoke.AppBarStates option, IntPtr hwnd)
         {
             LocalPInvoke.APPBARDATA msgData = new LocalPInvoke.APPBARDATA();

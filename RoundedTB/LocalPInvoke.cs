@@ -123,7 +123,25 @@ namespace RoundedTB
         public static extern bool SetWindowText(IntPtr hwnd, string lpString);
 
         [DllImport("shell32.dll")]
-        static extern IntPtr SHAppBarMessage(uint dwMessage, [In] ref APPBARDATA pData);
+        public static extern IntPtr SHAppBarMessage(uint dwMessage, [In] ref APPBARDATA pData);
+
+        [DllImport("user32.dll")]
+        public static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, uint dwFlags);
+
+        [DllImport("user32.dll")]
+        public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetWindowLong(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetLayeredWindowAttributes(IntPtr hwnd, out uint crKey, out byte bAlpha, out uint dwFlags);
+
+        public const int GWL_EXSTYLE = -20;
+        public const int WS_EX_LAYERED = 0x80000;
+        public const int WS_EX_TRANSPARENT = 0x00000020;
+        public const int LWA_ALPHA = 0x2;
+        public const int LWA_COLORKEY = 0x1;
 
         public enum AppBarStates
         {
