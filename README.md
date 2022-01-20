@@ -31,8 +31,9 @@ The advanced options allow for further customisation, at the cost of some user-f
 
 
 ## Known issues
- - Auto-hiding is still incredibly experimental and may lead to a lot of flickering, especially with TranslucentTB compatibility or dynamic/split mode enabled.
- - Rounded corners are not antialiased due to a Windows limitation.
+ - Auto-hiding is still incredibly experimental and may lead to a lot of flickering, especially with TranslucentTB compatibility or dynamic/split mode enabled. ([#36](https://github.com/torchgm/RoundedTB/issues/36))
+ - Rounded corners are not antialiased due to a Windows limitation. ([#4](https://github.com/torchgm/RoundedTB/issues/4))
+ - Dynamic mode won't hide the left side of the taskbar if the taskbar alignment has never been changed. This can be worked around by changing the alignment to Left and back to Center. ([#98](https://github.com/torchgm/RoundedTB/issues/98)) 
  - Dynamic mode/split mode only work correctly when the taskbar is horizontal at the top/bottom of the screen.
  - Split mode on Windows 10 only supports the main taskbar, secondary taskbars will not be split.
  - When using dynamic mode, the taskbar may occasionally become too large, too small or not update. This can usually be fixed by moving a window to or from that monitor or briefly changing the taskbar alignment. These issues will be reduced in upcoming updates, don't worry! I just need to refactor a lot of code first.
