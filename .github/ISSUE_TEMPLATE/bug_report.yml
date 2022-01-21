@@ -1,0 +1,55 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: (Enter short, one sentence summary of bug here)"
+labels: ["bug"]
+assignees:
+  - torchgm
+  - Erisa
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: checkboxes
+    id: no-issues-relating-to-this
+    attributes:
+      label: Duplicate Issues
+      description: Check to make sure there are no existing posts about your problem in the 'issues' section.
+      options:
+        - label: There are **no existing posts relating to my problem**
+          required: true
+        - label: There are **existing posts relating to my problem, but the solution given, doesn't work for me.**
+          required: false
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      placeholder: Tell us what you see!
+      value: "Well, I was trying to ... but then ..."
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Release version
+      description: What version of this program are you using?
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: This will allow me to figure out where the issue originates.
+      placeholder: Step 1, Step 2, Step 3...
+      value: |
+             1. 
+             2. 
+             3. 
+    validations:
+      required: true
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: (Screenshots can be uploaded by simply dragging an image file into this box)
