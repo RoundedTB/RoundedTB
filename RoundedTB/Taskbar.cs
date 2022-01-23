@@ -451,15 +451,11 @@ namespace RoundedTB
                 Ignored = false
             });
             int style = LocalPInvoke.GetWindowLong(hwndMain, LocalPInvoke.GWL_EXSTYLE).ToInt32();
-            if ((style & LocalPInvoke.WS_EX_LAYERED) == LocalPInvoke.WS_EX_LAYERED)
-            {
-                Debug.WriteLine("Taskbar is set to layered.");
-            }
-            else
+            if ((style & LocalPInvoke.WS_EX_LAYERED) != LocalPInvoke.WS_EX_LAYERED)
             {
                 LocalPInvoke.SetWindowLong(hwndMain, LocalPInvoke.GWL_EXSTYLE, LocalPInvoke.GetWindowLong(hwndMain, LocalPInvoke.GWL_EXSTYLE).ToInt32() ^ LocalPInvoke.WS_EX_LAYERED);
-                Debug.WriteLine("Taskbar isn't set to layered.");
             }
+
 
 
 
