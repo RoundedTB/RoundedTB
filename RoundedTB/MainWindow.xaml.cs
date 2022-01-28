@@ -395,7 +395,10 @@ namespace RoundedTB
             }
             else
             {
-                if (!int.TryParse(mTopInput.Text, out mt) || !int.TryParse(mLeftInput.Text, out ml) || !int.TryParse(mBottomInput.Text, out mb) || !int.TryParse(mRightInput.Text, out mr))
+                if (   (!int.TryParse(mTopInput.Text, out mt) && mTopInput.Text != String.Empty)
+                    || (!int.TryParse(mLeftInput.Text, out ml) && mLeftInput.Text != String.Empty)
+                    || (!int.TryParse(mBottomInput.Text, out mb) && mBottomInput.Text != String.Empty)
+                    || (!int.TryParse(mRightInput.Text, out mr) && mRightInput.Text != String.Empty))
                 {
                     return;
                 }
