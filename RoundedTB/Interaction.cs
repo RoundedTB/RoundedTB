@@ -52,34 +52,38 @@ namespace RoundedTB
                 {
                     mw.activeSettings = new Types.Settings()
                     {
-                        CornerRadius = 7,
-                        MarginBasic = 3,
-                        MarginBottom = 0,
-                        MarginTop = 0,
-                        MarginLeft = 0,
-                        MarginRight = 0,
+                        SimpleTaskbarLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
+                        DynamicAppListLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
+                        DynamicTrayLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
+                        DynamicWidgetsLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
                         IsDynamic = false,
                         IsCentred = false,
+                        IsWindows11 = true,
                         ShowTray = false,
                         CompositionCompat = false,
-                        IsNotFirstLaunch = false
+                        IsNotFirstLaunch = false,
+                        FillOnMaximise = true,
+                        FillOnTaskSwitch = true,
+                        ShowTrayOnHover = false
                     };
                 }
                 else
                 {
                     mw.activeSettings = new Types.Settings()
                     {
-                        CornerRadius = 16,
-                        MarginBasic = 2,
-                        MarginBottom = 0,
-                        MarginTop = 0,
-                        MarginLeft = 0,
-                        MarginRight = 0,
+                        SimpleTaskbarLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
+                        DynamicAppListLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
+                        DynamicTrayLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
+                        DynamicWidgetsLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
                         IsDynamic = false,
                         IsCentred = false,
+                        IsWindows11 = false,
                         ShowTray = false,
                         CompositionCompat = false,
-                        IsNotFirstLaunch = false
+                        IsNotFirstLaunch = false,
+                        FillOnMaximise = true,
+                        FillOnTaskSwitch = false,
+                        ShowTrayOnHover = false
                     };
                 }
                 

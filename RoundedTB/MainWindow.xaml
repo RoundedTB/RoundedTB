@@ -5,19 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RoundedTB"
         xmlns:tb="http://www.hardcodet.net/taskbar"
-        mc:Ignorable="d"
         xmlns:wpfui="clr-namespace:WPFUI.Controls;assembly=WPFUI"
-        Style="{StaticResource UiWindowRounded}"
-        Title="RoundedTB" Height="542" Width="646"
-        Opacity="1.001" Visibility = "Visible" ResizeMode="NoResize" Background="#FF1D1D1D" WindowStyle="SingleBorderWindow">
+        mc:Ignorable="d"
+        Style="{StaticResource UiWindow}"
+        Title="RoundedTB" Height="458" Width="718"
+        Background="#20808080"
+        d:Background="Transparent"
+        Visibility = "Visible"
+        Opacity="0.001"
+        d:Opacity="1"
+        ResizeMode="NoResize">
     <!--169, 393-->
-    <Grid x:Name="MainGrid" Height="542" Width="646" VerticalAlignment="Top" HorizontalAlignment="Left">
+    <Grid x:Name="MainGrid" Margin="0,0,0,0" d:Margin="0,-16,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" MinHeight="30" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <tb:TaskbarIcon x:Name="TrayIcon" Visibility ="Visible" ToolTipText="RoundedTB" Width="0" Height="0" d:LayoutOverrides="Width, Height" HorizontalAlignment="Center" VerticalAlignment="Top" >
+        <tb:TaskbarIcon x:Name="TrayIcon" Visibility ="Visible" ToolTipText="RoundedTB" Width="0" Height="0" HorizontalAlignment="Center" VerticalAlignment="Top" >
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu MouseEnter="ContextMenu_MouseEnter">
                     <CheckBox x:Name ="StartupCheckBox" Content="Run at startup" Click="Startup_Clicked"/>
@@ -28,7 +33,7 @@
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
 
-        <wpfui:TitleBar Grid.Row="0" ApplicationNavigation="True" Margin="0,0,0,0" VerticalAlignment="Stretch" RenderTransformOrigin="0.5,0.5" >
+        <wpfui:TitleBar Grid.Row="0" ApplicationNavigation="True" Margin="0,0,0,0" RenderTransformOrigin="0.5,0.5" Title="RoundedTB - Configuration" Icon="pack://application:,,,/RoundedTBcanary.ico" Height="51" ShowMaximize="False">
             <wpfui:TitleBar.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -41,62 +46,67 @@
 
         <Grid Grid.Row="1">
 
+            <Grid Margin="0,0,10,0" HorizontalAlignment="Right" Width="202" Height="55" VerticalAlignment="Top">
+                <Label x:Name="cornerRadiusLabel" Content="Corner radius" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                <TextBox x:Name="cornerRadiusInput" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" HorizontalAlignment="Left" Width="94" Margin="108,19,0,0"/>
+                <Slider x:Name="cornerRadiusSlider" Height="10" VerticalAlignment="Top" HorizontalAlignment="Left" Width="84" ValueChanged="cornerRadiusSlider_ValueChanged" LargeChange="0" SmallChange="1" Focusable="False" Maximum="48" Orientation="Horizontal" Thumb.DragCompleted="cornerRadiusSlider_DragCompleted" Margin="0,25,0,0"/>
+            </Grid>
 
 
-            <Label x:Name="marginLabel" Content="Margin" HorizontalAlignment="Left" Margin="262,267,0,0" Height="20" VerticalAlignment="Top"/>
-            <Label x:Name="cornerRadiusLabel" Content="Corner radius" HorizontalAlignment="Left" Height="19" VerticalAlignment="Top" Margin="10,267,0,0"/>
 
-            <TextBox x:Name="marginInput" TextWrapping="NoWrap" Text="" Margin="394,282,0,197" HorizontalAlignment="Left" Width="100" Height="32"/>
-            <Button x:Name="advancedMarginsButton" Content="..."  Visibility="Hidden" Margin="-120,65,0,0" VerticalAlignment="Top" Height="26" Width="70" FontSize="10" Click="advancedMarginsButton_Click"/>
-            <Slider x:Name="marginSlider" Margin="262,287,0,0" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" ValueChanged="marginSlider_ValueChanged" LargeChange="0" SmallChange="1" Focusable="False" Maximum="24" Orientation="Horizontal" Thumb.DragCompleted="marginSlider_DragCompleted" Width="127"/>
-            <TextBox x:Name="cornerRadiusInput" TextWrapping="NoWrap" Text="" Margin="142,280,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="100"/>
-            <Slider x:Name="cornerRadiusSlider" Margin="10,287,0,0" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" Width="127" ValueChanged="cornerRadiusSlider_ValueChanged" LargeChange="0" SmallChange="1" Focusable="False" Maximum="48" Orientation="Horizontal" Thumb.DragCompleted="cornerRadiusSlider_DragCompleted"/>
 
-            <Button x:Name="aboutButton" Margin="515,397,0,0" VerticalAlignment="Top" Width="121" HorizontalAlignment="Left" Content="Help" Click="aboutButton_Click" FontWeight="Normal" Foreground="White" Background="#FF373737" BorderBrush="#FF1C1C1C"/>
-            <Button x:Name="advancedButton" Margin="515,433,0,0" Width="121" VerticalAlignment="Top" HorizontalAlignment="Left" Content="Advanced" Click="advancedButton_Click" FontWeight="Normal" Foreground="White" Background="#FF373737" BorderBrush="#FF1C1C1C"/>
-            <Button x:Name="applyButton" Margin="515,469,0,0" Height="32" Width="121" VerticalAlignment="Top" HorizontalAlignment="Left" Content="Apply" Click="ApplyButton_Click" FontWeight="Normal" Foreground="Black"/>
+            <wpfui:Button x:Name="aboutButton" Appearance="Secondary" Margin="0,0,10,47" VerticalAlignment="Bottom" Content="Help" Click="aboutButton_Click" FontWeight="Normal" HorizontalAlignment="Right" Width="133" Height="31"/>
+            <wpfui:Button x:Name="applyButton" Margin="0,0,10,10" VerticalAlignment="Bottom" Content="Apply" Click="ApplyButton_Click" FontWeight="Normal" Foreground="Black" HorizontalAlignment="Right" Width="133" Height="32"/>
 
-            <CheckBox x:Name="dynamicCheckBox" Content="Dynamic mode" Margin="510,282,0,0" Checked="dynamicCheckBox_Checked" Unchecked="dynamicCheckBox_Unchecked" VerticalAlignment="Top" RenderTransformOrigin="1.763,4.069" HorizontalAlignment="Left"/>
-            <CheckBox x:Name="showTrayCheckBox" Content="Show system tray" Margin="510,307,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-            <CheckBox x:Name="independentMarginsCheckBox" Content="Complex margins" Margin="510,332,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+            <CheckBox x:Name="dynamicCheckBox" Content="Dynamic mode" Margin="0,210,53,0" Checked="dynamicCheckBox_Checked" Unchecked="dynamicCheckBox_Unchecked" VerticalAlignment="Top" RenderTransformOrigin="1.763,4.069" Visibility="Visible" HorizontalAlignment="Right" Width="116"/>
+            <CheckBox x:Name="showTrayCheckBox" Content="Show this segment" Margin="0,210,44,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="134" Visibility="Hidden"/>
+            <CheckBox x:Name="showWidgetsCheckBox" Content="Show this segment" Margin="0,210,44,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="134" Visibility="Hidden"/>
 
             <CheckBox x:Name="centredCheckBox" Content="Centred taskbar?" Margin="10,62,0,0" VerticalAlignment="Top" Visibility="Hidden"/>
-            <Button x:Name="splitHelpButton" Content="Click me!"  Margin="107,122,0,0" Click="splitHelpButton_Click"  Height="32" Width="94" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" Visibility="Hidden"/>
+            <Button x:Name="splitHelpButton" Opacity="0.001" Content="Click me!"  Margin="107,122,0,0" Click="splitHelpButton_Click"  Height="32" Width="94" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" Visibility="Hidden"/>
 
-            <Grid x:Name="AdvancedGrid" Width="0" Height="0" Margin="0,0,0,0" d:LayoutOverrides="Width, Height" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Grid Width="500" Margin="15,0,0,15" HorizontalAlignment="Left" Height="110" VerticalAlignment="Bottom">
+                <CheckBox x:Name="showTrayOnHoverCheckBox" Content="Show segments only when hovered over with the mouse" Margin="0,0,0,0" VerticalAlignment="Top" Checked="showTrayOnHoverCheckBox_Checked" Unchecked="showTrayOnHoverCheckBox_Unchecked" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
+                <CheckBox x:Name="fillMaximisedCheckBox" Content="When a window is maximised, reset the taskbar appearance to normal" Margin="0,30,0,0" Checked="fillMaximisedCheckBox_Checked"  Unchecked="fillMaximisedCheckBox_Unchecked"  VerticalAlignment="Top" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
+                <CheckBox x:Name="fillAltTabCheckBox" Content="When alt+tab or win+tab is pressed,  reset the taskbar appearance to normal" Margin="0,60,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment"/>
+                <CheckBox x:Name="compositionFixCheckBox" Content="Improve compatibility with TranslucentTB and other mods (may cause flickering)" Margin="0,90,0,0" VerticalAlignment="Top" IsChecked="False" Checked="compositionFixCheckBox_Checked" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
+            </Grid>
+
+            <Grid Width="202" Height="110" Margin="0,70,10,0" HorizontalAlignment="Right" VerticalAlignment="Top">
+                <Label x:Name="mTopLabel" Content="Top Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Width="94" Margin="0,0,0,0" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
+                <TextBox x:Name="mTopInput" HorizontalAlignment="Left" Margin="0,20,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
+
+                <Label x:Name="mBottomLabel" Content="Bottom Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="108,0,0,0" Width="94" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
+                <TextBox x:Name="mBottomInput" HorizontalAlignment="Left" Margin="108,20,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False" d:LayoutOverrides="VerticalAlignment"/>
+
+                <Label x:Name="mLeftLabel" Content="Left Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,56,0,0" Width="94" d:LayoutOverrides="HorizontalAlignment"/>
+                <TextBox x:Name="mLeftInput" HorizontalAlignment="Left" Margin="0,76,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False" d:LayoutOverrides="HorizontalAlignment"/>
+
+                <Label x:Name="mRightLabel" Content="Right Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="108,56,0,0" Width="84"/>
+                <TextBox x:Name="mRightInput" HorizontalAlignment="Left" Margin="108,76,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False"/>
 
             </Grid>
-            <Expander x:Name="advancedExpander" Header="Advanced" Margin="10,324,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="232" IsExpanded="True">
-                <Grid>
-                    <CheckBox x:Name="showTrayOnHoverCheckBox" Content="Show system tray on hover" Margin="10,0,0,0" VerticalAlignment="Top" Checked="showTrayOnHoverCheckBox_Checked" Unchecked="showTrayOnHoverCheckBox_Unchecked" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
-                    <CheckBox x:Name="compositionFixCheckBox" Content="TranslucentTB compatibility" Margin="10,30,0,0" VerticalAlignment="Top" IsChecked="False" Checked="compositionFixCheckBox_Checked" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
-                    <CheckBox x:Name="fillMaximisedCheckBox" Content="Fill taskbar when maximised" Margin="10,60,0,0" Checked="fillMaximisedCheckBox_Checked"  Unchecked="fillMaximisedCheckBox_Unchecked"  VerticalAlignment="Top" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
-                    <CheckBox x:Name="fillAltTabCheckBox" Content="Fill taskbar on alt+tab" Margin="10,90,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment"/>
-                </Grid>
-            </Expander>
 
-            <Expander x:Name="marginExpander" Header="Complex margins" Margin="262,324,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="232" IsExpanded="True">
-                <Grid>
-                    <Label x:Name="mTopLabel" Content="Top Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Width="94" Margin="4,0,0,0" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
-                    <TextBox x:Name="mTopInput" HorizontalAlignment="Left" Margin="4,20,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
-
-                    <Label x:Name="mBottomLabel" Content="Bottom Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="112,0,0,0" Width="94" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
-                    <TextBox x:Name="mBottomInput" HorizontalAlignment="Left" Margin="112,20,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False" d:LayoutOverrides="VerticalAlignment"/>
-
-                    <Label x:Name="mLeftLabel" Content="Left Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4,56,0,0" Width="94" d:LayoutOverrides="HorizontalAlignment"/>
-                    <TextBox x:Name="mLeftInput" HorizontalAlignment="Left" Margin="4,76,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False" d:LayoutOverrides="HorizontalAlignment"/>
-
-                    <Label x:Name="mRightLabel" Content="Right Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="112,56,0,0" Width="84"/>
-                    <TextBox x:Name="mRightInput" HorizontalAlignment="Left" Margin="112,76,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" IsEnabled="False"/>
-
-                </Grid>
-            </Expander>
-            <Grid x:Name="tbDiagramGrid" Margin="80,10,80,255">
-                <Label Content="RoundedTB" HorizontalAlignment="Center" Margin="65" FontFamily="Segoe UI Variable Display" FontWeight="SemiBold" FontSize="60"/>
+            <Grid x:Name="tbDiagramGrid" Margin="10,0,0,0" Height="247" VerticalAlignment="Top" HorizontalAlignment="Left" Width="486">
                 <Rectangle Stroke="#30242424" Fill="#20808080" RadiusX="5" RadiusY="5"/>
-                <Rectangle Stroke="#30242424" Fill="#33808080" RadiusX="6" RadiusY="6" Margin="126,205,126,5"/>
-                <Rectangle Stroke="#30242424" Fill="#33808080" RadiusX="6" RadiusY="6" Margin="393,205,5,5"/>
+                <wpfui:Button x:Name="taskbarRectStandIn" Margin="126,0,126,5" VerticalAlignment="Bottom" Click="taskbarRectStandIn_Click" Appearance="Primary" Height="32"/>
+                <wpfui:Button x:Name="trayRectStandIn" Margin="415,0,5,5" MouseEnter="trayRectStandIn_MouseEnter" MouseLeave="trayRectStandIn_MouseLeave" Click="trayRectStandIn_Click" VerticalAlignment="Bottom" Height="32" Appearance="Secondary"/>
+                <wpfui:Button x:Name="widgetsRectStandIn" Margin="5,0,415,5" MouseEnter="widgetsRectStandIn_MouseEnter" MouseLeave="widgetsRectStandIn_MouseLeave" Click="widgetsRectStandIn_Click" VerticalAlignment="Bottom" Height="32" Appearance="Secondary"/>
+
+                <Label Content="RoundedTB" HorizontalAlignment="Center" Margin="0,59,0,108" FontFamily="Segoe UI Variable Display" FontWeight="SemiBold" FontSize="60" Opacity="0.75"/>
+                <Label Content="To begin, select a taskbar segment below." HorizontalAlignment="Center" Margin="0,138,0,75" FontFamily="Segoe UI Variable Display" FontWeight="SemiBold" FontSize="20" Opacity="0.75"/>
             </Grid>
+
+            <Grid Margin="0,0,10,83" HorizontalAlignment="Right" Width="133" Height="50" VerticalAlignment="Bottom">
+                <Label Content="Auto-hide" Height="18" VerticalAlignment="Top"/>
+                <ComboBox SelectedIndex="0" Margin="0,18,0,0" VerticalAlignment="Top">
+                    <ComboBoxItem>Always show</ComboBoxItem>
+                    <ComboBoxItem>Always hide</ComboBoxItem>
+                    <ComboBoxItem>Show on desktop</ComboBoxItem>
+                </ComboBox>
+            </Grid>
+            <Rectangle HorizontalAlignment="Center" Margin="0,262,0,0" Stroke="#4C909090" Width="698" RadiusX="1" RadiusY="1.5" Height="1" VerticalAlignment="Top"/>
+
         </Grid>
     </Grid>
 </Window>

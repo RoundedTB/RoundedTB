@@ -29,12 +29,10 @@ namespace RoundedTB
         public class Settings
         {
             public int Version {  get; set; }
-            public int CornerRadius { get; set; }
-            public int MarginBasic { get; set; }
-            public int MarginBottom { get; set; }
-            public int MarginLeft { get; set; }
-            public int MarginRight { get; set; }
-            public int MarginTop { get; set; }
+            public SegmentSettings SimpleTaskbarLayout { get; set; }
+            public SegmentSettings DynamicAppListLayout { get; set; }
+            public SegmentSettings DynamicTrayLayout { get; set; }
+            public SegmentSettings DynamicWidgetsLayout { get; set; }
             public bool IsDynamic { get; set; }
             public bool IsCentred { get; set; }
             public bool IsWindows11 { get; set; }
@@ -44,6 +42,7 @@ namespace RoundedTB
             public bool FillOnMaximise { get; set; }
             public bool FillOnTaskSwitch {  get; set; }
             public bool ShowTrayOnHover { get; set; }
+            public int AutoHide { get; set; }
         }
 
         public class EffectiveRegion
@@ -53,6 +52,15 @@ namespace RoundedTB
             public int Left { get; set; }
             public int Width { get; set; }
             public int Height { get; set; }
+        }
+
+        public class SegmentSettings
+        {
+            public int CornerRadius { get; set; }
+            public int MarginTop { get; set; }
+            public int MarginLeft { get; set; }
+            public int MarginBottom { get; set; }
+            public int MarginRight { get; set; }
         }
 
         public enum TrayMode

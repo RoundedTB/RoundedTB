@@ -167,23 +167,14 @@ namespace RoundedTB
         {
             try
             {
-                // If independent margins are disabled, set all four margins to the same value
-                if (settings.MarginBasic != -384)
-                {
-                    settings.MarginLeft = settings.MarginBasic;
-                    settings.MarginTop = settings.MarginBasic;
-                    settings.MarginRight = settings.MarginBasic;
-                    settings.MarginBottom = settings.MarginBasic;
-                }
-
                 // Create an effective region to be applied to the taskbar
                 Types.EffectiveRegion taskbarEffectiveRegion = new Types.EffectiveRegion
                 {
-                    CornerRadius = Convert.ToInt32(settings.CornerRadius * taskbar.ScaleFactor),
-                    Top = Convert.ToInt32(settings.MarginTop * taskbar.ScaleFactor),
-                    Left = Convert.ToInt32(settings.MarginLeft * taskbar.ScaleFactor),
-                    Width = Convert.ToInt32(taskbar.TaskbarRect.Right - taskbar.TaskbarRect.Left - (settings.MarginRight * taskbar.ScaleFactor)) + 1,
-                    Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.MarginBottom * taskbar.ScaleFactor)) + 1
+                    CornerRadius = Convert.ToInt32(settings.SimpleTaskbarLayout.CornerRadius * taskbar.ScaleFactor),
+                    Top = Convert.ToInt32(settings.SimpleTaskbarLayout.MarginTop * taskbar.ScaleFactor),
+                    Left = Convert.ToInt32(settings.SimpleTaskbarLayout.MarginLeft * taskbar.ScaleFactor),
+                    Width = Convert.ToInt32(taskbar.TaskbarRect.Right - taskbar.TaskbarRect.Left - (settings.SimpleTaskbarLayout.MarginRight * taskbar.ScaleFactor)) + 1,
+                    Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.SimpleTaskbarLayout.MarginBottom * taskbar.ScaleFactor)) + 1
                 };
 
                 IntPtr region = LocalPInvoke.CreateRoundRectRgn(taskbarEffectiveRegion.Left, taskbarEffectiveRegion.Top, taskbarEffectiveRegion.Width, taskbarEffectiveRegion.Height, taskbarEffectiveRegion.CornerRadius, taskbarEffectiveRegion.CornerRadius);
@@ -214,43 +205,43 @@ namespace RoundedTB
                 IntPtr finalRegion = LocalPInvoke.CreateRoundRectRgn(1, 1, 1, 1, 0, 0);
                 int centredDistanceFromEdge = 0;
 
-                // If independent margins are disabled, set all four margins to the same value
-                if (settings.MarginBasic != -384)
-                {
-                    settings.MarginLeft = settings.MarginBasic;
-                    settings.MarginTop = settings.MarginBasic;
-                    settings.MarginRight = settings.MarginBasic;
-                    settings.MarginBottom = settings.MarginBasic;
-                }
-
                 // Create an effective region to be applied to the taskbar for the applist
                 Types.EffectiveRegion taskbarEffectiveRegion = new Types.EffectiveRegion
                 {
-                    CornerRadius = Convert.ToInt32(settings.CornerRadius * taskbar.ScaleFactor),
-                    Top = Convert.ToInt32(settings.MarginTop * taskbar.ScaleFactor),
-                    Left = Convert.ToInt32(settings.MarginLeft * taskbar.ScaleFactor),
-                    Width = Convert.ToInt32(taskbar.TaskbarRect.Right - taskbar.TaskbarRect.Left - (settings.MarginRight * taskbar.ScaleFactor)) + 1,
-                    Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.MarginBottom * taskbar.ScaleFactor)) + 1
+                    CornerRadius = Convert.ToInt32(settings.DynamicAppListLayout.CornerRadius * taskbar.ScaleFactor),
+                    Top = Convert.ToInt32(settings.DynamicAppListLayout.MarginTop * taskbar.ScaleFactor),
+                    Left = Convert.ToInt32(settings.DynamicAppListLayout.MarginLeft * taskbar.ScaleFactor),
+                    Width = Convert.ToInt32(taskbar.TaskbarRect.Right - taskbar.TaskbarRect.Left - (settings.DynamicAppListLayout.MarginRight * taskbar.ScaleFactor)) + 1,
+                    Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.DynamicAppListLayout.MarginBottom * taskbar.ScaleFactor)) + 1
                 };
 
                 // Create an effective region to be applied to the taskbar for the applist
                 Types.EffectiveRegion centredEffectiveRegion = new Types.EffectiveRegion
                 {
-                    CornerRadius = Convert.ToInt32(settings.CornerRadius * taskbar.ScaleFactor),
-                    Top = Convert.ToInt32(settings.MarginTop * taskbar.ScaleFactor),
-                    Left = Convert.ToInt32(settings.MarginRight * taskbar.ScaleFactor) - 1,
-                    Width = Convert.ToInt32(taskbar.TaskbarRect.Right - taskbar.TaskbarRect.Left - (settings.MarginRight * taskbar.ScaleFactor)) + 1,
-                    Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.MarginBottom * taskbar.ScaleFactor)) + 1
+                    CornerRadius = Convert.ToInt32(settings.DynamicAppListLayout.CornerRadius * taskbar.ScaleFactor),
+                    Top = Convert.ToInt32(settings.DynamicAppListLayout.MarginTop * taskbar.ScaleFactor),
+                    Left = Convert.ToInt32(settings.DynamicAppListLayout.MarginRight * taskbar.ScaleFactor) - 1,
+                    Width = Convert.ToInt32(taskbar.TaskbarRect.Right - taskbar.TaskbarRect.Left - (settings.DynamicAppListLayout.MarginRight * taskbar.ScaleFactor)) + 1,
+                    Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.DynamicAppListLayout.MarginBottom * taskbar.ScaleFactor)) + 1
                 };
 
                 // Create an effective region to be applied to the taskbar for the tray
                 Types.EffectiveRegion trayEffectiveRegion = new Types.EffectiveRegion
                 {
-                    CornerRadius = Convert.ToInt32(settings.CornerRadius * taskbar.ScaleFactor),
-                    Top = Convert.ToInt32(settings.MarginTop * taskbar.ScaleFactor),
-                    Left = Convert.ToInt32(taskbar.ScaleFactor), // Disable custom margin for taskbar left as there's no "padding" provided by Windows and always looks weird as soon as you trim it.
-                    Width = Convert.ToInt32(taskbar.TaskbarRect.Right - taskbar.TaskbarRect.Left - (settings.MarginLeft * taskbar.ScaleFactor)) + 1,
-                    Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.MarginBottom * taskbar.ScaleFactor)) + 1
+                    CornerRadius = Convert.ToInt32(settings.DynamicTrayLayout.CornerRadius * taskbar.ScaleFactor),
+                    Top = Convert.ToInt32(settings.DynamicTrayLayout.MarginTop * taskbar.ScaleFactor),
+                    Left = Convert.ToInt32((settings.DynamicTrayLayout.MarginLeft * taskbar.ScaleFactor) - (3 * taskbar.ScaleFactor)), // Add extra margin for taskbar left as there's no "padding" provided by Windows and always looks weird as soon as you trim it otherwise.
+                    Width = Convert.ToInt32(taskbar.TaskbarRect.Right - taskbar.TaskbarRect.Left - (settings.DynamicTrayLayout.MarginRight * taskbar.ScaleFactor)) + 1,
+                    Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.DynamicTrayLayout.MarginBottom * taskbar.ScaleFactor)) + 1
+                };
+
+                Types.EffectiveRegion widgetsEffectiveRegion = new Types.EffectiveRegion
+                {
+                    CornerRadius = Convert.ToInt32(settings.DynamicWidgetsLayout.CornerRadius * taskbar.ScaleFactor),
+                    Top = Convert.ToInt32(settings.DynamicWidgetsLayout.MarginTop * taskbar.ScaleFactor),
+                    Left = Convert.ToInt32(settings.DynamicWidgetsLayout.MarginLeft * taskbar.ScaleFactor),
+                    Width = Convert.ToInt32(168 * taskbar.ScaleFactor - (settings.DynamicWidgetsLayout.MarginRight * taskbar.ScaleFactor)) + 1,
+                    Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.DynamicWidgetsLayout.MarginBottom * taskbar.ScaleFactor)) + 1
                 };
 
                 centredDistanceFromEdge = taskbar.TaskbarRect.Right - taskbar.AppListRect.Right - Convert.ToInt32(2 * taskbar.ScaleFactor);
@@ -300,7 +291,17 @@ namespace RoundedTB
                         trayEffectiveRegion.CornerRadius
                         );
 
+                    IntPtr widgetsRegion = LocalPInvoke.CreateRoundRectRgn(
+                        widgetsEffectiveRegion.Left,
+                        widgetsEffectiveRegion.Top,
+                        widgetsEffectiveRegion.Width,
+                        widgetsEffectiveRegion.Height,
+                        widgetsEffectiveRegion.CornerRadius,
+                        widgetsEffectiveRegion.CornerRadius
+                        );
+
                     LocalPInvoke.CombineRgn(finalRegion, trayRegion, mainRegion, 2);
+                    LocalPInvoke.CombineRgn(finalRegion, widgetsRegion, finalRegion, 2);
                     mainRegion = finalRegion;
                 }
 
@@ -310,11 +311,6 @@ namespace RoundedTB
                 {
                     Interaction.UpdateTranslucentTB(taskbar.TaskbarHwnd);
                 }
-
-                // Force window to be always-on-top just in case
-                //LocalPInvoke.SetWindowPos(taskbar.TaskbarHwnd, new IntPtr(-1), 0, 0, 0, 0, LocalPInvoke.SetWindowPosFlags.IgnoreMove | LocalPInvoke.SetWindowPosFlags.IgnoreResize);
-                //SetTaskbarState(LocalPInvoke.AppBarStates.AlwaysOnTop, taskbar.TaskbarHwnd);
-                //Debug.WriteLine("Forced always-on-top");
 
                 return true;
             }

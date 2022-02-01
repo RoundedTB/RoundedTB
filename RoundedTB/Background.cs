@@ -148,8 +148,7 @@ namespace RoundedTB
                                 }
                             }
 
-                            // TODO: add an actual setting for autohide
-                            if (true)
+                            if (settings.AutoHide > 0)
                             {
                                 LocalPInvoke.RECT currentTaskbarRect = taskbars[current].TaskbarRect;
                                 LocalPInvoke.GetCursorPos(out LocalPInvoke.POINT msPt);
