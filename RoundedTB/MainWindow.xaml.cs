@@ -48,6 +48,7 @@ namespace RoundedTB
         public Background background;
         public Interaction interaction;
         private HwndSource source;
+        public int selectedSegment = 0; // 0 = Simple, 1 = AppList, 2 = Tray, 3 = Widgets
         public int version = -1;
         /// <summary>
         /// Versions:
@@ -55,6 +56,7 @@ namespace RoundedTB
         ///  0: R3.0
         ///  1: P3.1B
         ///  2: R3.1
+        ///  3: R4
         /// </summary>
 
         public MainWindow()
@@ -165,11 +167,12 @@ namespace RoundedTB
                         IsCentred = false,
                         IsWindows11 = true,
                         ShowTray = false,
+                        ShowWidgets = false,
                         CompositionCompat = false,
                         IsNotFirstLaunch = false,
                         FillOnMaximise = true,
                         FillOnTaskSwitch = true,
-                        ShowTrayOnHover = false
+                        ShowSegmentsOnHover = false
                     };
                 }
                 else // Default settings for Windows 10
@@ -184,11 +187,12 @@ namespace RoundedTB
                         IsCentred = false,
                         IsWindows11 = false,
                         ShowTray = false,
+                        ShowWidgets = false,
                         CompositionCompat = false,
                         IsNotFirstLaunch = false,
                         FillOnMaximise = true,
                         FillOnTaskSwitch = false,
-                        ShowTrayOnHover = false
+                        ShowSegmentsOnHover = false
                     };
                 }
             }
@@ -209,27 +213,36 @@ namespace RoundedTB
                 $"IsDynamic: {activeSettings.IsDynamic}\n" +
                 $"IsCentred: {activeSettings.IsCentred}\n" +
                 $"ShowTray: {activeSettings.ShowTray}\n" +
+                $"ShowWidgets: {activeSettings.ShowWidgets}\n" +
                 $"CompositionCompat: {activeSettings.CompositionCompat}\n" +
                 $"IsNotFirstLaunch: {activeSettings.IsNotFirstLaunch}\n" +
                 $"FillOnMaximise: {activeSettings.FillOnMaximise}\n" +
                 $"FillOnTaskSwitch: {activeSettings.FillOnTaskSwitch}\n" +
-                $"ShowTrayOnHover: {activeSettings.ShowTrayOnHover}\n"
+                $"ShowTrayOnHover: {activeSettings.ShowSegmentsOnHover}\n"
                 );
 
             // Checks if advanced margins are configured
-            if (true)
+            if (activeSettings.IsDynamic)
             {
-                mTopInput.IsEnabled = true;
-                mLeftInput.IsEnabled = true;
-                mBottomInput.IsEnabled = true;
-                mRightInput.IsEnabled = true;
+                cornerRadiusInput.Text = activeSettings.DynamicAppListLayout.CornerRadius.ToString();
+                cornerRadiusSlider.Value = activeSettings.DynamicAppListLayout.CornerRadius;
+                mTopInput.Text = activeSettings.DynamicAppListLayout.MarginTop.ToString();
+                mLeftInput.Text = activeSettings.DynamicAppListLayout.MarginLeft.ToString();
+                mBottomInput.Text = activeSettings.DynamicAppListLayout.MarginBottom.ToString();
+                mRightInput.Text = activeSettings.DynamicAppListLayout.MarginRight.ToString();
 
-                // TODO: Reimplement this
-                //mTopInput.Text = activeSettings.MarginTop.ToString();
-                //mLeftInput.Text = activeSettings.MarginLeft.ToString();
-                //mBottomInput.Text = activeSettings.MarginBottom.ToString();
-                //mRightInput.Text = activeSettings.MarginRight.ToString();
+                selectedSegment = 1;
+            }
+            else
+            {
+                cornerRadiusInput.Text = activeSettings.SimpleTaskbarLayout.CornerRadius.ToString();
+                cornerRadiusSlider.Value = activeSettings.SimpleTaskbarLayout.CornerRadius;
+                mTopInput.Text = activeSettings.SimpleTaskbarLayout.MarginTop.ToString();
+                mLeftInput.Text = activeSettings.SimpleTaskbarLayout.MarginLeft.ToString();
+                mBottomInput.Text = activeSettings.SimpleTaskbarLayout.MarginBottom.ToString();
+                mRightInput.Text = activeSettings.SimpleTaskbarLayout.MarginRight.ToString();
 
+                selectedSegment = 0;
             }
 
             // Get whether or not taskbar is centred
@@ -265,9 +278,10 @@ namespace RoundedTB
             dynamicCheckBox.IsChecked = activeSettings.IsDynamic;
             centredCheckBox.IsChecked = activeSettings.IsCentred;
             showTrayCheckBox.IsChecked = activeSettings.ShowTray;
+            showWidgetsCheckBox.IsChecked = activeSettings.ShowWidgets;
             fillMaximisedCheckBox.IsChecked = activeSettings.FillOnMaximise;
             fillAltTabCheckBox.IsChecked = activeSettings.FillOnTaskSwitch;
-            showTrayOnHoverCheckBox.IsChecked = activeSettings.ShowTrayOnHover;
+            showSegmentsOnHoverCheckBox.IsChecked = activeSettings.ShowSegmentsOnHover;
             compositionFixCheckBox.IsChecked = activeSettings.CompositionCompat;
             taskbarDetails = Taskbar.GenerateTaskbarInfo();
             if (true)
@@ -318,20 +332,22 @@ namespace RoundedTB
 
         public void UpdateUi()
         {
-            if (activeSettings.ShowTrayOnHover)
+            if (!activeSettings.ShowTray || activeSettings.ShowSegmentsOnHover)
             {
-                trayRectStandIn.Visibility = Visibility.Visible;
-                trayRectStandIn.Opacity = 0.25;
-            }
-            else if (activeSettings.ShowTray)
-            {
-                trayRectStandIn.Visibility = Visibility.Visible;
-                trayRectStandIn.Opacity = 1;
+                trayRectStandIn.Opacity = 0.1;
             }
             else
             {
-                trayRectStandIn.Visibility = Visibility.Hidden;
                 trayRectStandIn.Opacity = 1;
+            }
+
+            if (!activeSettings.ShowWidgets || activeSettings.ShowSegmentsOnHover)
+            {
+                widgetsRectStandIn.Opacity = 0.1;
+            }
+            else
+            {
+                widgetsRectStandIn.Opacity = 1;
             }
 
             if (activeSettings.IsCentred && activeSettings.IsWindows11 && activeSettings.IsDynamic)
@@ -344,7 +360,7 @@ namespace RoundedTB
             {
                 taskbarRectStandIn.Margin = new Thickness(5, 0, 247, 5);
                 trayRectStandIn.Visibility = Visibility.Visible;
-                widgetsRectStandIn.Visibility = Visibility.Visible;
+                widgetsRectStandIn.Visibility = Visibility.Hidden;
             }
             else
             {
@@ -404,34 +420,37 @@ namespace RoundedTB
 
         public void ApplyButton_Click(object sender, RoutedEventArgs e)
         {
-            int mt = 0;
-            int ml = 0;
-            int mb = 0;
-            int mr = 0;
 
             //if (!int.TryParse(cornerRadiusInput.Text, out int roundFactor) || (!int.TryParse(marginInput.Text, out int marginFactor)))
             //{
             //    return;
             //}
 
+            int mt = 0;
+            int ml = 0;
+            int mb = 0;
+            int mr = 0;
+
+
+
             {
-                //if (!int.TryParse(mTopInput.Text, out mt) || !int.TryParse(mLeftInput.Text, out ml) || !int.TryParse(mBottomInput.Text, out mb) || !int.TryParse(mRightInput.Text, out mr))
-                //{
-                //    return;
-                //}
+                if ((!int.TryParse(mTopInput.Text, out mt) && mTopInput.Text != string.Empty)
+                || (!int.TryParse(mLeftInput.Text, out ml) && mLeftInput.Text != string.Empty)
+                || (!int.TryParse(mBottomInput.Text, out mb) && mBottomInput.Text != string.Empty)
+                || (!int.TryParse(mRightInput.Text, out mr) && mRightInput.Text != string.Empty))
+                {
+                    return;
+                }
             }
-            // TODO: Update to incorporate all settings
-            //activeSettings.MarginTop = mt;
-            //activeSettings.MarginLeft = ml;
-            //activeSettings.MarginBottom = mb;
-            //activeSettings.MarginRight = mr;
+
             activeSettings.IsDynamic = (bool)dynamicCheckBox.IsChecked;
             activeSettings.IsCentred = Taskbar.CheckIfCentred();
             activeSettings.ShowTray = (bool)showTrayCheckBox.IsChecked;
+            activeSettings.ShowWidgets = (bool)showWidgetsCheckBox.IsChecked;
             activeSettings.CompositionCompat = (bool)compositionFixCheckBox.IsChecked;
             activeSettings.FillOnMaximise = (bool)fillMaximisedCheckBox.IsChecked;
             activeSettings.FillOnTaskSwitch = (bool)fillAltTabCheckBox.IsChecked;
-            activeSettings.ShowTrayOnHover = (bool)showTrayOnHoverCheckBox.IsChecked;
+            activeSettings.ShowSegmentsOnHover = (bool)showSegmentsOnHoverCheckBox.IsChecked;
 
             try
             {
@@ -741,8 +760,8 @@ namespace RoundedTB
         private void dynamicCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             centredCheckBox.IsEnabled = true;
-            showTrayOnHoverCheckBox.IsEnabled = true;
-            showTrayOnHoverCheckBox.IsChecked = false;
+            showSegmentsOnHoverCheckBox.IsEnabled = true;
+            showSegmentsOnHoverCheckBox.IsChecked = false;
             showTrayCheckBox.IsEnabled = true;
             showTrayCheckBox.IsChecked = true;
             
@@ -762,8 +781,8 @@ namespace RoundedTB
 
             centredCheckBox.IsEnabled = false;
             centredCheckBox.IsChecked = false;
-            showTrayOnHoverCheckBox.IsEnabled = false;
-            showTrayOnHoverCheckBox.IsChecked = false;
+            showSegmentsOnHoverCheckBox.IsEnabled = false;
+            showSegmentsOnHoverCheckBox.IsChecked = false;
             showTrayCheckBox.IsEnabled = false;
             showTrayCheckBox.IsChecked = false;
             
@@ -773,14 +792,32 @@ namespace RoundedTB
             }
         }
 
-        private void marginSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
-        {
-            ApplyButton_Click(null, null);
-        }
-
         private void cornerRadiusSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
-            ApplyButton_Click(null, null);
+            int check = Convert.ToInt32(Math.Round(cornerRadiusSlider.Value));
+            cornerRadiusInput.Text = check.ToString();
+
+            switch (selectedSegment)
+            {
+                default:
+                    break;
+
+                case 0:
+                    activeSettings.SimpleTaskbarLayout.CornerRadius = check;
+                    break;
+
+                case 1:
+                    activeSettings.DynamicAppListLayout.CornerRadius = check;
+                    break;
+
+                case 2:
+                    activeSettings.DynamicTrayLayout.CornerRadius = check;
+                    break;
+
+                case 3:
+                    activeSettings.DynamicWidgetsLayout.CornerRadius = check;
+                    break;
+            }
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -844,47 +881,22 @@ namespace RoundedTB
 
         }
 
-        private void cornerRadiusSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            cornerRadiusInput.Text = Math.Round(cornerRadiusSlider.Value).ToString();
-        }
-
-        private void showTrayOnHoverCheckBox_Checked(object sender, RoutedEventArgs e)
+        private void showSegmentsOnHoverCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             showTrayCheckBox.IsEnabled = false;
             showTrayCheckBox.IsChecked = false;
+
+            showWidgetsCheckBox.IsEnabled = false;
+            showWidgetsCheckBox.IsChecked = false;
         }
 
-        private void showTrayOnHoverCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        private void showSegmentsOnHoverCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
             showTrayCheckBox.IsEnabled = true;
             showTrayCheckBox.IsChecked = true;
-        }
 
-        private void trayRectStandIn_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            trayRectStandIn.Opacity = 1;
-        }
-
-        private void trayRectStandIn_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            if (activeSettings.ShowTrayOnHover)
-            {
-                trayRectStandIn.Opacity = 0.25;
-            }
-        }
-
-        private void widgetsRectStandIn_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            widgetsRectStandIn.Opacity = 1;
-        }
-
-        private void widgetsRectStandIn_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            if (activeSettings.ShowTrayOnHover)
-            {
-                widgetsRectStandIn.Opacity = 0.25;
-            }
+            showWidgetsCheckBox.IsEnabled = true;
+            showWidgetsCheckBox.IsChecked = true;
         }
 
         private void taskbarRectStandIn_Click(object sender, RoutedEventArgs e)
@@ -896,6 +908,28 @@ namespace RoundedTB
             showTrayCheckBox.Visibility = Visibility.Hidden;
             showWidgetsCheckBox.Visibility = Visibility.Hidden;
 
+            if (activeSettings.IsDynamic)
+            {
+                selectedSegment = 1;
+
+                cornerRadiusInput.Text = activeSettings.DynamicAppListLayout.CornerRadius.ToString();
+                cornerRadiusSlider.Value = activeSettings.DynamicAppListLayout.CornerRadius;
+                mTopInput.Text = activeSettings.DynamicAppListLayout.MarginTop.ToString();
+                mLeftInput.Text = activeSettings.DynamicAppListLayout.MarginLeft.ToString();
+                mBottomInput.Text = activeSettings.DynamicAppListLayout.MarginBottom.ToString();
+                mRightInput.Text = activeSettings.DynamicAppListLayout.MarginRight.ToString();
+            }
+            else
+            {
+                selectedSegment = 0;
+
+                cornerRadiusInput.Text = activeSettings.SimpleTaskbarLayout.CornerRadius.ToString();
+                cornerRadiusSlider.Value = activeSettings.SimpleTaskbarLayout.CornerRadius;
+                mTopInput.Text = activeSettings.SimpleTaskbarLayout.MarginTop.ToString();
+                mLeftInput.Text = activeSettings.SimpleTaskbarLayout.MarginLeft.ToString();
+                mBottomInput.Text = activeSettings.SimpleTaskbarLayout.MarginBottom.ToString();
+                mRightInput.Text = activeSettings.SimpleTaskbarLayout.MarginRight.ToString();
+            }
         }
 
         private void trayRectStandIn_Click(object sender, RoutedEventArgs e)
@@ -906,6 +940,15 @@ namespace RoundedTB
             dynamicCheckBox.Visibility = Visibility.Hidden;
             showTrayCheckBox.Visibility = Visibility.Visible;
             showWidgetsCheckBox.Visibility = Visibility.Hidden;
+
+            selectedSegment = 2;
+
+            cornerRadiusInput.Text = activeSettings.DynamicTrayLayout.CornerRadius.ToString();
+            cornerRadiusSlider.Value = activeSettings.DynamicTrayLayout.CornerRadius;
+            mTopInput.Text = activeSettings.DynamicTrayLayout.MarginTop.ToString();
+            mLeftInput.Text = activeSettings.DynamicTrayLayout.MarginLeft.ToString();
+            mBottomInput.Text = activeSettings.DynamicTrayLayout.MarginBottom.ToString();
+            mRightInput.Text = activeSettings.DynamicTrayLayout.MarginRight.ToString();
         }
 
         private void widgetsRectStandIn_Click(object sender, RoutedEventArgs e)
@@ -916,6 +959,162 @@ namespace RoundedTB
             dynamicCheckBox.Visibility = Visibility.Hidden;
             showTrayCheckBox.Visibility = Visibility.Hidden;
             showWidgetsCheckBox.Visibility = Visibility.Visible;
+
+            selectedSegment = 3;
+
+            cornerRadiusInput.Text = activeSettings.DynamicWidgetsLayout.CornerRadius.ToString();
+            cornerRadiusSlider.Value = activeSettings.DynamicWidgetsLayout.CornerRadius;
+            mTopInput.Text = activeSettings.DynamicWidgetsLayout.MarginTop.ToString();
+            mLeftInput.Text = activeSettings.DynamicWidgetsLayout.MarginLeft.ToString();
+            mBottomInput.Text = activeSettings.DynamicWidgetsLayout.MarginBottom.ToString();
+            mRightInput.Text = activeSettings.DynamicWidgetsLayout.MarginRight.ToString();
+        }
+
+        private void mTopInput_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (int.TryParse(mTopInput.Text, out int check) && mTopInput.Text != string.Empty)
+            {
+                switch (selectedSegment)
+                {
+                    default:
+                        break;
+
+                    case 0:
+                        activeSettings.SimpleTaskbarLayout.MarginTop = check;
+                        break;
+
+                    case 1:
+                        activeSettings.DynamicAppListLayout.MarginTop = check;
+                        break;
+
+                    case 2:
+                        activeSettings.DynamicTrayLayout.MarginTop = check;
+                        break;
+
+                    case 3:
+                        activeSettings.DynamicWidgetsLayout.MarginTop = check;
+                        break;
+                }
+            }
+        }
+
+        private void mBottomInput_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (int.TryParse(mBottomInput.Text, out int check) && mBottomInput.Text != string.Empty)
+            {
+                switch (selectedSegment)
+                {
+                    default:
+                        break;
+
+                    case 0:
+                        activeSettings.SimpleTaskbarLayout.MarginBottom = check;
+                        break;
+
+                    case 1:
+                        activeSettings.DynamicAppListLayout.MarginBottom = check;
+                        break;
+
+                    case 2:
+                        activeSettings.DynamicTrayLayout.MarginBottom = check;
+                        break;
+
+                    case 3:
+                        activeSettings.DynamicWidgetsLayout.MarginBottom = check;
+                        break;
+                }
+            }
+        }
+
+        private void mLeftInput_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (int.TryParse(mLeftInput.Text, out int check) && mLeftInput.Text != string.Empty)
+            {
+                switch (selectedSegment)
+                {
+                    default:
+                        break;
+
+                    case 0:
+                        activeSettings.SimpleTaskbarLayout.MarginLeft = check;
+                        break;
+
+                    case 1:
+                        activeSettings.DynamicAppListLayout.MarginLeft = check;
+                        break;
+
+                    case 2:
+                        activeSettings.DynamicTrayLayout.MarginLeft = check;
+                        break;
+
+                    case 3:
+                        activeSettings.DynamicWidgetsLayout.MarginLeft = check;
+                        break;
+                }
+            }
+        }
+
+        private void mRightInput_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (int.TryParse(mRightInput.Text, out int check) && mRightInput.Text != string.Empty)
+            {
+                switch (selectedSegment)
+                {
+                    default:
+                        break;
+
+                    case 0:
+                        activeSettings.SimpleTaskbarLayout.MarginRight = check;
+                        break;
+
+                    case 1:
+                        activeSettings.DynamicAppListLayout.MarginRight = check;
+                        break;
+
+                    case 2:
+                        activeSettings.DynamicTrayLayout.MarginRight = check;
+                        break;
+
+                    case 3:
+                        activeSettings.DynamicWidgetsLayout.MarginRight = check;
+                        break;
+                }
+            }
+        }
+
+        private void cornerRadiusInput_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (int.TryParse(cornerRadiusInput.Text, out int check) && cornerRadiusInput.Text != string.Empty)
+            {
+                switch (selectedSegment)
+                {
+                    default:
+                        break;
+
+                    case 0:
+                        activeSettings.SimpleTaskbarLayout.CornerRadius = check;
+                        break;
+
+                    case 1:
+                        activeSettings.DynamicAppListLayout.CornerRadius = check;
+                        break;
+
+                    case 2:
+                        activeSettings.DynamicTrayLayout.CornerRadius = check;
+                        break;
+
+                    case 3:
+                        activeSettings.DynamicWidgetsLayout.CornerRadius = check;
+                        break;
+                }
+
+                cornerRadiusSlider.Value = check;
+            }
+        }
+
+        private void cornerRadiusSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            cornerRadiusInput.Text = Math.Round(cornerRadiusSlider.Value).ToString();
         }
     }
 }

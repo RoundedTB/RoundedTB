@@ -64,7 +64,7 @@ namespace RoundedTB
                         IsNotFirstLaunch = false,
                         FillOnMaximise = true,
                         FillOnTaskSwitch = true,
-                        ShowTrayOnHover = false
+                        ShowSegmentsOnHover = false
                     };
                 }
                 else
@@ -83,7 +83,7 @@ namespace RoundedTB
                         IsNotFirstLaunch = false,
                         FillOnMaximise = true,
                         FillOnTaskSwitch = false,
-                        ShowTrayOnHover = false
+                        ShowSegmentsOnHover = false
                     };
                 }
                 

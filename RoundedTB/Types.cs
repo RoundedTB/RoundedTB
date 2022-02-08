@@ -37,11 +37,12 @@ namespace RoundedTB
             public bool IsCentred { get; set; }
             public bool IsWindows11 { get; set; }
             public bool ShowTray { get; set; }
+            public bool ShowWidgets { get; set; }
             public bool CompositionCompat { get; set; }
             public bool IsNotFirstLaunch { get; set; }
             public bool FillOnMaximise { get; set; }
             public bool FillOnTaskSwitch {  get; set; }
-            public bool ShowTrayOnHover { get; set; }
+            public bool ShowSegmentsOnHover { get; set; }
             public int AutoHide { get; set; }
         }
 

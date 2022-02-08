@@ -202,7 +202,7 @@ namespace RoundedTB
             try
             {
                 IntPtr mainRegion;
-                IntPtr finalRegion = LocalPInvoke.CreateRoundRectRgn(1, 1, 1, 1, 0, 0);
+                IntPtr workingRegion = LocalPInvoke.CreateRoundRectRgn(1, 1, 1, 1, 0, 0);
                 int centredDistanceFromEdge = 0;
 
                 // Create an effective region to be applied to the taskbar for the applist
@@ -291,6 +291,12 @@ namespace RoundedTB
                         trayEffectiveRegion.CornerRadius
                         );
 
+                    LocalPInvoke.CombineRgn(workingRegion, trayRegion, mainRegion, 2);
+                    mainRegion = workingRegion;
+                }
+
+                if (settings.ShowWidgets)
+                {
                     IntPtr widgetsRegion = LocalPInvoke.CreateRoundRectRgn(
                         widgetsEffectiveRegion.Left,
                         widgetsEffectiveRegion.Top,
@@ -300,9 +306,8 @@ namespace RoundedTB
                         widgetsEffectiveRegion.CornerRadius
                         );
 
-                    LocalPInvoke.CombineRgn(finalRegion, trayRegion, mainRegion, 2);
-                    LocalPInvoke.CombineRgn(finalRegion, widgetsRegion, finalRegion, 2);
-                    mainRegion = finalRegion;
+                    LocalPInvoke.CombineRgn(workingRegion, widgetsRegion, mainRegion, 2);
+                    mainRegion = workingRegion;
                 }
 
                 // Apply the final region to the taskbar

@@ -45,30 +45,30 @@ namespace RoundedTB
                         if (infrequentCount == 10)
                         {
                             // Check to see if settings need to be shown
-                            //List<IntPtr> windowList = Interaction.GetTopLevelWindows();
-                            //foreach (IntPtr hwnd in windowList)
-                            //{
-                            //    StringBuilder windowClass = new StringBuilder(1024);
-                            //    StringBuilder windowTitle = new StringBuilder(1024);
-                            //    try
-                            //    {
-                            //        LocalPInvoke.GetClassName(hwnd, windowClass, 1024);
-                            //        LocalPInvoke.GetWindowText(hwnd, windowTitle, 1024);
+                            List<IntPtr> windowList = Interaction.GetTopLevelWindows();
+                            foreach (IntPtr hwnd in windowList)
+                            {
+                                StringBuilder windowClass = new StringBuilder(1024);
+                                StringBuilder windowTitle = new StringBuilder(1024);
+                                try
+                                {
+                                    LocalPInvoke.GetClassName(hwnd, windowClass, 1024);
+                                    LocalPInvoke.GetWindowText(hwnd, windowTitle, 1024);
 
-                            //        if (windowClass.ToString().Contains("HwndWrapper[RoundedTB.exe") && windowTitle.ToString() == "RoundedTB_SettingsRequest")
-                            //        {
-                            //            mw.Dispatcher.Invoke(() =>
-                            //            {
-                            //                if (mw.Visibility != Visibility.Visible)
-                            //                {
-                            //                    mw.ShowMenuItem_Click(null, null);
-                            //                }
-                            //            });
-                            //            LocalPInvoke.SetWindowText(hwnd, "RoundedTB");
-                            //        }
-                            //    }
-                            //    catch (Exception) { }
-                            //}
+                                    if (windowClass.ToString().Contains("HwndWrapper[RoundedTB.exe") && windowTitle.ToString() == "RoundedTB_SettingsRequest")
+                                    {
+                                        mw.Dispatcher.Invoke(() =>
+                                        {
+                                            if (mw.Visibility != Visibility.Visible)
+                                            {
+                                                mw.ShowMenuItem_Click(null, null);
+                                            }
+                                        });
+                                        LocalPInvoke.SetWindowText(hwnd, "RoundedTB");
+                                    }
+                                }
+                                catch (Exception) { }
+                            }
 
                             // Update tray icon
                             mw.Dispatcher.Invoke(() =>
@@ -127,7 +127,7 @@ namespace RoundedTB
                             }
 
                             // Showhide tray on hover
-                            if (settings.ShowTrayOnHover)
+                            if (settings.ShowSegmentsOnHover)
                             {
                                 LocalPInvoke.RECT currentTrayRect = taskbars[current].TrayRect;
                                 if (currentTrayRect.Left != 0)
