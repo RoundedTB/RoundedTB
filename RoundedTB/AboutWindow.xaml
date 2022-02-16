@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="" Height="600" Width="500"
         xmlns:ui="http://schemas.modernwpf.com/2019"
-        ui:WindowHelper.UseModernWindowStyle="True" Visibility ="Visible" ResizeMode="NoResize" Opacity="1.001">
+        Visibility ="Visible" ResizeMode="NoResize" Opacity="1.001">
     <Grid>
         <Image x:Name="bannerMst" Visibility ="Hidden" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBanner.png" Width="500" Stretch="UniformToFill" Margin="0,-37,0,0"/>
         <Image x:Name="bannerDev" Visibility ="Hidden" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBannerDev.png" Width="500" Stretch="UniformToFill" Margin="0,-37,0,0"/>

@@ -130,10 +130,13 @@ namespace RoundedTB
                             if (settings.ShowSegmentsOnHover)
                             {
                                 LocalPInvoke.RECT currentTrayRect = taskbars[current].TrayRect;
+                                LocalPInvoke.RECT currentWidgetsRect = taskbars[current].TaskbarRect;
+                                currentWidgetsRect.Right = Convert.ToInt32((currentWidgetsRect.Right - (currentWidgetsRect.Right - currentWidgetsRect.Left) + 168) * taskbars[current].ScaleFactor);
                                 if (currentTrayRect.Left != 0)
                                 {
                                     LocalPInvoke.GetCursorPos(out LocalPInvoke.POINT msPt);
                                     bool isHoveringOverTray = LocalPInvoke.PtInRect(ref currentTrayRect, msPt);
+                                    bool isHoveringOverWidgets = LocalPInvoke.PtInRect(ref currentWidgetsRect, msPt);
                                     if (isHoveringOverTray && !settings.ShowTray)
                                     {
                                         settings.ShowTray = true;
@@ -142,6 +145,17 @@ namespace RoundedTB
                                     else if (!isHoveringOverTray)
                                     {
                                         settings.ShowTray = false;
+                                        taskbars[current].Ignored = true;
+                                    }
+
+                                    if (isHoveringOverWidgets && !settings.ShowWidgets)
+                                    {
+                                        settings.ShowWidgets = true;
+                                        taskbars[current].Ignored = true;
+                                    }
+                                    else if (!isHoveringOverWidgets)
+                                    {
+                                        settings.ShowWidgets = false;
                                         taskbars[current].Ignored = true;
                                     }
 
@@ -206,6 +220,29 @@ namespace RoundedTB
                                     taskbars[current].Ignored = true;
                                     taskbars[current].TaskbarHidden = true;
                                     Debug.WriteLine("MouseOff TB");
+                                }
+                            }
+                            else
+                            {
+                                int animSpeed = 15;
+                                byte taskbarOpacity = 0;
+                                LocalPInvoke.GetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, out _, out taskbarOpacity, out _);
+                                if (taskbarOpacity < 255)
+                                {
+                                    int style = LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32();
+                                    if ((style & LocalPInvoke.WS_EX_TRANSPARENT) == LocalPInvoke.WS_EX_TRANSPARENT)
+                                    {
+                                        LocalPInvoke.SetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE, LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32() ^ LocalPInvoke.WS_EX_TRANSPARENT);
+                                    }
+                                    LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 63, LocalPInvoke.LWA_ALPHA);
+                                    System.Threading.Thread.Sleep(animSpeed);
+                                    LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 127, LocalPInvoke.LWA_ALPHA);
+                                    System.Threading.Thread.Sleep(animSpeed);
+                                    LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 191, LocalPInvoke.LWA_ALPHA);
+                                    System.Threading.Thread.Sleep(animSpeed);
+                                    LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 255, LocalPInvoke.LWA_ALPHA);
+                                    taskbars[current].Ignored = true;
+                                    taskbars[current].TaskbarHidden = false;
                                 }
                             }
 

@@ -7,7 +7,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Reflection;
-using ModernWpf;
 using System.Windows.Threading;
 using System.Windows.Interop;
 using DesktopBridge;
@@ -172,7 +171,8 @@ namespace RoundedTB
                         IsNotFirstLaunch = false,
                         FillOnMaximise = true,
                         FillOnTaskSwitch = true,
-                        ShowSegmentsOnHover = false
+                        ShowSegmentsOnHover = false,
+                        AutoHide = 0
                     };
                 }
                 else // Default settings for Windows 10
@@ -192,7 +192,8 @@ namespace RoundedTB
                         IsNotFirstLaunch = false,
                         FillOnMaximise = true,
                         FillOnTaskSwitch = false,
-                        ShowSegmentsOnHover = false
+                        ShowSegmentsOnHover = false,
+                        AutoHide = 0
                     };
                 }
             }
@@ -283,11 +284,11 @@ namespace RoundedTB
             fillAltTabCheckBox.IsChecked = activeSettings.FillOnTaskSwitch;
             showSegmentsOnHoverCheckBox.IsChecked = activeSettings.ShowSegmentsOnHover;
             compositionFixCheckBox.IsChecked = activeSettings.CompositionCompat;
+            autoHideComboBox.SelectedIndex = activeSettings.AutoHide;
             taskbarDetails = Taskbar.GenerateTaskbarInfo();
-            if (true)
-            {
-                ApplyButton_Click(null, null);
-            }
+
+            ApplyButton_Click(null, null);
+
 
             if (!activeSettings.FillOnMaximise)
             {
@@ -322,10 +323,8 @@ namespace RoundedTB
                 ShowMenuItem.Header = "Hide RoundedTB";
             }
 
-            if (activeSettings.AutoHide > 0)
-            {
-                AutoHide(true, taskbarDetails);
-            }
+            AutoHide(true, taskbarDetails);
+
             UpdateUi();
 
         }
@@ -371,10 +370,10 @@ namespace RoundedTB
             }
         }
 
-        public void AutoHide(bool enable, List<Types.Taskbar> taskbarDetails)
+        public void AutoHide(bool enabled, List<Types.Taskbar> taskbarDetails)
         {
             // Wondering how this works, are you? Perhaps come up with your own ideas instead of copying other people, you uninspired hack 😒
-            if (enable)
+            if (activeSettings.AutoHide > 0 && enabled)
             {
                 MonitorStuff.DisplayInfoCollection Displays = MonitorStuff.GetDisplays();
 
@@ -390,31 +389,42 @@ namespace RoundedTB
                     Taskbar.SetTaskbarState(LocalPInvoke.AppBarStates.AlwaysOnTop, taskbar.TaskbarHwnd);
                 }
             }
-            else
+            else if (!enabled)
             {
                 foreach (Types.Taskbar taskbar in taskbarDetails)
                 {
                     LocalPInvoke.SetWindowPos(taskbar.TaskbarHwnd, new IntPtr(-1), 0, 0, 0, 0, LocalPInvoke.SetWindowPosFlags.IgnoreMove | LocalPInvoke.SetWindowPosFlags.IgnoreResize);
                     Taskbar.SetTaskbarState(LocalPInvoke.AppBarStates.AutoHide, taskbar.TaskbarHwnd);
                     Taskbar.SetTaskbarState(LocalPInvoke.AppBarStates.AlwaysOnTop, taskbar.TaskbarHwnd);
+
+                    MonitorStuff.DisplayInfoCollection Displays = MonitorStuff.GetDisplays();
+
+                    foreach (MonitorStuff.DisplayInfo display in Displays)
+                    {
+                        int taskbarHeight = taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top;
+                        LocalPInvoke.RECT workArea = display.MonitorArea;
+                        workArea.Bottom = workArea.Bottom - taskbarHeight;
+                        Interaction.SetWorkspace(workArea);
+                    }
                 }
             }
         }
 
-        public TypedEventHandler<ThemeManager, object> TrayIconCheck()
+        public void TrayIconCheck()
         {
-            Uri resLight = new Uri("pack://application:,,,/res/traylight.ico");
-            Uri resDark = new Uri("pack://application:,,,/res/traydark.ico");
+            
+            Uri resLight = new("pack://application:,,,/res/traylight.ico");
+            Uri resDark = new("pack://application:,,,/res/traydark.ico");
+            WPFUI.Theme.Style style = WPFUI.Theme.Manager.GetSystemTheme();
 
-            if (ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Light)
+            if (style == WPFUI.Theme.Style.Light)
             {
-                TrayIcon.Icon = new System.Drawing.Icon(Application.GetResourceStream(resLight).Stream);
+                mainTitleBar.NotifyIconImage = new System.Windows.Media.Imaging.BitmapImage(resLight);
             }
             else
             {
-                TrayIcon.Icon = new System.Drawing.Icon(Application.GetResourceStream(resDark).Stream);
+                mainTitleBar.NotifyIconImage = new System.Windows.Media.Imaging.BitmapImage(resDark);
             }
-            return null;
         }
 
 
@@ -443,6 +453,7 @@ namespace RoundedTB
                 }
             }
 
+            activeSettings.AutoHide = autoHideComboBox.SelectedIndex;
             activeSettings.IsDynamic = (bool)dynamicCheckBox.IsChecked;
             activeSettings.IsCentred = Taskbar.CheckIfCentred();
             activeSettings.ShowTray = (bool)showTrayCheckBox.IsChecked;
@@ -488,6 +499,14 @@ namespace RoundedTB
                 taskbarThread.RunWorkerAsync((mt, ml, mb, mr, 0));
             }
 
+            if (activeSettings.AutoHide < 1)
+            {
+                AutoHide(false, taskbarDetails);
+            }
+            else
+            {
+                AutoHide(true, taskbarDetails);
+            }
             interaction.WriteJSON();
             TrayIconCheck();
             UpdateUi();
