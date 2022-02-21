@@ -16,6 +16,7 @@ using System.Diagnostics;
 using Microsoft.Win32;
 using System.Text;
 using WPFUI;
+using System.Windows.Forms;
 using System.Windows.Media;
 
 namespace RoundedTB
@@ -372,7 +373,16 @@ namespace RoundedTB
 
         public void AutoHide(bool enabled, List<Types.Taskbar> taskbarDetails)
         {
-            // Wondering how this works, are you? Perhaps come up with your own ideas instead of copying other people, you uninspired hack 😒
+            int workingHeight = Screen.PrimaryScreen.WorkingArea.Height;
+            int boundsHeight = Screen.PrimaryScreen.Bounds.Height;
+            int taskbarHeight = taskbarDetails[0].TaskbarRect.Bottom - taskbarDetails[0].TaskbarRect.Top;
+            bool workAreaMisconfigured = false;
+
+            if (boundsHeight - taskbarHeight > workingHeight)
+            {
+                workAreaMisconfigured = true;
+            }
+
             if (activeSettings.AutoHide > 0 && enabled)
             {
                 MonitorStuff.DisplayInfoCollection Displays = MonitorStuff.GetDisplays();
@@ -394,14 +404,17 @@ namespace RoundedTB
                 foreach (Types.Taskbar taskbar in taskbarDetails)
                 {
                     LocalPInvoke.SetWindowPos(taskbar.TaskbarHwnd, new IntPtr(-1), 0, 0, 0, 0, LocalPInvoke.SetWindowPosFlags.IgnoreMove | LocalPInvoke.SetWindowPosFlags.IgnoreResize);
-                    Taskbar.SetTaskbarState(LocalPInvoke.AppBarStates.AutoHide, taskbar.TaskbarHwnd);
-                    Taskbar.SetTaskbarState(LocalPInvoke.AppBarStates.AlwaysOnTop, taskbar.TaskbarHwnd);
+                    if (workAreaMisconfigured)
+                    {
+                        Taskbar.SetTaskbarState(LocalPInvoke.AppBarStates.AutoHide, taskbar.TaskbarHwnd);
+                        Taskbar.SetTaskbarState(LocalPInvoke.AppBarStates.AlwaysOnTop, taskbar.TaskbarHwnd);
+                    }
 
                     MonitorStuff.DisplayInfoCollection Displays = MonitorStuff.GetDisplays();
 
                     foreach (MonitorStuff.DisplayInfo display in Displays)
                     {
-                        int taskbarHeight = taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top;
+                        taskbarHeight = taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top;
                         LocalPInvoke.RECT workArea = display.MonitorArea;
                         workArea.Bottom = workArea.Bottom - taskbarHeight;
                         Interaction.SetWorkspace(workArea);
@@ -430,12 +443,6 @@ namespace RoundedTB
 
         public void ApplyButton_Click(object sender, RoutedEventArgs e)
         {
-
-            //if (!int.TryParse(cornerRadiusInput.Text, out int roundFactor) || (!int.TryParse(marginInput.Text, out int marginFactor)))
-            //{
-            //    return;
-            //}
-
             int mt = 0;
             int ml = 0;
             int mb = 0;

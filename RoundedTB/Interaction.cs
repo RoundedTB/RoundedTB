@@ -103,8 +103,8 @@ namespace RoundedTB
             bool result = LocalPInvoke.SystemParametersInfo(LocalPInvoke.SPI_SETWORKAREA, 0, ref rect, LocalPInvoke.SPIF_change);
             if (!result)
             {
-                // Find out the error code
-                Debug.WriteLine("The last error was: " + Marshal.GetLastWin32Error().ToString());
+                // Get error
+                Debug.WriteLine("Error setting work area: " + Marshal.GetLastWin32Error().ToString());
             }
 
             return result;

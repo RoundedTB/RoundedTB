@@ -283,7 +283,7 @@ namespace RoundedTB
                 if (settings.ShowTray && taskbar.TrayHwnd != IntPtr.Zero)
                 {
                     IntPtr trayRegion = LocalPInvoke.CreateRoundRectRgn(
-                        taskbar.TrayRect.Left - trayEffectiveRegion.Left,
+                        (taskbar.TrayRect.Left - taskbar.TaskbarRect.Left) - trayEffectiveRegion.Left,
                         trayEffectiveRegion.Top,
                         trayEffectiveRegion.Width,
                         trayEffectiveRegion.Height,
@@ -476,7 +476,17 @@ namespace RoundedTB
                 {
                     LocalPInvoke.GetWindowRect(hwndCurrent, out LocalPInvoke.RECT rectCurrent);
                     LocalPInvoke.GetWindowRgn(hwndCurrent, out IntPtr hrgnCurrent);
-                    IntPtr hwndSecTray = LocalPInvoke.FindWindowExA(hwndCurrent, IntPtr.Zero, "TrayNotifyWnd", null); // Get handle to this secondary taskbar's tray
+                    Interaction interaction = new Interaction();
+                    IntPtr hwndSecTray = IntPtr.Zero;
+                    if (interaction.IsWindows11())
+                    {
+                        IntPtr imd = LocalPInvoke.FindWindowExA(hwndCurrent, IntPtr.Zero, "Windows.UI.Composition.DesktopWindowContentBridge", null);
+                        hwndSecTray = LocalPInvoke.FindWindowExA(hwndCurrent, imd, "Windows.UI.Composition.DesktopWindowContentBridge", null);
+                    }
+                    else
+                    {
+                        hwndSecTray = LocalPInvoke.FindWindowExA(hwndCurrent, IntPtr.Zero, "TrayNotifyWnd", null); // Get handle to this secondary taskbar's tray
+                    }
                     LocalPInvoke.GetWindowRect(hwndTray, out LocalPInvoke.RECT rectSecTray); // Get the RECT for this secondary taskbar's tray
                     IntPtr hwndSecAppList = LocalPInvoke.FindWindowExA(LocalPInvoke.FindWindowExA(hwndCurrent, IntPtr.Zero, "WorkerW", null), IntPtr.Zero, "MSTaskListWClass", null); // Get the handle to the main taskbar's app list
                     LocalPInvoke.GetWindowRect(hwndSecAppList, out LocalPInvoke.RECT rectSecAppList);// Get the RECT for this secondary taskbar's app list
@@ -571,5 +581,7 @@ namespace RoundedTB
             msgData.lParam = (int)option;
             LocalPInvoke.SHAppBarMessage(LocalPInvoke.ABM.SetState, ref msgData);
         }
+
+
     }
 }
