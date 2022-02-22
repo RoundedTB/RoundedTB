@@ -131,7 +131,8 @@ namespace RoundedTB
                             {
                                 LocalPInvoke.RECT currentTrayRect = taskbars[current].TrayRect;
                                 LocalPInvoke.RECT currentWidgetsRect = taskbars[current].TaskbarRect;
-                                currentWidgetsRect.Right = Convert.ToInt32((currentWidgetsRect.Right - (currentWidgetsRect.Right - currentWidgetsRect.Left) + 168) * taskbars[current].ScaleFactor);
+                                currentWidgetsRect.Right = Convert.ToInt32(currentWidgetsRect.Right - (currentWidgetsRect.Right - currentWidgetsRect.Left) + (168 * taskbars[current].ScaleFactor));
+                                
                                 if (currentTrayRect.Left != 0)
                                 {
                                     LocalPInvoke.GetCursorPos(out LocalPInvoke.POINT msPt);
@@ -144,8 +145,8 @@ namespace RoundedTB
                                     }
                                     else if (!isHoveringOverTray)
                                     {
-                                        settings.ShowTray = false;
                                         taskbars[current].Ignored = true;
+                                        settings.ShowTray = false;
                                     }
 
                                     if (isHoveringOverWidgets && !settings.ShowWidgets)
@@ -155,8 +156,8 @@ namespace RoundedTB
                                     }
                                     else if (!isHoveringOverWidgets)
                                     {
-                                        settings.ShowWidgets = false;
                                         taskbars[current].Ignored = true;
+                                        settings.ShowWidgets = false;
                                     }
 
                                 }

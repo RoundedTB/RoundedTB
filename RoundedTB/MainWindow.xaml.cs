@@ -334,7 +334,7 @@ namespace RoundedTB
         {
             if (!activeSettings.ShowTray || activeSettings.ShowSegmentsOnHover)
             {
-                trayRectStandIn.Opacity = 0.1;
+                trayRectStandIn.Opacity = 0.5;
             }
             else
             {
@@ -343,7 +343,7 @@ namespace RoundedTB
 
             if (!activeSettings.ShowWidgets || activeSettings.ShowSegmentsOnHover)
             {
-                widgetsRectStandIn.Opacity = 0.1;
+                widgetsRectStandIn.Opacity = 0.5;
             }
             else
             {
@@ -430,14 +430,14 @@ namespace RoundedTB
             Uri resDark = new("pack://application:,,,/res/traydark.ico");
             WPFUI.Theme.Style style = WPFUI.Theme.Manager.GetSystemTheme();
 
-            if (style == WPFUI.Theme.Style.Light)
-            {
-                mainTitleBar.NotifyIconImage = new System.Windows.Media.Imaging.BitmapImage(resLight);
-            }
-            else
-            {
-                mainTitleBar.NotifyIconImage = new System.Windows.Media.Imaging.BitmapImage(resDark);
-            }
+            //if (style == WPFUI.Theme.Style.Light)
+            //{
+            //    mainTitleBar.NotifyIconImage = new System.Windows.Media.Imaging.BitmapImage(resLight);
+            //}
+            //else
+            //{
+            //    mainTitleBar.NotifyIconImage = new System.Windows.Media.Imaging.BitmapImage(resDark);
+            //}
         }
 
 

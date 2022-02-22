@@ -56,7 +56,7 @@
             <Button x:Name="splitHelpButton" Opacity="0.001" Content="Click me!"  Margin="107,122,0,0" Click="splitHelpButton_Click"  Height="32" Width="94" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" Visibility="Hidden"/>
 
             <Grid Width="500" Margin="15,0,0,15" HorizontalAlignment="Left" Height="110" VerticalAlignment="Bottom">
-                <CheckBox x:Name="showSegmentsOnHoverCheckBox" Content="Show segments only when hovered over with the mouse" Margin="0,0,0,0" VerticalAlignment="Top" Checked="showSegmentsOnHoverCheckBox_Checked" Unchecked="showSegmentsOnHoverCheckBox_Unchecked" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
+                <CheckBox x:Name="showSegmentsOnHoverCheckBox" Content="Show segments only when hovered over with the mouse - PERFORMANCE ISSUES" Margin="0,0,0,0" VerticalAlignment="Top" Checked="showSegmentsOnHoverCheckBox_Checked" Unchecked="showSegmentsOnHoverCheckBox_Unchecked" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
                 <CheckBox x:Name="fillMaximisedCheckBox" Content="When a window is maximised, restore the taskbar" Margin="0,30,0,0" Checked="fillMaximisedCheckBox_Checked"  Unchecked="fillMaximisedCheckBox_Unchecked"  VerticalAlignment="Top" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
                 <CheckBox x:Name="fillAltTabCheckBox" Content="When alt+tab or win+tab is pressed, restore the taskbar" Margin="0,60,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment"/>
                 <CheckBox x:Name="compositionFixCheckBox" Content="Improve compatibility with TranslucentTB and other mods (may cause flickering)" Margin="0,90,0,0" VerticalAlignment="Top" IsChecked="False" Checked="compositionFixCheckBox_Checked" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
@@ -92,7 +92,7 @@
                 <ComboBox x:Name="autoHideComboBox" Margin="0,18,0,0" VerticalAlignment="Top">
                     <ComboBoxItem>Always show</ComboBoxItem>
                     <ComboBoxItem>Always hide</ComboBoxItem>
-                    <ComboBoxItem>Show on desktop</ComboBoxItem>
+                    <ComboBoxItem>[unavailable]</ComboBoxItem>
                 </ComboBox>
             </Grid>
             <Rectangle HorizontalAlignment="Center" Margin="0,262,0,0" Stroke="#4C909090" Width="698" RadiusX="1" RadiusY="1.5" Height="1" VerticalAlignment="Top"/>

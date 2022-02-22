@@ -112,8 +112,8 @@ namespace RoundedTB
 
         public void AddLog(string message)
         {
-            m = $"[{DateTime.Now}] {message}\n";
-            File.AppendAllText(mw.logPath, m);
+            //m = $"[{DateTime.Now}] {message}\n";
+            //File.AppendAllText(mw.logPath, m);
         }
 
         public static bool IsTranslucentTBRunning()

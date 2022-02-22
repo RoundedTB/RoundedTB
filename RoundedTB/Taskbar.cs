@@ -88,7 +88,7 @@ namespace RoundedTB
                 appListRectChanged = false;
             }
             if (
-                currentTB.TrayRect.Left == newTB.TrayRect.Left &&
+                (currentTB.TrayRect.Left + 5 >= newTB.TrayRect.Left && currentTB.TrayRect.Left - 5 <= newTB.TrayRect.Left) &&
                 currentTB.TrayRect.Top == newTB.TrayRect.Top &&
                 currentTB.TrayRect.Right == newTB.TrayRect.Right &&
                 currentTB.TrayRect.Bottom == newTB.TrayRect.Bottom)

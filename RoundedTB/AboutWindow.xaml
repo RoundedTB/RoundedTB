@@ -17,7 +17,7 @@
         <TextBlock x:Name="subtitleBlock" HorizontalAlignment="Left" Margin="10,50,0,0" TextWrapping="Wrap" Text="Canary" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="22" Opacity="0.795" Height="30"/>
 
         <TextBlock x:Name="bodyBlockMain" Margin="10,97,10,47" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI SemiBold" FontSize="14">
-            <Bold>Thanks for downloading RoundedTB. Expand the following categories for more information.</Bold>
+            <Bold>Thanks for downloading RoundedTB. Expand the following categories for more information. <LineBreak/> TODO: FINISH DIALOG</Bold>
         </TextBlock>
 
         <ScrollViewer Margin="0,136,0,45">
