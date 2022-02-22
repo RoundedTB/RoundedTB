@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     name: build-windows
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
     - name: Checkout
