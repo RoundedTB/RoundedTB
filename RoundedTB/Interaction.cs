@@ -17,7 +17,14 @@ namespace RoundedTB
 
         public Interaction()
         {
-            mw = (MainWindow)Application.Current.MainWindow;
+            try
+            {
+                mw = (MainWindow)Application.Current.MainWindow;
+            }
+            catch (Exception)
+            {
+                // No idea why this was necessary but it was so it's here now. Yay. TODO - work out why this is suddenly broken and unbreak it
+            }
         }
 
         public Types.Settings ReadJSON()

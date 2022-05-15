@@ -10,7 +10,7 @@
         Style="{StaticResource UiWindow}"
         Title="RoundedTB" Height="458" Width="718"
         Background="#20808080"
-        d:Background="Transparent"
+        d:Background="DarkGray"
         Visibility = "Visible"
         Opacity="0.001"
         d:Opacity="1"
@@ -23,7 +23,7 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <wpfui:TitleBar x:Name="mainTitleBar" Grid.Row="0" UseNotifyIcon="True" NotifyIconImage="pack://application:,,,/res/traydark.ico" NotifyIconTooltip="RoundedTB" ApplicationNavigation="True" Margin="0,0,0,0" Title="RoundedTB - Configuration" Icon="pack://application:,,,/RoundedTBcanary.ico" Height="51" ShowMaximize="False">
+        <wpfui:TitleBar x:Name="mainTitleBar" Grid.Row="0" UseNotifyIcon="True" NotifyIconImage="pack://application:,,,/res/traydark.ico" NotifyIconTooltip="RoundedTB" ApplicationNavigation="True" Margin="0,0,0,0" Title="RoundedTB - Configuration" Icon="pack://application:,,,/RoundedTBCanary.ico" Height="51" ShowMaximize="False">
             <wpfui:TitleBar.NotifyIconMenu>
                 <ContextMenu MouseEnter="ContextMenu_MouseEnter">
                     <CheckBox x:Name ="StartupCheckBox" Content="Run at startup" Click="Startup_Clicked"/>
@@ -46,7 +46,7 @@
 
 
             <wpfui:Button x:Name="aboutButton" Appearance="Secondary" Margin="0,0,10,47" VerticalAlignment="Bottom" Content="Help" Click="aboutButton_Click" FontWeight="Normal" HorizontalAlignment="Right" Width="133" Height="31"/>
-            <wpfui:Button x:Name="applyButton" Margin="0,0,10,10" VerticalAlignment="Bottom" Content="Apply" Click="ApplyButton_Click" FontWeight="Normal" Foreground="Black" HorizontalAlignment="Right" Width="133" Height="32"/>
+            <wpfui:Button x:Name="applyButton" Margin="0,0,10,10" VerticalAlignment="Bottom" Content="Apply" Click="ApplyButton_Click" FontWeight="Normal" HorizontalAlignment="Right" Width="133" Height="32"/>
 
             <CheckBox x:Name="dynamicCheckBox" Content="Dynamic mode" Margin="0,210,53,0" Checked="dynamicCheckBox_Checked" Unchecked="dynamicCheckBox_Unchecked" VerticalAlignment="Top" RenderTransformOrigin="1.763,4.069" Visibility="Visible" HorizontalAlignment="Right" Width="116"/>
             <CheckBox x:Name="showTrayCheckBox" Content="Show this segment" Margin="0,210,44,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="134" Visibility="Hidden"/>
@@ -88,7 +88,7 @@
             </Grid>
 
             <Grid Margin="0,0,10,83" HorizontalAlignment="Right" Width="133" Height="50" VerticalAlignment="Bottom">
-                <Label Content="Auto-hide" Height="18" VerticalAlignment="Top"/>
+                <Label Content="Auto-hide" Height="20" VerticalAlignment="Top"/>
                 <ComboBox x:Name="autoHideComboBox" Margin="0,18,0,0" VerticalAlignment="Top">
                     <ComboBoxItem>Always show</ComboBoxItem>
                     <ComboBoxItem>Always hide</ComboBoxItem>

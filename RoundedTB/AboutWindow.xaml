@@ -4,30 +4,36 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RoundedTB"
+        xmlns:wpfui="clr-namespace:WPFUI.Controls;assembly=WPFUI"
         mc:Ignorable="d"
-        Title="" Height="600" Width="500"
-        xmlns:ui="http://schemas.modernwpf.com/2019"
+        Style="{StaticResource UiWindow}"
+        Background="#20808080"
+        Title="RoundedTB - About" Height="616" Width="500"
         Visibility ="Visible" ResizeMode="NoResize" Opacity="1.001">
     <Grid>
-        <Image x:Name="bannerMst" Visibility ="Hidden" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBanner.png" Width="500" Stretch="UniformToFill" Margin="0,-37,0,0"/>
-        <Image x:Name="bannerDev" Visibility ="Hidden" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBannerDev.png" Width="500" Stretch="UniformToFill" Margin="0,-37,0,0"/>
-        <Image x:Name="bannerCan" Visibility ="Visible" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBannerCan.png" Width="500" Stretch="UniformToFill" Margin="0,-37,0,0"/>
-        <Button x:Name="okButton" Content="OK" Margin="0,0,10,10" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="37" Click="okButton_Click"/>
-        <TextBlock x:Name="titleBlock" HorizontalAlignment="Left" Margin="10,2,0,0" TextWrapping="Wrap" Text="Welcome to RoundedTB!" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="36" Opacity="0.795"/>
-        <TextBlock x:Name="subtitleBlock" HorizontalAlignment="Left" Margin="10,50,0,0" TextWrapping="Wrap" Text="Canary" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="22" Opacity="0.795" Height="30"/>
 
-        <TextBlock x:Name="bodyBlockMain" Margin="10,97,10,47" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI SemiBold" FontSize="14">
-            <Bold>Thanks for downloading RoundedTB. Expand the following categories for more information. <LineBreak/> TODO: FINISH DIALOG</Bold>
+        <Image x:Name="bannerMst" Visibility ="Hidden" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBanner.png" Width="500" Stretch="UniformToFill" Margin="0,-16,0,0"/>
+        <Image x:Name="bannerDev" Visibility ="Hidden" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBannerDev.png" Width="500" Stretch="UniformToFill" Margin="0,-16,0,0"/>
+        <Image x:Name="bannerCan" Visibility ="Visible" HorizontalAlignment="Center" Height="146" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBannerCan.png" Width="500" Stretch="UniformToFill" Margin="0,-16,0,0"/>
+        <Button x:Name="okButton" Content="OK" Margin="0,0,10,10" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="85" Click="okButton_Click" FontWeight="Normal"/>
+        <TextBlock x:Name="titleBlock" HorizontalAlignment="Left" Margin="10,35,0,0" TextWrapping="Wrap" Text="Welcome to RoundedTB!" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="36" Opacity="0.795"/>
+        <TextBlock x:Name="subtitleBlock" HorizontalAlignment="Left" Margin="10,85,0,0" TextWrapping="Wrap" Text="Canary" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="22" Opacity="0.795" Height="30"/>
+
+        <wpfui:TitleBar x:Name="aboutTitleBar" Grid.Row="0" NotifyIconTooltip="RoundedTB" ApplicationNavigation="True" Title="RoundedTB - About" Icon="pack://application:,,,/RoundedTBCanary.ico" Height="51" ShowMaximize="False"/>
+
+
+        <TextBlock x:Name="bodyBlockMain" Margin="10,134,10,0" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI SemiBold" FontSize="14" Height="37" VerticalAlignment="Top">
+            <Bold>Thanks for downloading RoundedTB. Expand the following categories for more information.</Bold>
         </TextBlock>
 
-        <ScrollViewer Margin="0,136,0,45">
-            <StackPanel>
+        <ScrollViewer Margin="0,176,0,0" VerticalScrollBarVisibility="Hidden" Height="378" VerticalAlignment="Top">
+            <StackPanel Width="473">
                 <Expander x:Name="expander0" HorizontalAlignment="Center" Header="What's new" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
                     <Grid>
                         <TextBlock Margin="0,5,0,0" x:Name="bodyBlock0" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="23">            
                     • Nobody knows. Some say secrets lie amongst these builds. And bugs. Honestly, I'm pretty sure they're 90% bug. 95%. 98%. Actually the fact you're even seeing this text is probably a bug. idk tbh, i give up
                     <LineBreak/>
-                    <Bold>REMINDER: Autohide is currently not supported.</Bold>
+                    <Bold>REMINDER: Autohide is currently rather buggy and must be entirely disabled in Windows.</Bold>
                     <LineBreak/>
                         </TextBlock>
                     </Grid>
@@ -119,7 +125,7 @@
                 </Expander>
             </StackPanel>
         </ScrollViewer>
-        
+
 
     </Grid>
 </Window>

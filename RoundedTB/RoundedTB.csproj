@@ -95,6 +95,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="RoundedTB.ico" />
+  </ItemGroup>
+  <ItemGroup>
     <Resource Include="RoundedTBDev.ico" />
   </ItemGroup>
   <ItemGroup>

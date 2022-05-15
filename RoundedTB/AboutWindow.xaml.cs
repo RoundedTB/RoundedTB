@@ -24,6 +24,7 @@ namespace RoundedTB
         public AboutWindow()
         {
             InitializeComponent();
+            WPFUI.Background.Manager.Apply(WPFUI.Background.BackgroundType.Mica, this);
         }
 
         private void okButton_Click(object sender, RoutedEventArgs e)
