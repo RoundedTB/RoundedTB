@@ -237,6 +237,15 @@ namespace RoundedTB
                     Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.MarginBottom * taskbar.ScaleFactor)) + 1
                 };
 
+                Types.EffectiveRegion widgetsEffectiveRegion = new Types.EffectiveRegion
+                {
+                    CornerRadius = Convert.ToInt32(settings.CornerRadius * taskbar.ScaleFactor),
+                    Top = Convert.ToInt32(settings.MarginTop * taskbar.ScaleFactor),
+                    Left = Convert.ToInt32(settings.MarginLeft * taskbar.ScaleFactor),
+                    Width = Convert.ToInt32(168 * taskbar.ScaleFactor - (settings.MarginRight * taskbar.ScaleFactor)) + 1,
+                    Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.MarginBottom * taskbar.ScaleFactor)) + 1
+                };
+
                 centredDistanceFromEdge = taskbar.TaskbarRect.Right - taskbar.AppListRect.Right - Convert.ToInt32(2 * taskbar.ScaleFactor);
 
                 // If on Windows 10, add an extra 20 logical pixels for the grabhandle
@@ -287,6 +296,22 @@ namespace RoundedTB
                     LocalPInvoke.CombineRgn(finalRegion, trayRegion, mainRegion, 2);
                     mainRegion = finalRegion;
                 }
+
+                if (settings.ShowWidgets)
+                {
+                    IntPtr widgetsRegion = LocalPInvoke.CreateRoundRectRgn(
+                        widgetsEffectiveRegion.Left,
+                        widgetsEffectiveRegion.Top,
+                        widgetsEffectiveRegion.Width,
+                        widgetsEffectiveRegion.Height,
+                        widgetsEffectiveRegion.CornerRadius,
+                        widgetsEffectiveRegion.CornerRadius
+                        );
+
+                    LocalPInvoke.CombineRgn(finalRegion, widgetsRegion, mainRegion, 2);
+                    mainRegion = finalRegion;
+                }
+
 
                 // Apply the final region to the taskbar
                 LocalPInvoke.SetWindowRgn(taskbar.TaskbarHwnd, mainRegion, true);

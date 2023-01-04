@@ -161,6 +161,7 @@ namespace RoundedTB
                         IsCentred = false,
                         IsWindows11 = true,
                         ShowTray = false,
+                        ShowWidgets = false,
                         CompositionCompat = false,
                         IsNotFirstLaunch = false,
                         FillOnMaximise = true,
@@ -182,6 +183,7 @@ namespace RoundedTB
                         IsCentred = false,
                         IsWindows11 = false,
                         ShowTray = false,
+                        ShowWidgets = false,
                         CompositionCompat = false,
                         IsNotFirstLaunch = false,
                         FillOnMaximise = true,
@@ -208,6 +210,7 @@ namespace RoundedTB
                 $"IsDynamic: {activeSettings.IsDynamic}\n" +
                 $"IsCentred: {activeSettings.IsCentred}\n" +
                 $"ShowTray: {activeSettings.ShowTray}\n" +
+                $"ShowWidgets: {activeSettings.ShowWidgets}\n" +
                 $"CompositionCompat: {activeSettings.CompositionCompat}\n" +
                 $"IsNotFirstLaunch: {activeSettings.IsNotFirstLaunch}\n" +
                 $"FillOnMaximise: {activeSettings.FillOnMaximise}\n" +
@@ -273,6 +276,7 @@ namespace RoundedTB
             dynamicCheckBox.IsChecked = activeSettings.IsDynamic;
             centredCheckBox.IsChecked = activeSettings.IsCentred;
             showTrayCheckBox.IsChecked = activeSettings.ShowTray;
+            showWidgetsCheckBox.IsChecked = activeSettings.ShowWidgets;
             fillMaximisedCheckBox.IsChecked = activeSettings.FillOnMaximise;
             fillAltTabCheckBox.IsChecked = activeSettings.FillOnTaskSwitch;
             showTrayOnHoverCheckBox.IsChecked = activeSettings.ShowTrayOnHover;
@@ -383,6 +387,7 @@ namespace RoundedTB
             activeSettings.IsDynamic = (bool)dynamicCheckBox.IsChecked;
             activeSettings.IsCentred = Taskbar.CheckIfCentred();
             activeSettings.ShowTray = (bool)showTrayCheckBox.IsChecked;
+            activeSettings.ShowWidgets = (bool)showWidgetsCheckBox.IsChecked;
             activeSettings.CompositionCompat = (bool)compositionFixCheckBox.IsChecked;
             activeSettings.FillOnMaximise = (bool)fillMaximisedCheckBox.IsChecked;
             activeSettings.FillOnTaskSwitch = (bool)fillAltTabCheckBox.IsChecked;
@@ -709,6 +714,8 @@ namespace RoundedTB
             showTrayOnHoverCheckBox.IsChecked = false;
             showTrayCheckBox.IsEnabled = true;
             showTrayCheckBox.IsChecked = true;
+            showWidgetsCheckBox.IsEnabled = true;
+            showWidgetsCheckBox.IsChecked = true;
             mLeftLabel.Content = "Outer Margin";
             mRightLabel.Content = "Inner Margin";
 
@@ -734,7 +741,9 @@ namespace RoundedTB
             showTrayOnHoverCheckBox.IsChecked = false;
             showTrayCheckBox.IsEnabled = false;
             showTrayCheckBox.IsChecked = false;
-            
+            showWidgetsCheckBox.IsEnabled = false;
+            showWidgetsCheckBox.IsChecked = false;
+
             if (!isWindows11)
             {
                 splitHelpButton.Visibility = Visibility.Hidden;
@@ -853,12 +862,16 @@ namespace RoundedTB
         {
             showTrayCheckBox.IsEnabled = false;
             showTrayCheckBox.IsChecked = false;
+            showWidgetsCheckBox.IsEnabled = false;
+            showWidgetsCheckBox.IsChecked = false;
         }
 
         private void showTrayOnHoverCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
             showTrayCheckBox.IsEnabled = true;
             showTrayCheckBox.IsChecked = true;
+            showWidgetsCheckBox.IsEnabled = true;
+            showWidgetsCheckBox.IsChecked = true;
         }
     }
 }

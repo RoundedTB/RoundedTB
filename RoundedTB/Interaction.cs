@@ -61,6 +61,7 @@ namespace RoundedTB
                         IsDynamic = false,
                         IsCentred = false,
                         ShowTray = false,
+                        ShowWidgets = false,
                         CompositionCompat = false,
                         IsNotFirstLaunch = false
                     };
@@ -78,6 +79,7 @@ namespace RoundedTB
                         IsDynamic = false,
                         IsCentred = false,
                         ShowTray = false,
+                        ShowWidgets = false,
                         CompositionCompat = false,
                         IsNotFirstLaunch = false
                     };
@@ -179,13 +181,15 @@ namespace RoundedTB
                             Debug.WriteLine(vkey);
                             if (vkey == 0x71)
                             {
-                                if (mw.showTrayCheckBox.IsChecked == true)
+                                if (mw.showTrayCheckBox.IsChecked == true || mw.showWidgetsCheckBox.IsChecked == true)
                                 {
                                     mw.showTrayCheckBox.IsChecked = false;
+                                    mw.showWidgetsCheckBox.IsChecked = false;
                                 }
                                 else
                                 {
                                     mw.showTrayCheckBox.IsChecked = true;
+                                    mw.showWidgetsCheckBox.IsChecked = true;
                                 }
                                 mw.ApplyButton_Click(null, null);
                             }

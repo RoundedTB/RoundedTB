@@ -122,10 +122,14 @@ namespace RoundedTB
                             if (settings.ShowTrayOnHover)
                             {
                                 LocalPInvoke.RECT currentTrayRect = taskbars[current].TrayRect;
+                                LocalPInvoke.RECT currentWidgetsRect = taskbars[current].TaskbarRect;
+                                currentWidgetsRect.Right = Convert.ToInt32(currentWidgetsRect.Right - (currentWidgetsRect.Right - currentWidgetsRect.Left) + (168 * taskbars[current].ScaleFactor));
+
                                 if (currentTrayRect.Left != 0)
                                 {
                                     LocalPInvoke.GetCursorPos(out LocalPInvoke.POINT msPt);
                                     bool isHoveringOverTray = LocalPInvoke.PtInRect(ref currentTrayRect, msPt);
+                                    bool isHoveringOverWidgets = LocalPInvoke.PtInRect(ref currentWidgetsRect, msPt);
                                     if (isHoveringOverTray && !settings.ShowTray)
                                     {
                                         settings.ShowTray = true;
@@ -135,6 +139,17 @@ namespace RoundedTB
                                     {
                                         settings.ShowTray = false;
                                         taskbars[current].Ignored = true;
+                                    }
+
+                                    if (isHoveringOverWidgets && !settings.ShowWidgets)
+                                    {
+                                        settings.ShowWidgets = true;
+                                        taskbars[current].Ignored = true;
+                                    }
+                                    else if (!isHoveringOverWidgets)
+                                    {
+                                        taskbars[current].Ignored = true;
+                                        settings.ShowWidgets = false;
                                     }
 
                                 }
