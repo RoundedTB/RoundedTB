@@ -165,6 +165,7 @@ namespace RoundedTB
         /// </returns>
         public static bool UpdateSimpleTaskbar(Types.Taskbar taskbar, Types.Settings settings)
         {
+            IntPtr region = IntPtr.Zero;
             try
             {
                 // Create an effective region to be applied to the taskbar
@@ -177,7 +178,7 @@ namespace RoundedTB
                     Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.SimpleTaskbarLayout.MarginBottom * taskbar.ScaleFactor)) + 1
                 };
 
-                IntPtr region = LocalPInvoke.CreateRoundRectRgn(taskbarEffectiveRegion.Left, taskbarEffectiveRegion.Top, taskbarEffectiveRegion.Width, taskbarEffectiveRegion.Height, taskbarEffectiveRegion.CornerRadius, taskbarEffectiveRegion.CornerRadius);
+                region = LocalPInvoke.CreateRoundRectRgn(taskbarEffectiveRegion.Left, taskbarEffectiveRegion.Top, taskbarEffectiveRegion.Width, taskbarEffectiveRegion.Height, taskbarEffectiveRegion.CornerRadius, taskbarEffectiveRegion.CornerRadius);
                 LocalPInvoke.SetWindowRgn(taskbar.TaskbarHwnd, region, true);
                 if (settings.CompositionCompat)
                 {
@@ -189,6 +190,10 @@ namespace RoundedTB
             {
                 return false;
             }
+            finally
+            {
+                LocalPInvoke.DeleteObject(region);
+            }
         }
 
         /// <summary>
@@ -199,10 +204,13 @@ namespace RoundedTB
         /// </returns>
         public static bool UpdateDynamicTaskbar(Types.Taskbar taskbar, Types.Settings settings)
         {
+            IntPtr mainRegion = IntPtr.Zero;
+            IntPtr workingRegion = IntPtr.Zero;
+            IntPtr trayRegion = IntPtr.Zero;
+            IntPtr widgetsRegion = IntPtr.Zero;
             try
             {
-                IntPtr mainRegion;
-                IntPtr workingRegion = LocalPInvoke.CreateRoundRectRgn(1, 1, 1, 1, 0, 0);
+                workingRegion = LocalPInvoke.CreateRoundRectRgn(1, 1, 1, 1, 0, 0);
                 int centredDistanceFromEdge = 0;
 
                 // Create an effective region to be applied to the taskbar for the applist
@@ -282,7 +290,7 @@ namespace RoundedTB
                 // If the user has it enabled and the tray handle isn't null, create a region for the system tray and merge it with the taskbar region
                 if (settings.ShowTray && taskbar.TrayHwnd != IntPtr.Zero)
                 {
-                    IntPtr trayRegion = LocalPInvoke.CreateRoundRectRgn(
+                    trayRegion = LocalPInvoke.CreateRoundRectRgn(
                         (taskbar.TrayRect.Left - taskbar.TaskbarRect.Left) - trayEffectiveRegion.Left,
                         trayEffectiveRegion.Top,
                         trayEffectiveRegion.Width,
@@ -292,12 +300,13 @@ namespace RoundedTB
                         );
 
                     LocalPInvoke.CombineRgn(workingRegion, trayRegion, mainRegion, 2);
+                    LocalPInvoke.DeleteObject(mainRegion);
                     mainRegion = workingRegion;
                 }
 
                 if (settings.ShowWidgets)
                 {
-                    IntPtr widgetsRegion = LocalPInvoke.CreateRoundRectRgn(
+                    widgetsRegion = LocalPInvoke.CreateRoundRectRgn(
                         widgetsEffectiveRegion.Left,
                         widgetsEffectiveRegion.Top,
                         widgetsEffectiveRegion.Width,
@@ -307,6 +316,7 @@ namespace RoundedTB
                         );
 
                     LocalPInvoke.CombineRgn(workingRegion, widgetsRegion, mainRegion, 2);
+                    LocalPInvoke.DeleteObject(mainRegion);
                     mainRegion = workingRegion;
                 }
 
@@ -322,6 +332,13 @@ namespace RoundedTB
             catch (Exception)
             {
                 return false;
+            }
+            finally
+            {
+                LocalPInvoke.DeleteObject(widgetsRegion);
+                LocalPInvoke.DeleteObject(trayRegion);
+                LocalPInvoke.DeleteObject(mainRegion);
+                LocalPInvoke.DeleteObject(workingRegion);                
             }
 
         }
