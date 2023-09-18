@@ -159,7 +159,6 @@ namespace RoundedTB
                                         taskbars[current].Ignored = true;
                                         settings.ShowWidgets = false;
                                     }
-
                                 }
                             }
 

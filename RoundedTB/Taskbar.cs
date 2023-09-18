@@ -204,13 +204,12 @@ namespace RoundedTB
         /// </returns>
         public static bool UpdateDynamicTaskbar(Types.Taskbar taskbar, Types.Settings settings)
         {
-            IntPtr mainRegion = IntPtr.Zero;
             IntPtr workingRegion = IntPtr.Zero;
             IntPtr trayRegion = IntPtr.Zero;
             IntPtr widgetsRegion = IntPtr.Zero;
+            IntPtr clockRegion = IntPtr.Zero;
             try
             {
-                workingRegion = LocalPInvoke.CreateRoundRectRgn(1, 1, 1, 1, 0, 0);
                 int centredDistanceFromEdge = 0;
 
                 // Create an effective region to be applied to the taskbar for the applist
@@ -248,8 +247,18 @@ namespace RoundedTB
                     CornerRadius = Convert.ToInt32(settings.DynamicWidgetsLayout.CornerRadius * taskbar.ScaleFactor),
                     Top = Convert.ToInt32(settings.DynamicWidgetsLayout.MarginTop * taskbar.ScaleFactor),
                     Left = Convert.ToInt32(settings.DynamicWidgetsLayout.MarginLeft * taskbar.ScaleFactor),
-                    Width = Convert.ToInt32(168 * taskbar.ScaleFactor - (settings.DynamicWidgetsLayout.MarginRight * taskbar.ScaleFactor)) + 1,
+                    Width = Convert.ToInt32(settings.WidgetsWidth * taskbar.ScaleFactor - (settings.DynamicWidgetsLayout.MarginRight * taskbar.ScaleFactor)) + 1,
                     Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.DynamicWidgetsLayout.MarginBottom * taskbar.ScaleFactor)) + 1
+                };
+
+
+                Types.EffectiveRegion secondaryClockRegion = new Types.EffectiveRegion
+                {
+                    CornerRadius = Convert.ToInt32(settings.DynamicSecondaryClockLayout.CornerRadius * taskbar.ScaleFactor),
+                    Top = Convert.ToInt32(settings.DynamicSecondaryClockLayout.MarginTop * taskbar.ScaleFactor),
+                    Left = (taskbar.TaskbarRect.Right - taskbar.TaskbarRect.Left) - settings.ClockWidth - Convert.ToInt32(settings.DynamicSecondaryClockLayout.MarginLeft * taskbar.ScaleFactor),
+                    Width = Convert.ToInt32(settings.ClockWidth * taskbar.ScaleFactor - (settings.DynamicSecondaryClockLayout.MarginRight * taskbar.ScaleFactor)) + 1,
+                    Height = Convert.ToInt32(taskbar.TaskbarRect.Bottom - taskbar.TaskbarRect.Top - (settings.DynamicSecondaryClockLayout.MarginBottom * taskbar.ScaleFactor)) + 1
                 };
 
                 centredDistanceFromEdge = taskbar.TaskbarRect.Right - taskbar.AppListRect.Right - Convert.ToInt32(2 * taskbar.ScaleFactor);
@@ -263,7 +272,7 @@ namespace RoundedTB
                 // Create region for if the taskbar is centred by take the right-to-right distance (centredDistanceFromEdge) off from both sides, as well as the margin
                 if (settings.IsCentred)
                 {
-                    mainRegion = LocalPInvoke.CreateRoundRectRgn(
+                    workingRegion = LocalPInvoke.CreateRoundRectRgn(
                         centredDistanceFromEdge + centredEffectiveRegion.Left,
                         centredEffectiveRegion.Top,
                         centredEffectiveRegion.Width - centredDistanceFromEdge,
@@ -277,7 +286,7 @@ namespace RoundedTB
                 else
                 {
 
-                    mainRegion = LocalPInvoke.CreateRoundRectRgn(
+                    workingRegion = LocalPInvoke.CreateRoundRectRgn(
                         taskbarEffectiveRegion.Left,
                         taskbarEffectiveRegion.Top,
                         taskbarEffectiveRegion.Width - centredDistanceFromEdge,
@@ -285,6 +294,19 @@ namespace RoundedTB
                         taskbarEffectiveRegion.CornerRadius,
                         taskbarEffectiveRegion.CornerRadius
                         );
+                }
+
+                if (settings.ShowSecondaryClock && taskbar.IsSecondary)
+                {
+                    clockRegion = LocalPInvoke.CreateRoundRectRgn(
+                        secondaryClockRegion.Left,
+                        secondaryClockRegion.Top,
+                        secondaryClockRegion.Width + secondaryClockRegion.Left,
+                        secondaryClockRegion.Height,
+                        secondaryClockRegion.CornerRadius,
+                        secondaryClockRegion.CornerRadius
+                        );
+                    LocalPInvoke.CombineRgn(workingRegion, clockRegion, workingRegion, 2);
                 }
 
                 // If the user has it enabled and the tray handle isn't null, create a region for the system tray and merge it with the taskbar region
@@ -299,9 +321,7 @@ namespace RoundedTB
                         trayEffectiveRegion.CornerRadius
                         );
 
-                    LocalPInvoke.CombineRgn(workingRegion, trayRegion, mainRegion, 2);
-                    LocalPInvoke.DeleteObject(mainRegion);
-                    mainRegion = workingRegion;
+                    LocalPInvoke.CombineRgn(workingRegion, trayRegion, workingRegion, 2);
                 }
 
                 if (settings.ShowWidgets)
@@ -314,14 +334,12 @@ namespace RoundedTB
                         widgetsEffectiveRegion.CornerRadius,
                         widgetsEffectiveRegion.CornerRadius
                         );
-
-                    LocalPInvoke.CombineRgn(workingRegion, widgetsRegion, mainRegion, 2);
-                    LocalPInvoke.DeleteObject(mainRegion);
-                    mainRegion = workingRegion;
+                    LocalPInvoke.CombineRgn(workingRegion, widgetsRegion, workingRegion, 2);
                 }
 
+
                 // Apply the final region to the taskbar
-                LocalPInvoke.SetWindowRgn(taskbar.TaskbarHwnd, mainRegion, true);
+                LocalPInvoke.SetWindowRgn(taskbar.TaskbarHwnd, workingRegion, true);
                 if (settings.CompositionCompat)
                 {
                     Interaction.UpdateTranslucentTB(taskbar.TaskbarHwnd);
@@ -335,10 +353,10 @@ namespace RoundedTB
             }
             finally
             {
+                LocalPInvoke.DeleteObject(clockRegion);
                 LocalPInvoke.DeleteObject(widgetsRegion);
                 LocalPInvoke.DeleteObject(trayRegion);
-                LocalPInvoke.DeleteObject(mainRegion);
-                LocalPInvoke.DeleteObject(workingRegion);                
+                LocalPInvoke.DeleteObject(workingRegion);
             }
 
         }
@@ -466,7 +484,8 @@ namespace RoundedTB
                 RecoveryHrgn = hrgnMain,
                 ScaleFactor = Convert.ToDouble(LocalPInvoke.GetDpiForWindow(hwndMain)) / 96.00,
                 TaskbarRes = $"{rectMain.Right - rectMain.Left} x {rectMain.Bottom - rectMain.Top}",
-                Ignored = false
+                Ignored = false,
+                IsSecondary = false,
             });
             int style = LocalPInvoke.GetWindowLong(hwndMain, LocalPInvoke.GWL_EXSTYLE).ToInt32();
             if ((style & LocalPInvoke.WS_EX_LAYERED) != LocalPInvoke.WS_EX_LAYERED)
@@ -529,7 +548,8 @@ namespace RoundedTB
                         RecoveryHrgn = hrgnCurrent,
                         ScaleFactor = Convert.ToDouble(LocalPInvoke.GetDpiForWindow(hwndCurrent)) / 96.00,
                         TaskbarRes = $"{rectCurrent.Right - rectCurrent.Left} x {rectCurrent.Bottom - rectCurrent.Top}",
-                        Ignored = false
+                        Ignored = false,
+                        IsSecondary = true,
                     });
                     style = LocalPInvoke.GetWindowLong(hwndCurrent, LocalPInvoke.GWL_EXSTYLE).ToInt32();
                     if ((style & LocalPInvoke.WS_EX_LAYERED) != LocalPInvoke.WS_EX_LAYERED)

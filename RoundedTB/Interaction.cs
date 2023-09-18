@@ -31,6 +31,11 @@ namespace RoundedTB
         {
             string jsonSettings = File.ReadAllText(mw.configPath);
             Types.Settings settings = JsonConvert.DeserializeObject<Types.Settings>(jsonSettings);
+            // compatible old settings 
+            if (settings.DynamicSecondaryClockLayout == null)
+            {
+                settings.DynamicSecondaryClockLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 };
+            }
             return settings;
         }
 
@@ -63,6 +68,9 @@ namespace RoundedTB
                         DynamicAppListLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
                         DynamicTrayLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
                         DynamicWidgetsLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
+                        DynamicSecondaryClockLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
+                        WidgetsWidth = 168,
+                        ClockWidth = 110,
                         IsDynamic = false,
                         IsCentred = false,
                         IsWindows11 = true,
@@ -83,6 +91,9 @@ namespace RoundedTB
                         DynamicAppListLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
                         DynamicTrayLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
                         DynamicWidgetsLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
+                        DynamicSecondaryClockLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
+                        WidgetsWidth = 168,
+                        ClockWidth = 110,
                         IsDynamic = false,
                         IsCentred = false,
                         IsWindows11 = false,
