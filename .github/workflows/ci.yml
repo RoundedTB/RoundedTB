@@ -10,7 +10,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v3
       with:
           submodules: recursive
           
@@ -32,7 +32,7 @@ jobs:
         Rename-Item -Path ".\RoundedTB\bin\Release" -NewName "RoundedTB-$(git rev-parse --short ${{ github.sha }})"
         
     - name: Upload artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: rtb-artifacts
         path: |
