@@ -10,7 +10,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Newtonsoft.Json;
 using System.Runtime.InteropServices;
-
+using System.Windows.Automation;
 
 
 namespace RoundedTB
@@ -116,11 +116,17 @@ namespace RoundedTB
         /// <returns>
         /// a partial Taskbar containing just rects and handles.
         /// </returns>
-        public static Types.Taskbar GetQuickTaskbarRects(IntPtr taskbarHwnd, IntPtr trayHwnd, IntPtr appListHwnd)
+        public static Types.Taskbar GetQuickTaskbarRects(IntPtr taskbarHwnd, IntPtr trayHwnd, IntPtr appListHwnd, Types.AppListXaml appListXaml)
         {
             LocalPInvoke.GetWindowRect(taskbarHwnd, out LocalPInvoke.RECT taskbarRectCheck);
             LocalPInvoke.GetWindowRect(trayHwnd, out LocalPInvoke.RECT trayRectCheck);
             LocalPInvoke.GetWindowRect(appListHwnd, out LocalPInvoke.RECT appListRectCheck);
+
+            LocalPInvoke.RECT? r = appListXaml?.GetWindowRect();
+            if(r != null)
+            {
+                appListRectCheck = r.Value;
+            }
 
             return new Types.Taskbar()
             {
@@ -455,6 +461,43 @@ namespace RoundedTB
             return true;
         }
 
+
+        /// <summary>Get AppList handle for win23h2 and later. </summary>
+        public static Types.AppListXaml GetAppListSince23H2(IntPtr hwndTaskbarMain)
+        {
+
+            IntPtr hwndDesktopXamlSrc = LocalPInvoke.FindWindowExA(hwndTaskbarMain, IntPtr.Zero, "Windows.UI.Composition.DesktopWindowContentBridge", null); // Get the handle to the main taskbar's app list
+            if(hwndDesktopXamlSrc == IntPtr.Zero)
+            {
+                return null;
+            }
+            IntPtr hwndWindowCls = LocalPInvoke.FindWindowExA(hwndDesktopXamlSrc, IntPtr.Zero, "Windows.UI.Input.InputSite.WindowClass", null); // Get the handle to the main taskbar's app list
+            if (hwndWindowCls == IntPtr.Zero)
+            {
+                return null;
+            }
+            AutomationElement taskbarElement = AutomationElement.FromHandle(hwndWindowCls);
+            AutomationElement taskFrameElement = taskbarElement.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.AutomationIdProperty, "TaskbarFrame"));
+            if (taskFrameElement == null)
+            {
+                return null;
+            }
+            return new Types.AppListXaml(taskFrameElement);
+
+            AutomationElementCollection appListItems = taskFrameElement.FindAll(TreeScope.Children, System.Windows.Automation.Condition.TrueCondition);
+            var x = new {
+                first = appListItems[0],
+                last = appListItems[appListItems.Count - 1]
+            };
+
+            TreeWalker walker = TreeWalker.ControlViewWalker;
+            AutomationElement childElement = walker.GetFirstChild(taskFrameElement);
+
+            AutomationElement appListElement = taskFrameElement.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.AutomationIdProperty, "TaskbarFrameRepeater"));
+            var a = (IntPtr)(appListElement?.Current.NativeWindowHandle);
+        }
+
+
         /// <summary>
         /// Collects information on any currently-present taskbars.
         /// </summary>
@@ -472,9 +515,11 @@ namespace RoundedTB
             LocalPInvoke.GetWindowRect(hwndTray, out LocalPInvoke.RECT rectTray); // Get the RECT for the main taskbar's tray
             IntPtr hwndAppList = LocalPInvoke.FindWindowExA(LocalPInvoke.FindWindowExA(hwndMain, IntPtr.Zero, "ReBarWindow32", null), IntPtr.Zero, "MSTaskSwWClass", null); // Get the handle to the main taskbar's app list
             LocalPInvoke.GetWindowRect(hwndAppList, out LocalPInvoke.RECT rectAppList);// Get the RECT for the main taskbar's app list
+            Types.AppListXaml appList = GetAppListSince23H2(hwndMain);
 
             retVal.Add(new Types.Taskbar
             {
+                AppListXaml = appList,
                 TaskbarHwnd = hwndMain,
                 TrayHwnd = hwndTray,
                 AppListHwnd = hwndAppList,

@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Automation;
+using System.Windows.Navigation;
 
 namespace RoundedTB
 {
@@ -10,6 +13,7 @@ namespace RoundedTB
     {
         public class Taskbar
         {
+            public AppListXaml AppListXaml { get; set; }
             public IntPtr TaskbarHwnd { get; set; } // Handle to the taskbar
             public IntPtr TrayHwnd { get; set; } // Handle to the tray on the taskbar (if present)
             public IntPtr AppListHwnd { get; set; } // Handle to the list of open/pinned apps on the taskbar
@@ -27,9 +31,46 @@ namespace RoundedTB
             public bool IsSecondary { get; set; } 
         }
 
+        public record AppListXaml(AutomationElement TaskbarFrame)
+        {
+            public LocalPInvoke.RECT? GetWindowRect()
+            {
+                TreeWalker walker = TreeWalker.ControlViewWalker;
+                AutomationElement nextElement = walker.GetFirstChild(TaskbarFrame);
+                if (nextElement == null)
+                {
+                    return null;
+                }
+                System.Windows.Rect leftRect = nextElement.Current.BoundingRectangle;
+                System.Windows.Rect rightRect = nextElement.Current.BoundingRectangle;
+                while (nextElement != null)
+                {
+                    System.Windows.Rect r = nextElement.Current.BoundingRectangle;
+                    if (r.Left < leftRect.Left)
+                    {
+                        leftRect = r;
+                    }
+                    if (rightRect.Right < r.Right)
+                    {
+                        rightRect = r;
+                    }
+                    nextElement = walker.GetNextSibling(nextElement);
+                }
+                Console.WriteLine($"rect: {(leftRect, rightRect)}");
+                var rect = new LocalPInvoke.RECT()
+                {
+                    Left = (int)leftRect.Left,
+                    Top = (int)leftRect.Top,
+                    Right = (int)rightRect.Right,
+                    Bottom = (int)leftRect.Bottom,
+                };
+                return rect;
+            }
+        }
+
         public class Settings
         {
-            public int Version {  get; set; }
+            public int Version { get; set; }
             public SegmentSettings SimpleTaskbarLayout { get; set; }
             public SegmentSettings DynamicAppListLayout { get; set; }
             public SegmentSettings DynamicTrayLayout { get; set; }
@@ -46,7 +87,7 @@ namespace RoundedTB
             public bool CompositionCompat { get; set; }
             public bool IsNotFirstLaunch { get; set; }
             public bool FillOnMaximise { get; set; }
-            public bool FillOnTaskSwitch {  get; set; }
+            public bool FillOnTaskSwitch { get; set; }
             public bool ShowSegmentsOnHover { get; set; }
             public int AutoHide { get; set; }
         }
