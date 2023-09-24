@@ -48,9 +48,17 @@
             <wpfui:Button x:Name="aboutButton" Appearance="Secondary" Margin="0,0,10,47" VerticalAlignment="Bottom" Content="Help" Click="aboutButton_Click" FontWeight="Normal" HorizontalAlignment="Right" Width="133" Height="31"/>
             <wpfui:Button x:Name="applyButton" Margin="0,0,10,10" VerticalAlignment="Bottom" Content="Apply" Click="ApplyButton_Click" FontWeight="Normal" HorizontalAlignment="Right" Width="133" Height="32"/>
 
-            <CheckBox x:Name="dynamicCheckBox" Content="Dynamic mode" Margin="0,210,53,0" Checked="dynamicCheckBox_Checked" Unchecked="dynamicCheckBox_Unchecked" VerticalAlignment="Top" RenderTransformOrigin="1.763,4.069" Visibility="Visible" HorizontalAlignment="Right" Width="116"/>
-            <CheckBox x:Name="showTrayCheckBox" Content="Show this segment" Margin="0,210,44,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="134" Visibility="Hidden"/>
-            <CheckBox x:Name="showWidgetsCheckBox" Content="Show this segment" Margin="0,210,44,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="134" Visibility="Hidden"/>
+            <Grid Width="202" Margin="0,190,10,0"   VerticalAlignment="Top" HorizontalAlignment="Right" >
+                <Label x:Name="widgetWidthLabel" Content="Width" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,0,0" Width="60"  Visibility="Hidden" />
+                <TextBox x:Name="widgetWidthInput" HorizontalAlignment="Left" Margin="0,17,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="60"  Visibility="Hidden" />
+                <Label x:Name="clockWidthLabel" Content="Width" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,0,0" Width="60"  Visibility="Hidden" />
+                <TextBox x:Name="clockWidthInput" HorizontalAlignment="Left" Margin="0,17,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="60"  Visibility="Hidden" />
+
+                <CheckBox x:Name="dynamicCheckBox" Content="Dynamic mode" Margin="70,12,0,0" Padding="0" Checked="dynamicCheckBox_Checked" Unchecked="dynamicCheckBox_Unchecked"  RenderTransformOrigin="1.763,4.069" Visibility="Visible"  Width="116" HorizontalAlignment="Left" />
+                <CheckBox x:Name="showTrayCheckBox" Content="Show tray" Margin="70,12,0,0" Padding="0" Visibility="Hidden" HorizontalAlignment="Left" />
+                <CheckBox x:Name="showWidgetsCheckBox" Content="Show widget"  Margin="70,12,0,0" Padding="0" Visibility="Hidden" HorizontalAlignment="Left" />
+                <CheckBox x:Name="showClockCheckBox" Content="Show clock"  Margin="70,12,0,0" Padding="0" Visibility="Hidden" HorizontalAlignment="Left" />
+            </Grid>
 
             <CheckBox x:Name="centredCheckBox" Content="Centred taskbar?" Margin="10,62,0,0" VerticalAlignment="Top" Visibility="Hidden"/>
             <Button x:Name="splitHelpButton" Opacity="0.001" Content="Click me!"  Margin="107,122,0,0" Click="splitHelpButton_Click"  Height="32" Width="94" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" Visibility="Hidden"/>
@@ -74,14 +82,15 @@
 
                 <Label x:Name="mRightLabel" Content="Right Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="108,56,0,0" Width="84"/>
                 <TextBox x:Name="mRightInput" HorizontalAlignment="Left" Margin="108,76,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" LostFocus="mRightInput_LostFocus"/>
-
+            
             </Grid>
 
             <Grid x:Name="tbDiagramGrid" Margin="10,0,0,0" Height="247" VerticalAlignment="Top" HorizontalAlignment="Left" Width="486">
                 <Rectangle Stroke="#30242424" Fill="#20808080" RadiusX="5" RadiusY="5"/>
-                <wpfui:Button x:Name="taskbarRectStandIn" Margin="126,0,126,5" VerticalAlignment="Bottom" Click="taskbarRectStandIn_Click" Appearance="Primary" Height="32"/>
-                <wpfui:Button x:Name="trayRectStandIn" Margin="415,0,5,5" Click="trayRectStandIn_Click" VerticalAlignment="Bottom" Height="32" Appearance="Secondary"/>
-                <wpfui:Button x:Name="widgetsRectStandIn" Margin="5,0,415,5" Click="widgetsRectStandIn_Click" VerticalAlignment="Bottom" Height="32" Appearance="Secondary"/>
+                <wpfui:Button x:Name="taskbarRectStandIn" Margin="126,0,126,5" VerticalAlignment="Bottom" Click="taskbarRectStandIn_Click" Appearance="Primary" Height="32"></wpfui:Button>
+                <wpfui:Button x:Name="trayRectStandIn" Margin="415,0,5,5" Click="trayRectStandIn_Click" VerticalAlignment="Bottom" Height="32" Appearance="Secondary" Padding="0">📅</wpfui:Button>
+                <wpfui:Button x:Name="widgetsRectStandIn" Margin="5,0,415,5" Click="widgetsRectStandIn_Click" VerticalAlignment="Bottom" Height="32" Appearance="Secondary" Padding="0">📰</wpfui:Button>
+                <wpfui:Button x:Name="clockRectStandIn" Margin="415,0,5,60" Click="clockRectStandIn_Click" VerticalAlignment="Bottom" Height="32" Appearance="Secondary" VerticalContentAlignment="Center" Padding="0">🕑</wpfui:Button>
 
                 <Label Content="RoundedTB" HorizontalAlignment="Center" Margin="0,59,0,108" FontFamily="Segoe UI Variable Display" FontWeight="SemiBold" FontSize="60" Opacity="0.75"/>
                 <Label Content="To begin, select a taskbar segment below." HorizontalAlignment="Center" Margin="0,138,0,75" FontFamily="Segoe UI Variable Display" FontWeight="SemiBold" FontSize="20" Opacity="0.75"/>

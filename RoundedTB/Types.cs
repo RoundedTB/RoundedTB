@@ -24,6 +24,7 @@ namespace RoundedTB
             public bool TrayHidden { get; set; } // Specifies if the tray is currently hidden by RTB on this taskbar
             public int AppListWidth { get; set; } // Specifies the width of the app list
             public TaskbarEffect TaskbarEffectWindow { get; set; } // Unused clone to apply effects to the taskbar
+            public bool IsSecondary { get; set; } 
         }
 
         public class Settings
@@ -33,11 +34,15 @@ namespace RoundedTB
             public SegmentSettings DynamicAppListLayout { get; set; }
             public SegmentSettings DynamicTrayLayout { get; set; }
             public SegmentSettings DynamicWidgetsLayout { get; set; }
+            public SegmentSettings DynamicSecondaryClockLayout { get; set; }
+            public int WidgetsWidth { get; set; }
+            public int ClockWidth { get; set; }
             public bool IsDynamic { get; set; }
             public bool IsCentred { get; set; }
             public bool IsWindows11 { get; set; }
             public bool ShowTray { get; set; }
             public bool ShowWidgets { get; set; }
+            public bool ShowSecondaryClock { get; set; }
             public bool CompositionCompat { get; set; }
             public bool IsNotFirstLaunch { get; set; }
             public bool FillOnMaximise { get; set; }
