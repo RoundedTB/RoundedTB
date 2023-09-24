@@ -327,7 +327,7 @@ namespace RoundedTB
             centredCheckBox.IsChecked = activeSettings.IsCentred;
             showTrayCheckBox.IsChecked = activeSettings.ShowTray;
             showWidgetsCheckBox.IsChecked = activeSettings.ShowWidgets;
-            showClockCheckBox.IsChecked = activeSettings.ShowWidgets;
+            showClockCheckBox.IsChecked = activeSettings.ShowSecondaryClock;
             fillMaximisedCheckBox.IsChecked = activeSettings.FillOnMaximise;
             fillAltTabCheckBox.IsChecked = activeSettings.FillOnTaskSwitch;
             showSegmentsOnHoverCheckBox.IsChecked = activeSettings.ShowSegmentsOnHover;
