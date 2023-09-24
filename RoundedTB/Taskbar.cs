@@ -10,7 +10,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Newtonsoft.Json;
 using System.Runtime.InteropServices;
-using System.Windows.Automation;
+using Interop.UIAutomationClient;
 
 
 namespace RoundedTB
@@ -123,13 +123,14 @@ namespace RoundedTB
             LocalPInvoke.GetWindowRect(appListHwnd, out LocalPInvoke.RECT appListRectCheck);
 
             LocalPInvoke.RECT? r = appListXaml?.GetWindowRect();
-            if(r != null)
+            if (r != null)
             {
                 appListRectCheck = r.Value;
             }
 
             return new Types.Taskbar()
             {
+                AppListXaml = appListXaml,
                 TaskbarHwnd = taskbarHwnd,
                 TrayHwnd = trayHwnd,
                 AppListHwnd = appListHwnd,
@@ -465,36 +466,25 @@ namespace RoundedTB
         /// <summary>Get AppList handle for win23h2 and later. </summary>
         public static Types.AppListXaml GetAppListSince23H2(IntPtr hwndTaskbarMain)
         {
-
-            IntPtr hwndDesktopXamlSrc = LocalPInvoke.FindWindowExA(hwndTaskbarMain, IntPtr.Zero, "Windows.UI.Composition.DesktopWindowContentBridge", null); // Get the handle to the main taskbar's app list
-            if(hwndDesktopXamlSrc == IntPtr.Zero)
+            IntPtr hwndDesktopXamlSrc = LocalPInvoke.FindWindowExA(hwndTaskbarMain, IntPtr.Zero, "Windows.UI.Composition.DesktopWindowContentBridge", null); 
+            if (hwndDesktopXamlSrc == IntPtr.Zero)
             {
                 return null;
             }
-            IntPtr hwndWindowCls = LocalPInvoke.FindWindowExA(hwndDesktopXamlSrc, IntPtr.Zero, "Windows.UI.Input.InputSite.WindowClass", null); // Get the handle to the main taskbar's app list
+            IntPtr hwndWindowCls = LocalPInvoke.FindWindowExA(hwndDesktopXamlSrc, IntPtr.Zero, "Windows.UI.Input.InputSite.WindowClass", null); 
             if (hwndWindowCls == IntPtr.Zero)
             {
                 return null;
             }
-            AutomationElement taskbarElement = AutomationElement.FromHandle(hwndWindowCls);
-            AutomationElement taskFrameElement = taskbarElement.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.AutomationIdProperty, "TaskbarFrame"));
-            if (taskFrameElement == null)
+            CUIAutomation uiAutomation = new CUIAutomation();
+            IUIAutomationElement taskEle = uiAutomation.ElementFromHandle(hwndWindowCls);
+            IUIAutomationCondition con = uiAutomation.CreatePropertyCondition(UIA_PropertyIds.UIA_AutomationIdPropertyId, "TaskbarFrame");
+            IUIAutomationElement taskFrameEle = taskEle.FindFirst(Interop.UIAutomationClient.TreeScope.TreeScope_Children, con);
+            if (taskFrameEle == null)
             {
                 return null;
             }
-            return new Types.AppListXaml(taskFrameElement);
-
-            AutomationElementCollection appListItems = taskFrameElement.FindAll(TreeScope.Children, System.Windows.Automation.Condition.TrueCondition);
-            var x = new {
-                first = appListItems[0],
-                last = appListItems[appListItems.Count - 1]
-            };
-
-            TreeWalker walker = TreeWalker.ControlViewWalker;
-            AutomationElement childElement = walker.GetFirstChild(taskFrameElement);
-
-            AutomationElement appListElement = taskFrameElement.FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.AutomationIdProperty, "TaskbarFrameRepeater"));
-            var a = (IntPtr)(appListElement?.Current.NativeWindowHandle);
+            return new Types.AppListXaml(taskFrameEle, uiAutomation);
         }
 
 

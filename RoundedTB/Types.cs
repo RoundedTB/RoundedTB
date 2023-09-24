@@ -4,8 +4,8 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Automation;
 using System.Windows.Navigation;
+using Interop.UIAutomationClient;
 
 namespace RoundedTB
 {
@@ -28,41 +28,53 @@ namespace RoundedTB
             public bool TrayHidden { get; set; } // Specifies if the tray is currently hidden by RTB on this taskbar
             public int AppListWidth { get; set; } // Specifies the width of the app list
             public TaskbarEffect TaskbarEffectWindow { get; set; } // Unused clone to apply effects to the taskbar
-            public bool IsSecondary { get; set; } 
+            public bool IsSecondary { get; set; }
         }
 
-        public record AppListXaml(AutomationElement TaskbarFrame)
+        public class AppListXaml
         {
+            private readonly IUIAutomationElement _taskbarFrame;
+            private readonly IUIAutomation _uia;
+
+            public AppListXaml(IUIAutomationElement taskbarFrame, IUIAutomation uiAutomation)
+            {
+                _taskbarFrame = taskbarFrame;
+                _uia = uiAutomation;
+            }
+
             public LocalPInvoke.RECT? GetWindowRect()
             {
-                TreeWalker walker = TreeWalker.ControlViewWalker;
-                AutomationElement nextElement = walker.GetFirstChild(TaskbarFrame);
-                if (nextElement == null)
+                IUIAutomationElementArray children = _taskbarFrame.FindAll(
+                    Interop.UIAutomationClient.TreeScope.TreeScope_Children,
+                    _uia.CreateTrueCondition());
+                tagRECT? leftRect = null;
+                tagRECT? rightRect = null;
+                int len = children.Length;
+                if (len == 0)
                 {
                     return null;
                 }
-                System.Windows.Rect leftRect = nextElement.Current.BoundingRectangle;
-                System.Windows.Rect rightRect = nextElement.Current.BoundingRectangle;
-                while (nextElement != null)
+
+                for (int i = 0; i < len; i++)
                 {
-                    System.Windows.Rect r = nextElement.Current.BoundingRectangle;
-                    if (r.Left < leftRect.Left)
+                    IUIAutomationElement child = children.GetElement(i);
+                    tagRECT r = child.CurrentBoundingRectangle;
+                    if (leftRect == null || r.left < leftRect.Value.left)
                     {
                         leftRect = r;
                     }
-                    if (rightRect.Right < r.Right)
+                    if (rightRect == null || rightRect.Value.right < r.right)
                     {
                         rightRect = r;
                     }
-                    nextElement = walker.GetNextSibling(nextElement);
                 }
-                Console.WriteLine($"rect: {(leftRect, rightRect)}");
-                var rect = new LocalPInvoke.RECT()
+
+                LocalPInvoke.RECT rect = new ()
                 {
-                    Left = (int)leftRect.Left,
-                    Top = (int)leftRect.Top,
-                    Right = (int)rightRect.Right,
-                    Bottom = (int)leftRect.Bottom,
+                    Left = (int)leftRect.Value.left,
+                    Top = (int)leftRect.Value.top,
+                    Right = (int)rightRect.Value.right,
+                    Bottom = (int)leftRect.Value.bottom,
                 };
                 return rect;
             }
