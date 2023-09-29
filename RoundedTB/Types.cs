@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Navigation;
+using Interop.UIAutomationClient;
 
 namespace RoundedTB
 {
@@ -10,6 +13,7 @@ namespace RoundedTB
     {
         public class Taskbar
         {
+            public AppListXaml AppListXaml { get; set; }
             public IntPtr TaskbarHwnd { get; set; } // Handle to the taskbar
             public IntPtr TrayHwnd { get; set; } // Handle to the tray on the taskbar (if present)
             public IntPtr AppListHwnd { get; set; } // Handle to the list of open/pinned apps on the taskbar
@@ -24,24 +28,78 @@ namespace RoundedTB
             public bool TrayHidden { get; set; } // Specifies if the tray is currently hidden by RTB on this taskbar
             public int AppListWidth { get; set; } // Specifies the width of the app list
             public TaskbarEffect TaskbarEffectWindow { get; set; } // Unused clone to apply effects to the taskbar
+            public bool IsSecondary { get; set; }
+        }
+
+        public class AppListXaml
+        {
+            private readonly IUIAutomationElement _taskbarFrame;
+            private readonly IUIAutomation _uia;
+
+            public AppListXaml(IUIAutomationElement taskbarFrame, IUIAutomation uiAutomation)
+            {
+                _taskbarFrame = taskbarFrame;
+                _uia = uiAutomation;
+            }
+
+            public LocalPInvoke.RECT? GetWindowRect()
+            {
+                IUIAutomationElementArray children = _taskbarFrame.FindAll(
+                    Interop.UIAutomationClient.TreeScope.TreeScope_Children,
+                    _uia.CreateTrueCondition());
+                tagRECT? leftRect = null;
+                tagRECT? rightRect = null;
+                int len = children.Length;
+                if (len == 0)
+                {
+                    return null;
+                }
+
+                for (int i = 0; i < len; i++)
+                {
+                    IUIAutomationElement child = children.GetElement(i);
+                    tagRECT r = child.CurrentBoundingRectangle;
+                    if (leftRect == null || r.left < leftRect.Value.left)
+                    {
+                        leftRect = r;
+                    }
+                    if (rightRect == null || rightRect.Value.right < r.right)
+                    {
+                        rightRect = r;
+                    }
+                }
+
+                LocalPInvoke.RECT rect = new ()
+                {
+                    Left = (int)leftRect.Value.left,
+                    Top = (int)leftRect.Value.top,
+                    Right = (int)rightRect.Value.right,
+                    Bottom = (int)leftRect.Value.bottom,
+                };
+                return rect;
+            }
         }
 
         public class Settings
         {
-            public int Version {  get; set; }
+            public int Version { get; set; }
             public SegmentSettings SimpleTaskbarLayout { get; set; }
             public SegmentSettings DynamicAppListLayout { get; set; }
             public SegmentSettings DynamicTrayLayout { get; set; }
             public SegmentSettings DynamicWidgetsLayout { get; set; }
+            public SegmentSettings DynamicSecondaryClockLayout { get; set; }
+            public int WidgetsWidth { get; set; }
+            public int ClockWidth { get; set; }
             public bool IsDynamic { get; set; }
             public bool IsCentred { get; set; }
             public bool IsWindows11 { get; set; }
             public bool ShowTray { get; set; }
             public bool ShowWidgets { get; set; }
+            public bool ShowSecondaryClock { get; set; }
             public bool CompositionCompat { get; set; }
             public bool IsNotFirstLaunch { get; set; }
             public bool FillOnMaximise { get; set; }
-            public bool FillOnTaskSwitch {  get; set; }
+            public bool FillOnTaskSwitch { get; set; }
             public bool ShowSegmentsOnHover { get; set; }
             public int AutoHide { get; set; }
         }
