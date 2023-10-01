@@ -572,8 +572,10 @@ namespace RoundedTB
                         hwndWorkerW = LocalPInvoke.FindWindowExA(hwndCurrent, hwndWorkerW, "WorkerW", null);
                     }
                     LocalPInvoke.GetWindowRect(hwndSecAppList, out LocalPInvoke.RECT rectSecAppList);// Get the RECT for this secondary taskbar's app list
+                    Types.AppListXaml appListSec = GetAppListSince23H2(hwndCurrent);
                     retVal.Add(new Types.Taskbar
                     {
+                        AppListXaml = appListSec,
                         TaskbarHwnd = hwndCurrent,
                         TrayHwnd = hwndSecTray,
                         AppListHwnd = hwndSecAppList,
