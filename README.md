@@ -33,15 +33,14 @@ The Microsoft Store's RoundedTB is not mine. It's the [original version](https:/
 
 ## Other info
 
+RoundedTB was created by torchgm. thanks.
+
+https://github.com/RoundedTB/RoundedTB
+
 torchgm says "RoundedTB is just a hobby of mine, and I'm certainly not an expert in this field, so I'm really sorry if you encounter a bug!".
 me too.
 
 If anything breaks catastrophically, press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Esc</kbd> to open Task Manager, end RoundedTB and then restart Explorer. At worst, just reboot your PC. RoundedTB makes no permanent changes (though it will run on startup if you enable it from the tray icon), so restarting should clear any issues.
 
-## Thanks
-
-RoundedTB was created by torchgm.
-
-https://github.com/RoundedTB/RoundedTB
 
 
