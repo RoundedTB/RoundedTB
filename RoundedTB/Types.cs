@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Navigation;
@@ -11,7 +12,7 @@ namespace RoundedTB
 {
     public class Types
     {
-        public class Taskbar
+        public class Taskbar : IDisposable
         {
             public AppListXaml AppListXaml { get; set; }
             public IntPtr TaskbarHwnd { get; set; } // Handle to the taskbar
@@ -29,54 +30,130 @@ namespace RoundedTB
             public int AppListWidth { get; set; } // Specifies the width of the app list
             public TaskbarEffect TaskbarEffectWindow { get; set; } // Unused clone to apply effects to the taskbar
             public bool IsSecondary { get; set; }
+
+            public void Dispose()
+            {
+                AppListXaml.Dispose();
+            }
         }
 
-        public class AppListXaml
+        public class AppListXaml : IDisposable
         {
-            private readonly IUIAutomationElement _taskbarFrame;
-            private readonly IUIAutomation _uia;
+            private IUIAutomationElement? _taskbarFrame;
+            private IUIAutomation? _uia;
+            private readonly IntPtr _hwndTaskbarMain;
 
-            public AppListXaml(IUIAutomationElement taskbarFrame, IUIAutomation uiAutomation)
+            public AppListXaml(IntPtr hwndTaskbarMain)
             {
-                _taskbarFrame = taskbarFrame;
-                _uia = uiAutomation;
+                this._hwndTaskbarMain = hwndTaskbarMain;
+                this._uia = new CUIAutomation();
+                _taskbarFrame = GetTaskbarFrameElement(this._hwndTaskbarMain, this._uia);
+            }
+
+            private static IUIAutomationElement? GetTaskbarFrameElement(IntPtr hwndTaskbarMain, IUIAutomation uia)
+            {
+                IntPtr hwndDesktopXamlSrc = LocalPInvoke.FindWindowExA(hwndTaskbarMain, IntPtr.Zero, "Windows.UI.Composition.DesktopWindowContentBridge", null);
+                if (hwndDesktopXamlSrc == IntPtr.Zero)
+                {
+                    return null;
+                }
+                IntPtr hwndWindowCls = LocalPInvoke.FindWindowExA(hwndDesktopXamlSrc, IntPtr.Zero, "Windows.UI.Input.InputSite.WindowClass", null);
+                if (hwndWindowCls == IntPtr.Zero)
+                {
+                    return null;
+                }
+                IUIAutomationElement taskEle = uia.ElementFromHandle(hwndWindowCls);
+                IUIAutomationCondition con = uia.CreatePropertyCondition(UIA_PropertyIds.UIA_AutomationIdPropertyId, "TaskbarFrame");
+                IUIAutomationElement taskFrameEle = taskEle.FindFirst(Interop.UIAutomationClient.TreeScope.TreeScope_Children, con);
+
+                Marshal.ReleaseComObject(con);
+                Marshal.ReleaseComObject(taskEle);
+
+                return taskFrameEle;
             }
 
             public LocalPInvoke.RECT? GetWindowRect()
             {
-                IUIAutomationElementArray children = _taskbarFrame.FindAll(
-                    Interop.UIAutomationClient.TreeScope.TreeScope_Children,
-                    _uia.CreateTrueCondition());
-                tagRECT? leftRect = null;
-                tagRECT? rightRect = null;
-                int len = children.Length;
-                if (len == 0)
+                if (_taskbarFrame == null || _uia == null)
+                {
+                    return null;
+                }
+                if (!LocalPInvoke.IsWindow(_hwndTaskbarMain))
                 {
                     return null;
                 }
 
-                for (int i = 0; i < len; i++)
+                IUIAutomationElementArray? children = null;
+                IUIAutomationElement? child = null;
+                try
                 {
-                    IUIAutomationElement child = children.GetElement(i);
-                    tagRECT r = child.CurrentBoundingRectangle;
-                    if (leftRect == null || r.left < leftRect.Value.left)
+                    children = _taskbarFrame.FindAll(
+                        Interop.UIAutomationClient.TreeScope.TreeScope_Children,
+                        _uia.CreateTrueCondition());
+                    tagRECT? leftRect = null;
+                    tagRECT? rightRect = null;
+                    int len = children.Length;
+                    if (len == 0)
                     {
-                        leftRect = r;
+                        return null;
                     }
-                    if (rightRect == null || rightRect.Value.right < r.right)
+
+                    for (int i = 0; i < len; i++)
                     {
-                        rightRect = r;
+                        child = children.GetElement(i);
+                        tagRECT r = child.CurrentBoundingRectangle;
+                        if (leftRect == null || r.left < leftRect.Value.left)
+                        {
+                            leftRect = r;
+                        }
+                        if (rightRect == null || rightRect.Value.right < r.right)
+                        {
+                            rightRect = r;
+                        }
+                        Marshal.ReleaseComObject(child);
+                        child = null;
+                    }
+
+                    LocalPInvoke.RECT rect = new()
+                    {
+                        Left = (int)leftRect.Value.left,
+                        Top = (int)leftRect.Value.top,
+                        Right = (int)rightRect.Value.right,
+                        Bottom = (int)leftRect.Value.bottom,
+                    };
+                    return rect;
+                }
+                catch (Exception ex)
+                {
+                    // TODO: write log.
+                    // An error occurs at here, the AppListXaml object will be recreated, so not reqire actions.
+                    return null;
+                }
+                finally
+                {
+                    if (child != null)
+                    {
+                        Marshal.ReleaseComObject(child);
+                    }
+                    if (children != null)
+                    {
+                        Marshal.ReleaseComObject(children);
                     }
                 }
+            }
 
-                LocalPInvoke.RECT rect = new ()
+            public void Dispose()
+            {
+                if (_taskbarFrame != null)
                 {
-                    Left = (int)leftRect.Value.left,
-                    Top = (int)leftRect.Value.top,
-                    Right = (int)rightRect.Value.right,
-                    Bottom = (int)leftRect.Value.bottom,
-                };
-                return rect;
+                    Marshal.ReleaseComObject(_taskbarFrame);
+                    _taskbarFrame = null;
+                }
+                if (_uia != null)
+                {
+                    Marshal.ReleaseComObject(_uia);
+                    _uia = null;
+                }
             }
         }
 

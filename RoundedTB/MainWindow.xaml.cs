@@ -50,7 +50,6 @@ namespace RoundedTB
         public Interaction interaction;
         private HwndSource source;
         public int selectedSegment = 0; // 0 = Simple, 1 = AppList, 2 = Tray, 3 = Widgets
-        public int version = -1;
         /// <summary>
         /// Versions:
         /// -1: Canary
@@ -59,6 +58,7 @@ namespace RoundedTB
         ///  2: R3.1
         ///  3: R4
         /// </summary>
+        public int version = -1;
 
 
         private VisiblityControlManager rectStands;
@@ -473,16 +473,40 @@ namespace RoundedTB
 
             Uri resLight = new("pack://application:,,,/res/traylight.ico");
             Uri resDark = new("pack://application:,,,/res/traydark.ico");
-            WPFUI.Theme.Style style = WPFUI.Theme.Manager.GetSystemTheme();
 
-            //if (style == WPFUI.Theme.Style.Light)
-            //{
-            //    mainTitleBar.NotifyIconImage = new System.Windows.Media.Imaging.BitmapImage(resLight);
-            //}
-            //else
-            //{
-            //    mainTitleBar.NotifyIconImage = new System.Windows.Media.Imaging.BitmapImage(resDark);
-            //}
+            bool cuurentIsLightMode = IsThemeLightMode();
+
+            if (cuurentIsLightMode)
+            {
+                mainTitleBar.NotifyIconImage = new System.Windows.Media.Imaging.BitmapImage(resLight);
+            }
+            else
+            {
+                mainTitleBar.NotifyIconImage = new System.Windows.Media.Imaging.BitmapImage(resDark);
+            }
+            mainTitleBar.InvalidateVisual();
+        }
+
+        public bool IsThemeLightMode()
+        {
+            if (this.isWindows11)
+            {
+                return IsThemeLightModeForWin11();
+            }
+            else
+            {
+                // To be removed in the future.
+                WPFUI.Theme.Style style = WPFUI.Theme.Manager.GetSystemTheme();
+                return (style == WPFUI.Theme.Style.Light);
+            }
+        }
+        private static bool IsThemeLightModeForWin11()
+        {
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            int sysLightTheme = (int)key.GetValue("SystemUsesLightTheme");
+
+            bool isLight = (sysLightTheme == 1);
+            return isLight;
         }
 
 

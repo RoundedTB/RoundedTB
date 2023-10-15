@@ -466,25 +466,7 @@ namespace RoundedTB
         /// <summary>Get AppList handle for win23h2 and later. </summary>
         public static Types.AppListXaml GetAppListSince23H2(IntPtr hwndTaskbarMain)
         {
-            IntPtr hwndDesktopXamlSrc = LocalPInvoke.FindWindowExA(hwndTaskbarMain, IntPtr.Zero, "Windows.UI.Composition.DesktopWindowContentBridge", null); 
-            if (hwndDesktopXamlSrc == IntPtr.Zero)
-            {
-                return null;
-            }
-            IntPtr hwndWindowCls = LocalPInvoke.FindWindowExA(hwndDesktopXamlSrc, IntPtr.Zero, "Windows.UI.Input.InputSite.WindowClass", null); 
-            if (hwndWindowCls == IntPtr.Zero)
-            {
-                return null;
-            }
-            CUIAutomation uiAutomation = new CUIAutomation();
-            IUIAutomationElement taskEle = uiAutomation.ElementFromHandle(hwndWindowCls);
-            IUIAutomationCondition con = uiAutomation.CreatePropertyCondition(UIA_PropertyIds.UIA_AutomationIdPropertyId, "TaskbarFrame");
-            IUIAutomationElement taskFrameEle = taskEle.FindFirst(Interop.UIAutomationClient.TreeScope.TreeScope_Children, con);
-            if (taskFrameEle == null)
-            {
-                return null;
-            }
-            return new Types.AppListXaml(taskFrameEle, uiAutomation);
+            return new Types.AppListXaml(hwndTaskbarMain);
         }
 
 

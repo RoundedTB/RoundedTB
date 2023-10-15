@@ -106,7 +106,7 @@ namespace RoundedTB
                         AutoHide = 0
                     };
                 }
-                
+
                 WriteJSON(); // butts - Missy Quarry, 2020
             }
             if (File.ReadAllText(mw.configPath) == "" || File.ReadAllText(mw.configPath) == null)
@@ -152,7 +152,7 @@ namespace RoundedTB
         {
             return LocalPInvoke.SendMessage(LocalPInvoke.FindWindow("TTB_WorkerWindow", "TTB_WorkerWindow"), LocalPInvoke.RegisterWindowMessage("TTB_ForceRefreshTaskbar"), 0, taskbarHwnd);
         }
-        
+
         // Attempt to forcefully refresh the taskbar
         public static void UpdateLegacyTB(IntPtr taskbarHwnd)
         {
@@ -185,7 +185,7 @@ namespace RoundedTB
                 return true; // Return true to indicate the value is odd.
             }
             return null; // Finally, return null to indicate that the provided number is neither odd nor even - not currently required, added for future-proofing in the event the concept of mathematics changes significantly enough to warrant it.
-        // (this is a joke to annoy sylly)
+                         // (this is a joke to annoy sylly)
         }
 
         public IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -270,6 +270,24 @@ namespace RoundedTB
         public static bool TaskbarOnMonitorWithMaximisedWindow(IntPtr taskbarHwnd)
         {
             return true;
+        }
+
+        public void RefreshGui()
+        {
+            // When the taskbar changes, there may be not show tray icons. so need for a redraw.
+            mw.Dispatcher.Invoke(() =>
+            {
+                try
+                {
+                    mw.TrayIconCheck();
+
+                }
+                catch (Exception)
+                {
+                    // TODO: write log
+                    // GUI refresh, gracefully handle errors.
+                }
+            });
         }
 
         public enum TaskbarPosition
