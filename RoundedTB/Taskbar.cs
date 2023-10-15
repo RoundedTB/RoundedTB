@@ -476,7 +476,7 @@ namespace RoundedTB
         /// <returns>
         /// A list of taskbars populated with information about their size, handles etc.
         /// </returns>
-        public static List<Types.Taskbar> GenerateTaskbarInfo()
+        public static List<Types.Taskbar> GenerateTaskbarInfo(bool isWindows11)
         {
             List<Types.Taskbar> retVal = new List<Types.Taskbar>();
 
@@ -529,9 +529,8 @@ namespace RoundedTB
                 {
                     LocalPInvoke.GetWindowRect(hwndCurrent, out LocalPInvoke.RECT rectCurrent);
                     LocalPInvoke.GetWindowRgn(hwndCurrent, out IntPtr hrgnCurrent);
-                    Interaction interaction = new Interaction();
                     IntPtr hwndSecTray = IntPtr.Zero;
-                    if (interaction.IsWindows11())
+                    if (isWindows11)
                     {
                         IntPtr imd = LocalPInvoke.FindWindowExA(hwndCurrent, IntPtr.Zero, "Windows.UI.Composition.DesktopWindowContentBridge", null);
                         hwndSecTray = LocalPInvoke.FindWindowExA(hwndCurrent, imd, "Windows.UI.Composition.DesktopWindowContentBridge", null);

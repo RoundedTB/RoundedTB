@@ -71,7 +71,7 @@ namespace RoundedTB
                             }
 
                             // Update tray icon
-                            mw.interaction.RefreshGui();
+                            mw.interaction.RefreshUiTray(isForceReset: false);
 
                             infrequentCount = 0;
                         }
@@ -89,7 +89,8 @@ namespace RoundedTB
                         {
                             // Forcefully reset taskbars if the taskbar count or main taskbar handle has changed
                             taskbars.ForEach(t => t.Dispose());
-                            taskbars = Taskbar.GenerateTaskbarInfo();
+                            mw.interaction.RefreshUiTray(isForceReset: true);
+                            taskbars = Taskbar.GenerateTaskbarInfo(mw.interaction.IsWindows11());
                             Debug.WriteLine("Regenerating taskbar info");
                         }
 
@@ -98,7 +99,8 @@ namespace RoundedTB
                             if (taskbars[current].TaskbarHwnd == IntPtr.Zero || taskbars[current].AppListHwnd == IntPtr.Zero)
                             {
                                 taskbars.ForEach(t => t.Dispose());
-                                taskbars = Taskbar.GenerateTaskbarInfo();
+                                taskbars = Taskbar.GenerateTaskbarInfo(mw.interaction.IsWindows11());
+                                mw.interaction.RefreshUiTray(isForceReset: true);
                                 Debug.WriteLine("Regenerating taskbar info due to a missing handle");
                                 break;
                             }

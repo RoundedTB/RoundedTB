@@ -150,7 +150,7 @@ namespace RoundedTB
                 Close();
                 return;
             }
-            TrayIconCheck();
+            TrayIconCheck(isForceReset:true);
 
             if (IsRunningAsUWP())
             {
@@ -335,7 +335,7 @@ namespace RoundedTB
             autoHideComboBox.SelectedIndex = activeSettings.AutoHide;
             widgetWidthInput.Text = activeSettings.WidgetsWidth.ToString();
             clockWidthInput.Text = activeSettings.ClockWidth.ToString();
-            taskbarDetails = Taskbar.GenerateTaskbarInfo();
+            taskbarDetails = Taskbar.GenerateTaskbarInfo(isWindows11);
 
             ApplyButton_Click(null, null);
 
@@ -468,23 +468,31 @@ namespace RoundedTB
             }
         }
 
-        public void TrayIconCheck()
+        public void TrayIconCheck(bool isForceReset)
         {
-
             Uri resLight = new("pack://application:,,,/res/traylight.ico");
             Uri resDark = new("pack://application:,,,/res/traydark.ico");
 
-            bool cuurentIsLightMode = IsThemeLightMode();
+            if (false)
+            {
+                // TODO: Show system theme mode icon.
+                bool cuurentIsLightMode = IsThemeLightMode();
+                if (cuurentIsLightMode)
+                {
+                    mainTitleBar.NotifyIconImage = System.Windows.Media.Imaging.BitmapFrame.Create(
+                        new System.Windows.Media.Imaging.BitmapImage(resLight));
+                }
+                else
+                {
+                    mainTitleBar.NotifyIconImage = System.Windows.Media.Imaging.BitmapFrame.Create(
+                        new System.Windows.Media.Imaging.BitmapImage(resDark));
+                }
+            }
+            if (isForceReset)
+            {
 
-            if (cuurentIsLightMode)
-            {
-                mainTitleBar.NotifyIconImage = new System.Windows.Media.Imaging.BitmapImage(resLight);
+                mainTitleBar.ResetIcon();
             }
-            else
-            {
-                mainTitleBar.NotifyIconImage = new System.Windows.Media.Imaging.BitmapImage(resDark);
-            }
-            mainTitleBar.InvalidateVisual();
         }
 
         public bool IsThemeLightMode()
@@ -595,7 +603,7 @@ namespace RoundedTB
                 AutoHide(true, taskbarDetails);
             }
             interaction.WriteJSON();
-            TrayIconCheck();
+            TrayIconCheck(isForceReset: true);
             UpdateUi();
 
         }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Navigation;
 using Interop.UIAutomationClient;
 
+
 namespace RoundedTB
 {
     public class Types
@@ -37,6 +38,7 @@ namespace RoundedTB
             }
         }
 
+#nullable enable
         public class AppListXaml : IDisposable
         {
             private IUIAutomationElement? _taskbarFrame;
@@ -113,6 +115,10 @@ namespace RoundedTB
                         Marshal.ReleaseComObject(child);
                         child = null;
                     }
+                    if (leftRect == null || rightRect == null)
+                    {
+                        return null;
+                    }
 
                     LocalPInvoke.RECT rect = new()
                     {
@@ -123,7 +129,7 @@ namespace RoundedTB
                     };
                     return rect;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // TODO: write log.
                     // An error occurs at here, the AppListXaml object will be recreated, so not reqire actions.
@@ -156,6 +162,7 @@ namespace RoundedTB
                 }
             }
         }
+#nullable restore
 
         public class Settings
         {
