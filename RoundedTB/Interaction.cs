@@ -31,6 +31,11 @@ namespace RoundedTB
         {
             string jsonSettings = File.ReadAllText(mw.configPath);
             Types.Settings settings = JsonConvert.DeserializeObject<Types.Settings>(jsonSettings);
+            // compatible old settings 
+            if (settings.DynamicSecondaryClockLayout == null)
+            {
+                settings.DynamicSecondaryClockLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 };
+            }
             return settings;
         }
 
@@ -63,6 +68,9 @@ namespace RoundedTB
                         DynamicAppListLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
                         DynamicTrayLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
                         DynamicWidgetsLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
+                        DynamicSecondaryClockLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
+                        WidgetsWidth = 168,
+                        ClockWidth = 110,
                         IsDynamic = false,
                         IsCentred = false,
                         IsWindows11 = true,
@@ -83,6 +91,9 @@ namespace RoundedTB
                         DynamicAppListLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
                         DynamicTrayLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
                         DynamicWidgetsLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
+                        DynamicSecondaryClockLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
+                        WidgetsWidth = 168,
+                        ClockWidth = 110,
                         IsDynamic = false,
                         IsCentred = false,
                         IsWindows11 = false,
@@ -95,7 +106,7 @@ namespace RoundedTB
                         AutoHide = 0
                     };
                 }
-                
+
                 WriteJSON(); // butts - Missy Quarry, 2020
             }
             if (File.ReadAllText(mw.configPath) == "" || File.ReadAllText(mw.configPath) == null)
@@ -141,7 +152,7 @@ namespace RoundedTB
         {
             return LocalPInvoke.SendMessage(LocalPInvoke.FindWindow("TTB_WorkerWindow", "TTB_WorkerWindow"), LocalPInvoke.RegisterWindowMessage("TTB_ForceRefreshTaskbar"), 0, taskbarHwnd);
         }
-        
+
         // Attempt to forcefully refresh the taskbar
         public static void UpdateLegacyTB(IntPtr taskbarHwnd)
         {
@@ -174,7 +185,7 @@ namespace RoundedTB
                 return true; // Return true to indicate the value is odd.
             }
             return null; // Finally, return null to indicate that the provided number is neither odd nor even - not currently required, added for future-proofing in the event the concept of mathematics changes significantly enough to warrant it.
-        // (this is a joke to annoy sylly)
+                         // (this is a joke to annoy sylly)
         }
 
         public IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -259,6 +270,24 @@ namespace RoundedTB
         public static bool TaskbarOnMonitorWithMaximisedWindow(IntPtr taskbarHwnd)
         {
             return true;
+        }
+
+        public void RefreshUiTray(bool isForceReset)
+        {
+            // When the taskbar changes, there may be not show tray icons. so need for a redraw.
+            mw.Dispatcher.Invoke(() =>
+            {
+                try
+                {
+                    mw.TrayIconCheck(isForceReset);
+
+                }
+                catch (Exception)
+                {
+                    // TODO: write log
+                    // GUI refresh, gracefully handle errors.
+                }
+            });
         }
 
         public enum TaskbarPosition

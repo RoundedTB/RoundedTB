@@ -16,8 +16,9 @@ using System.Diagnostics;
 using Microsoft.Win32;
 using System.Text;
 using WPFUI;
-using System.Windows.Forms;
 using System.Windows.Media;
+using System.Linq;
+using System.Windows.Controls;
 
 namespace RoundedTB
 {
@@ -49,7 +50,6 @@ namespace RoundedTB
         public Interaction interaction;
         private HwndSource source;
         public int selectedSegment = 0; // 0 = Simple, 1 = AppList, 2 = Tray, 3 = Widgets
-        public int version = -1;
         /// <summary>
         /// Versions:
         /// -1: Canary
@@ -58,12 +58,50 @@ namespace RoundedTB
         ///  2: R3.1
         ///  3: R4
         /// </summary>
+        public int version = -1;
+
+
+        private VisiblityControlManager rectStands;
+
+        record VisiblityControlSet(WPFUI.Controls.Button KeyControl, IList<System.Windows.Controls.Control> FollowingControls);
+
+        record VisiblityControlManager(VisiblityControlSet CenterBar, VisiblityControlSet TaskTray, VisiblityControlSet Widgets, VisiblityControlSet Clock)
+        {
+            public IReadOnlyList<VisiblityControlSet> All => new[] { CenterBar, TaskTray, Widgets, Clock };
+            public IReadOnlyList<VisiblityControlSet> AllWithoutCenterBar => new[] { TaskTray, Widgets, Clock };
+            public VisiblityControlSet At(int no) => All[no - 1];
+
+            internal void Focus(VisiblityControlSet set)
+            {
+                set.KeyControl.Appearance = WPFUI.Common.Appearance.Primary;
+                foreach (var c in set.FollowingControls)
+                {
+                    c.Visibility = Visibility.Visible;
+                }
+
+                All.Except(new[] { set }).ForEach(x =>
+                {
+                    x.KeyControl.Appearance = WPFUI.Common.Appearance.Secondary;
+                    foreach (var c in x.FollowingControls)
+                    {
+                        c.Visibility = Visibility.Hidden;
+                    }
+                });
+            }
+        }
 
         public MainWindow()
         {
             WPFUI.Background.Manager.Apply(WPFUI.Background.BackgroundType.Mica, this);
 
             InitializeComponent();
+
+            rectStands = new(
+                new VisiblityControlSet(taskbarRectStandIn, new[] { dynamicCheckBox }),
+                new VisiblityControlSet(trayRectStandIn, new[] { showTrayCheckBox }),
+                new VisiblityControlSet(widgetsRectStandIn, new Control[] { showWidgetsCheckBox, widgetWidthInput, widgetWidthLabel }),
+                new VisiblityControlSet(clockRectStandIn, new Control[] { showClockCheckBox, clockWidthInput, clockWidthLabel })
+            );
 
 
             // Check OS build, as behaviours rather-annoyingly differ between Windows 11 and Windows 10
@@ -87,7 +125,7 @@ namespace RoundedTB
 
             // Check if RoundedTB is already running, and if it is, do nothing.
             Process[] matchingProcesses = Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName);
-            
+
             if (matchingProcesses.Length > 1)
             {
                 List<IntPtr> windowList = Interaction.GetTopLevelWindows();
@@ -112,11 +150,11 @@ namespace RoundedTB
                 Close();
                 return;
             }
-            TrayIconCheck();
+            TrayIconCheck(isForceReset:true);
 
             if (IsRunningAsUWP())
             {
-                #pragma warning disable CS4014
+#pragma warning disable CS4014
                 StartupInit(true);
                 configPath = Path.Combine(Windows.Storage.ApplicationData.Current.RoamingFolder.Path, "rtb.json");
                 logPath = Path.Combine(Windows.Storage.ApplicationData.Current.RoamingFolder.Path, "rtb.log");
@@ -129,7 +167,7 @@ namespace RoundedTB
             }
             taskbarThread.WorkerSupportsCancellation = true;
             taskbarThread.WorkerReportsProgress = true;
-            taskbarThread.DoWork +=background.DoWork;
+            taskbarThread.DoWork += background.DoWork;
 
             // Load settings into memory/UI
             interaction.FileSystem();
@@ -154,20 +192,23 @@ namespace RoundedTB
             // Default settings
             if (activeSettings == null)
             {
-                
+
                 if (isWindows11) // Default settings for Windows 11
                 {
                     activeSettings = new Types.Settings()
                     {
-                        SimpleTaskbarLayout = new Types.SegmentSettings{ CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
+                        SimpleTaskbarLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
                         DynamicAppListLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
                         DynamicTrayLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
                         DynamicWidgetsLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
+                        WidgetsWidth = 168,
+                        ClockWidth = 110,
                         IsDynamic = false,
                         IsCentred = false,
                         IsWindows11 = true,
                         ShowTray = false,
                         ShowWidgets = false,
+                        ShowSecondaryClock = false,
                         CompositionCompat = false,
                         IsNotFirstLaunch = false,
                         FillOnMaximise = true,
@@ -184,11 +225,14 @@ namespace RoundedTB
                         DynamicAppListLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
                         DynamicTrayLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
                         DynamicWidgetsLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
+                        WidgetsWidth = 168,
+                        ClockWidth = 110,
                         IsDynamic = false,
                         IsCentred = false,
                         IsWindows11 = false,
                         ShowTray = false,
                         ShowWidgets = false,
+                        ShowSecondaryClock = false,
                         CompositionCompat = false,
                         IsNotFirstLaunch = false,
                         FillOnMaximise = true,
@@ -212,10 +256,12 @@ namespace RoundedTB
                 $"DynamicAppListLayout: {activeSettings.DynamicAppListLayout}\n" +
                 $"DynamicTrayLayout: {activeSettings.DynamicTrayLayout}\n" +
                 $"DynamicWidgetsLayout: {activeSettings.DynamicWidgetsLayout}\n" +
+                $"DynamicSecondaryClockLayout: {activeSettings.DynamicSecondaryClockLayout}\n" +
                 $"IsDynamic: {activeSettings.IsDynamic}\n" +
                 $"IsCentred: {activeSettings.IsCentred}\n" +
                 $"ShowTray: {activeSettings.ShowTray}\n" +
                 $"ShowWidgets: {activeSettings.ShowWidgets}\n" +
+                $"ShowSecondaryClock: {activeSettings.ShowSecondaryClock}\n" +
                 $"CompositionCompat: {activeSettings.CompositionCompat}\n" +
                 $"IsNotFirstLaunch: {activeSettings.IsNotFirstLaunch}\n" +
                 $"FillOnMaximise: {activeSettings.FillOnMaximise}\n" +
@@ -281,12 +327,15 @@ namespace RoundedTB
             centredCheckBox.IsChecked = activeSettings.IsCentred;
             showTrayCheckBox.IsChecked = activeSettings.ShowTray;
             showWidgetsCheckBox.IsChecked = activeSettings.ShowWidgets;
+            showClockCheckBox.IsChecked = activeSettings.ShowSecondaryClock;
             fillMaximisedCheckBox.IsChecked = activeSettings.FillOnMaximise;
             fillAltTabCheckBox.IsChecked = activeSettings.FillOnTaskSwitch;
             showSegmentsOnHoverCheckBox.IsChecked = activeSettings.ShowSegmentsOnHover;
             compositionFixCheckBox.IsChecked = activeSettings.CompositionCompat;
             autoHideComboBox.SelectedIndex = activeSettings.AutoHide;
-            taskbarDetails = Taskbar.GenerateTaskbarInfo();
+            widgetWidthInput.Text = activeSettings.WidgetsWidth.ToString();
+            clockWidthInput.Text = activeSettings.ClockWidth.ToString();
+            taskbarDetails = Taskbar.GenerateTaskbarInfo(isWindows11);
 
             ApplyButton_Click(null, null);
 
@@ -350,31 +399,27 @@ namespace RoundedTB
                 widgetsRectStandIn.Opacity = 1;
             }
 
+            rectStands.AllWithoutCenterBar.ForEach(x => x.KeyControl.Visibility = Visibility.Hidden);
             if (activeSettings.IsCentred && activeSettings.IsWindows11 && activeSettings.IsDynamic)
             {
                 taskbarRectStandIn.Margin = new Thickness(126, 0, 126, 5);
-                trayRectStandIn.Visibility = Visibility.Visible;
-                widgetsRectStandIn.Visibility = Visibility.Visible;
+                rectStands.AllWithoutCenterBar.ForEach(x => x.KeyControl.Visibility = Visibility.Visible);
             }
             else if (activeSettings.IsDynamic)
             {
                 taskbarRectStandIn.Margin = new Thickness(5, 0, 247, 5);
                 trayRectStandIn.Visibility = Visibility.Visible;
-                widgetsRectStandIn.Visibility = Visibility.Hidden;
             }
             else
             {
                 taskbarRectStandIn.Margin = new Thickness(5, 210, 5, 5);
-                trayRectStandIn.Visibility = Visibility.Hidden;
-                widgetsRectStandIn.Visibility = Visibility.Hidden;
-
             }
         }
 
         public void AutoHide(bool enabled, List<Types.Taskbar> taskbarDetails)
         {
-            int workingHeight = Screen.PrimaryScreen.WorkingArea.Height;
-            int boundsHeight = Screen.PrimaryScreen.Bounds.Height;
+            int workingHeight = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea.Height;
+            int boundsHeight = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height;
             int taskbarHeight = taskbarDetails[0].TaskbarRect.Bottom - taskbarDetails[0].TaskbarRect.Top;
             bool workAreaMisconfigured = false;
 
@@ -423,21 +468,53 @@ namespace RoundedTB
             }
         }
 
-        public void TrayIconCheck()
+        public void TrayIconCheck(bool isForceReset)
         {
-            
             Uri resLight = new("pack://application:,,,/res/traylight.ico");
             Uri resDark = new("pack://application:,,,/res/traydark.ico");
-            WPFUI.Theme.Style style = WPFUI.Theme.Manager.GetSystemTheme();
 
-            //if (style == WPFUI.Theme.Style.Light)
-            //{
-            //    mainTitleBar.NotifyIconImage = new System.Windows.Media.Imaging.BitmapImage(resLight);
-            //}
-            //else
-            //{
-            //    mainTitleBar.NotifyIconImage = new System.Windows.Media.Imaging.BitmapImage(resDark);
-            //}
+            if (false)
+            {
+                // TODO: Show system theme mode icon.
+                bool cuurentIsLightMode = IsThemeLightMode();
+                if (cuurentIsLightMode)
+                {
+                    mainTitleBar.NotifyIconImage = System.Windows.Media.Imaging.BitmapFrame.Create(
+                        new System.Windows.Media.Imaging.BitmapImage(resLight));
+                }
+                else
+                {
+                    mainTitleBar.NotifyIconImage = System.Windows.Media.Imaging.BitmapFrame.Create(
+                        new System.Windows.Media.Imaging.BitmapImage(resDark));
+                }
+            }
+            if (isForceReset)
+            {
+
+                mainTitleBar.ResetIcon();
+            }
+        }
+
+        public bool IsThemeLightMode()
+        {
+            if (this.isWindows11)
+            {
+                return IsThemeLightModeForWin11();
+            }
+            else
+            {
+                // To be removed in the future.
+                WPFUI.Theme.Style style = WPFUI.Theme.Manager.GetSystemTheme();
+                return (style == WPFUI.Theme.Style.Light);
+            }
+        }
+        private static bool IsThemeLightModeForWin11()
+        {
+            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            int sysLightTheme = (int)key.GetValue("SystemUsesLightTheme");
+
+            bool isLight = (sysLightTheme == 1);
+            return isLight;
         }
 
 
@@ -448,7 +525,8 @@ namespace RoundedTB
             int mb = 0;
             int mr = 0;
 
-
+            int widgetWidth = 0;
+            int clockWidth = 0;
 
             {
                 if ((!int.TryParse(mTopInput.Text, out mt) && mTopInput.Text != string.Empty)
@@ -458,13 +536,23 @@ namespace RoundedTB
                 {
                     return;
                 }
+
+                if ((!int.TryParse(widgetWidthInput.Text, out widgetWidth) && widgetWidthInput.Text != string.Empty)
+                || (!int.TryParse(clockWidthInput.Text, out clockWidth) && clockWidthInput.Text != string.Empty))
+                {
+                    return;
+                }
             }
+
+            activeSettings.WidgetsWidth = widgetWidth;
+            activeSettings.ClockWidth = clockWidth;
 
             activeSettings.AutoHide = autoHideComboBox.SelectedIndex;
             activeSettings.IsDynamic = (bool)dynamicCheckBox.IsChecked;
             activeSettings.IsCentred = Taskbar.CheckIfCentred();
             activeSettings.ShowTray = (bool)showTrayCheckBox.IsChecked;
             activeSettings.ShowWidgets = (bool)showWidgetsCheckBox.IsChecked;
+            activeSettings.ShowSecondaryClock = (bool)showClockCheckBox.IsChecked;
             activeSettings.CompositionCompat = (bool)compositionFixCheckBox.IsChecked;
             activeSettings.FillOnMaximise = (bool)fillMaximisedCheckBox.IsChecked;
             activeSettings.FillOnTaskSwitch = (bool)fillAltTabCheckBox.IsChecked;
@@ -515,7 +603,7 @@ namespace RoundedTB
                 AutoHide(true, taskbarDetails);
             }
             interaction.WriteJSON();
-            TrayIconCheck();
+            TrayIconCheck(isForceReset: true);
             UpdateUi();
 
         }
@@ -578,7 +666,7 @@ namespace RoundedTB
             {
                 App.Current.Windows[windowCount].Close();
             }
-            
+
             shouldReallyDieNoReally = true;
 
             Close();
@@ -758,7 +846,7 @@ namespace RoundedTB
             IntPtr hwndNext = LocalPInvoke.FindWindowExA(taskbarDetails[0].TaskbarHwnd, IntPtr.Zero, "Start", null);
             List<IntPtr> floatingMilkshakesBitsOfTaskbar = new List<IntPtr>();
             floatingMilkshakesBitsOfTaskbar.Add(hwndNext);
-            while (true) 
+            while (true)
             {
                 hwndNext = LocalPInvoke.FindWindowExA(taskbarDetails[0].TaskbarHwnd, hwndNext, null, null);
                 if (floatingMilkshakesBitsOfTaskbar.Contains(hwndNext))
@@ -790,7 +878,7 @@ namespace RoundedTB
             showSegmentsOnHoverCheckBox.IsChecked = false;
             showTrayCheckBox.IsEnabled = true;
             showTrayCheckBox.IsChecked = true;
-            
+
             if (!isWindows11)
             {
                 splitHelpButton.Visibility = Visibility.Visible;
@@ -811,7 +899,7 @@ namespace RoundedTB
             showSegmentsOnHoverCheckBox.IsChecked = false;
             showTrayCheckBox.IsEnabled = false;
             showTrayCheckBox.IsChecked = false;
-            
+
             if (!isWindows11)
             {
                 splitHelpButton.Visibility = Visibility.Hidden;
@@ -842,6 +930,10 @@ namespace RoundedTB
 
                 case 3:
                     activeSettings.DynamicWidgetsLayout.CornerRadius = check;
+                    break;
+
+                case 4:
+                    activeSettings.DynamicSecondaryClockLayout.CornerRadius = check;
                     break;
             }
         }
@@ -925,75 +1017,54 @@ namespace RoundedTB
             showWidgetsCheckBox.IsChecked = true;
         }
 
+        private void SetLayoutInput(Types.SegmentSettings layout)
+        {
+            cornerRadiusInput.Text = layout.CornerRadius.ToString();
+            cornerRadiusSlider.Value = layout.CornerRadius;
+            mTopInput.Text = layout.MarginTop.ToString();
+            mLeftInput.Text = layout.MarginLeft.ToString();
+            mBottomInput.Text = layout.MarginBottom.ToString();
+            mRightInput.Text = layout.MarginRight.ToString();
+        }
+
         private void taskbarRectStandIn_Click(object sender, RoutedEventArgs e)
         {
-            taskbarRectStandIn.Appearance = WPFUI.Common.Appearance.Primary;
-            trayRectStandIn.Appearance = WPFUI.Common.Appearance.Secondary;
-            widgetsRectStandIn.Appearance = WPFUI.Common.Appearance.Secondary;
-            dynamicCheckBox.Visibility = Visibility.Visible;
-            showTrayCheckBox.Visibility = Visibility.Hidden;
-            showWidgetsCheckBox.Visibility = Visibility.Hidden;
+            rectStands.Focus(rectStands.CenterBar);
 
             if (activeSettings.IsDynamic)
             {
                 selectedSegment = 1;
-
-                cornerRadiusInput.Text = activeSettings.DynamicAppListLayout.CornerRadius.ToString();
-                cornerRadiusSlider.Value = activeSettings.DynamicAppListLayout.CornerRadius;
-                mTopInput.Text = activeSettings.DynamicAppListLayout.MarginTop.ToString();
-                mLeftInput.Text = activeSettings.DynamicAppListLayout.MarginLeft.ToString();
-                mBottomInput.Text = activeSettings.DynamicAppListLayout.MarginBottom.ToString();
-                mRightInput.Text = activeSettings.DynamicAppListLayout.MarginRight.ToString();
+                SetLayoutInput(activeSettings.DynamicAppListLayout);
             }
             else
             {
                 selectedSegment = 0;
-
-                cornerRadiusInput.Text = activeSettings.SimpleTaskbarLayout.CornerRadius.ToString();
-                cornerRadiusSlider.Value = activeSettings.SimpleTaskbarLayout.CornerRadius;
-                mTopInput.Text = activeSettings.SimpleTaskbarLayout.MarginTop.ToString();
-                mLeftInput.Text = activeSettings.SimpleTaskbarLayout.MarginLeft.ToString();
-                mBottomInput.Text = activeSettings.SimpleTaskbarLayout.MarginBottom.ToString();
-                mRightInput.Text = activeSettings.SimpleTaskbarLayout.MarginRight.ToString();
+                SetLayoutInput(activeSettings.SimpleTaskbarLayout);
             }
         }
 
         private void trayRectStandIn_Click(object sender, RoutedEventArgs e)
         {
-            taskbarRectStandIn.Appearance = WPFUI.Common.Appearance.Secondary;
-            trayRectStandIn.Appearance = WPFUI.Common.Appearance.Primary;
-            widgetsRectStandIn.Appearance = WPFUI.Common.Appearance.Secondary;
-            dynamicCheckBox.Visibility = Visibility.Hidden;
-            showTrayCheckBox.Visibility = Visibility.Visible;
-            showWidgetsCheckBox.Visibility = Visibility.Hidden;
+            rectStands.Focus(rectStands.TaskTray);
 
             selectedSegment = 2;
-
-            cornerRadiusInput.Text = activeSettings.DynamicTrayLayout.CornerRadius.ToString();
-            cornerRadiusSlider.Value = activeSettings.DynamicTrayLayout.CornerRadius;
-            mTopInput.Text = activeSettings.DynamicTrayLayout.MarginTop.ToString();
-            mLeftInput.Text = activeSettings.DynamicTrayLayout.MarginLeft.ToString();
-            mBottomInput.Text = activeSettings.DynamicTrayLayout.MarginBottom.ToString();
-            mRightInput.Text = activeSettings.DynamicTrayLayout.MarginRight.ToString();
+            SetLayoutInput(activeSettings.DynamicTrayLayout);
         }
 
         private void widgetsRectStandIn_Click(object sender, RoutedEventArgs e)
         {
-            taskbarRectStandIn.Appearance = WPFUI.Common.Appearance.Secondary;
-            trayRectStandIn.Appearance = WPFUI.Common.Appearance.Secondary;
-            widgetsRectStandIn.Appearance = WPFUI.Common.Appearance.Primary;
-            dynamicCheckBox.Visibility = Visibility.Hidden;
-            showTrayCheckBox.Visibility = Visibility.Hidden;
-            showWidgetsCheckBox.Visibility = Visibility.Visible;
+            rectStands.Focus(rectStands.Widgets);
 
             selectedSegment = 3;
+            SetLayoutInput(activeSettings.DynamicWidgetsLayout);
+        }
 
-            cornerRadiusInput.Text = activeSettings.DynamicWidgetsLayout.CornerRadius.ToString();
-            cornerRadiusSlider.Value = activeSettings.DynamicWidgetsLayout.CornerRadius;
-            mTopInput.Text = activeSettings.DynamicWidgetsLayout.MarginTop.ToString();
-            mLeftInput.Text = activeSettings.DynamicWidgetsLayout.MarginLeft.ToString();
-            mBottomInput.Text = activeSettings.DynamicWidgetsLayout.MarginBottom.ToString();
-            mRightInput.Text = activeSettings.DynamicWidgetsLayout.MarginRight.ToString();
+        private void clockRectStandIn_Click(object sender, RoutedEventArgs e)
+        {
+            rectStands.Focus(rectStands.Clock);
+
+            selectedSegment = 4;
+            SetLayoutInput(activeSettings.DynamicSecondaryClockLayout);
         }
 
         private void mTopInput_LostFocus(object sender, RoutedEventArgs e)
@@ -1019,6 +1090,10 @@ namespace RoundedTB
 
                     case 3:
                         activeSettings.DynamicWidgetsLayout.MarginTop = check;
+                        break;
+
+                    case 4:
+                        activeSettings.DynamicSecondaryClockLayout.MarginTop = check;
                         break;
                 }
             }
@@ -1048,6 +1123,10 @@ namespace RoundedTB
                     case 3:
                         activeSettings.DynamicWidgetsLayout.MarginBottom = check;
                         break;
+
+                    case 4:
+                        activeSettings.DynamicSecondaryClockLayout.MarginBottom = check;
+                        break;
                 }
             }
         }
@@ -1075,6 +1154,10 @@ namespace RoundedTB
 
                     case 3:
                         activeSettings.DynamicWidgetsLayout.MarginLeft = check;
+                        break;
+
+                    case 4:
+                        activeSettings.DynamicSecondaryClockLayout.MarginLeft = check;
                         break;
                 }
             }
@@ -1104,6 +1187,10 @@ namespace RoundedTB
                     case 3:
                         activeSettings.DynamicWidgetsLayout.MarginRight = check;
                         break;
+
+                    case 4:
+                        activeSettings.DynamicSecondaryClockLayout.MarginRight = check;
+                        break;
                 }
             }
         }
@@ -1131,6 +1218,10 @@ namespace RoundedTB
 
                     case 3:
                         activeSettings.DynamicWidgetsLayout.CornerRadius = check;
+                        break;
+
+                    case 4:
+                        activeSettings.DynamicSecondaryClockLayout.CornerRadius = check;
                         break;
                 }
 
