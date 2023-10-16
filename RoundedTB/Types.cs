@@ -45,6 +45,11 @@ namespace RoundedTB
             private IUIAutomation? _uia;
             private readonly IntPtr _hwndTaskbarMain;
 
+            // singleton checker
+            private static bool appListXamlAlreadyExists = false;
+
+            public bool ReloadRequired => (AppListXaml.appListXamlAlreadyExists && this._taskbarFrame == null);
+
             public AppListXaml(IntPtr hwndTaskbarMain)
             {
                 this._hwndTaskbarMain = hwndTaskbarMain;
@@ -70,8 +75,20 @@ namespace RoundedTB
 
                 Marshal.ReleaseComObject(con);
                 Marshal.ReleaseComObject(taskEle);
-
+                AppListXaml.appListXamlAlreadyExists = true;
                 return taskFrameEle;
+            }
+
+
+            public void ReloadTaskbarFrameElement()
+            {
+                // When the taskbar is restarted, there's a possibility that XAML elements may not exist when the taskbar handle is created.
+                // Therefore, if XAML elements have been previously acquired, it's considered a restart, and we attempt to retrieve XAML again.
+                if (_uia == null)
+                {
+                    return;
+                }
+                _taskbarFrame = GetTaskbarFrameElement(_hwndTaskbarMain, _uia);
             }
 
             public LocalPInvoke.RECT? GetWindowRect()

@@ -10,6 +10,11 @@ namespace RoundedTB
 {
     public class Background
     {
+        private struct ReloadChecker
+        {
+            public bool IsReload { get; set; }
+        }
+
         // Just have a reference point for the Dispatcher
         public MainWindow mw;
         bool redrawOverride = false;
@@ -70,8 +75,17 @@ namespace RoundedTB
                                 catch (Exception) { }
                             }
 
+                            ReloadChecker checker = new();
+                            mw.taskbarDetails?.ForEach(taskbar =>
+                            {
+                                if (taskbar.AppListXaml.ReloadRequired)
+                                {
+                                    taskbar.AppListXaml.ReloadTaskbarFrameElement();
+                                    checker.IsReload = true;
+                                }
+                            });
                             // Update tray icon
-                            mw.interaction.RefreshUiTray(isForceReset: false);
+                            mw.interaction.RefreshUiTray(isForceReset: checker.IsReload);
 
                             infrequentCount = 0;
                         }
@@ -89,8 +103,8 @@ namespace RoundedTB
                         {
                             // Forcefully reset taskbars if the taskbar count or main taskbar handle has changed
                             taskbars.ForEach(t => t.Dispose());
-                            mw.interaction.RefreshUiTray(isForceReset: true);
                             taskbars = Taskbar.GenerateTaskbarInfo(mw.interaction.IsWindows11());
+                            mw.interaction.RefreshUiTray(isForceReset: true);
                             Debug.WriteLine("Regenerating taskbar info");
                         }
 
@@ -125,7 +139,7 @@ namespace RoundedTB
                                 LocalPInvoke.RECT currentTrayRect = taskbars[current].TrayRect;
                                 LocalPInvoke.RECT currentWidgetsRect = taskbars[current].TaskbarRect;
                                 currentWidgetsRect.Right = Convert.ToInt32(currentWidgetsRect.Right - (currentWidgetsRect.Right - currentWidgetsRect.Left) + (168 * taskbars[current].ScaleFactor));
-                                
+
                                 if (currentTrayRect.Left != 0)
                                 {
                                     LocalPInvoke.GetCursorPos(out LocalPInvoke.POINT msPt);
@@ -273,7 +287,7 @@ namespace RoundedTB
                         mw.taskbarDetails = taskbars;
 
 
-                    System.Threading.Thread.Sleep(100);
+                        System.Threading.Thread.Sleep(100);
                     }
                 }
                 catch (TypeInitializationException ex)
